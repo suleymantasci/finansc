@@ -25,8 +25,13 @@ export class BlogController {
 
   @Public()
   @Get()
-  findAll(@Query('limit') limit?: number) {
-    return this.blogService.findAll(limit);
+  findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('status') status?: string,
+    @Query('category') category?: string,
+  ) {
+    return this.blogService.findAll({ page, limit, status, category });
   }
 
   @Public()

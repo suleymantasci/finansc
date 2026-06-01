@@ -12,12 +12,41 @@ export class BlogService {
     private readonly blogRepo: Repository<Blog>,
   ) {}
 
-  async findAll(limit?: number) {
-    const blogs = await this.blogRepo.find({
-      order: { createdAt: 'DESC' },
-      take: limit || 100,
-    });
-    return { data: blogs };
+  async findAll(options: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    category?: string;
+  }) {
+    const page = Math.max(options.page || 1, 1);
+    const limit = Math.min(Math.max(options.limit || 8, 1), 50);
+
+    const qb = this.blogRepo.createQueryBuilder('blog');
+
+    if (options.status) {
+      qb.andWhere('blog.status = :status', { status: options.status });
+    }
+
+    if (options.category) {
+      qb.andWhere('blog.category = :category', { category: options.category });
+    }
+
+    qb.orderBy('blog.publishedAt', 'DESC', 'NULLS LAST')
+      .addOrderBy('blog.createdAt', 'DESC');
+
+    const total = await qb.getCount();
+    const data = await qb
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findBySlug(slug: string) {
