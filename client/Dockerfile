@@ -10,6 +10,9 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+# Ensure public dir exists (even if empty) so COPY won't fail
+RUN mkdir -p public
+
 # NEXT_PUBLIC_* vars are baked at build time
 ARG NEXT_PUBLIC_API_URL=https://api.finanscozum.net
 ARG NEXT_PUBLIC_SITE_URL=https://finanscozum.net
