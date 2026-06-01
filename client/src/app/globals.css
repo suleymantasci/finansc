@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+/* ── Design Tokens ── */
+@theme {
+  --color-background: #0f172a;
+  --color-foreground: #f1f5f9;
+  --color-card: #1e293b;
+  --color-card-foreground: #f1f5f9;
+  --color-border: #334155;
+  --color-primary: #f59e0b;
+  --color-primary-foreground: #0f172a;
+  --color-secondary: #1e293b;
+  --color-secondary-foreground: #94a3b8;
+  --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
+  --color-accent: #f59e0b;
+  --color-accent-foreground: #0f172a;
+  --color-destructive: #f43f5e;
+  --color-success: #10b981;
+  --color-ring: #f59e0b;
+  --color-up: #10b981;
+  --color-down: #f43f5e;
+  --color-neutral: #94a3b8;
+  --color-surface: #1e293b;
+  --color-surface-hover: #334155;
+  --radius: 0.75rem;
+
+  --animate-shimmer: shimmer 1.5s ease-in-out infinite;
+  --animate-flash-up: flash-green 0.6s ease-out;
+  --animate-flash-down: flash-red 0.6s ease-out;
+  --animate-ticker: ticker-scroll 30s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes flash-green {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: color-mix(in srgb, var(--color-up) 20%, transparent); }
+}
+
+@keyframes flash-red {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: color-mix(in srgb, var(--color-down) 20%, transparent); }
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Light Mode Overrides ── */
+@layer base {
+  [data-theme="light"] {
+    --color-background: #ffffff;
+    --color-foreground: #0f172a;
+    --color-card: #f8fafc;
+    --color-card-foreground: #0f172a;
+    --color-border: #e2e8f0;
+    --color-primary: #d97706;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #f1f5f9;
+    --color-secondary-foreground: #475569;
+    --color-muted: #f1f5f9;
+    --color-muted-foreground: #64748b;
+    --color-accent: #d97706;
+    --color-accent-foreground: #ffffff;
+    --color-destructive: #e11d48;
+    --color-success: #059669;
+    --color-ring: #d97706;
+    --color-up: #059669;
+    --color-down: #e11d48;
+    --color-neutral: #64748b;
+    --color-surface: #f8fafc;
+    --color-surface-hover: #f1f5f9;
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
+  }
+}
+
+/* ── Custom Utilities ── */
+@utility skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-muted) 25%,
+    var(--color-border) 50%,
+    var(--color-muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+@utility flash-up {
+  animation: var(--animate-flash-up);
+}
+
+@utility flash-down {
+  animation: var(--animate-flash-down);
+}
+
+@utility ticker-animate {
+  animation: var(--animate-ticker);
+  &:hover {
+    animation-play-state: paused;
+  }
+}
