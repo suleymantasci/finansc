@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useMarketStore } from '@/stores/market.store';
 import { SectionIntro } from '@/components/shared/SectionIntro';
@@ -32,12 +33,25 @@ const SORT_TAB_MAP: Record<SortTab, SortState> = {
 
 export function BorsaClient() {
   const { indices, stocks, indicesLoading, stocksLoading, flashMap, borsaStreamStatus: status } = useMarketStore();
-  const [mainTab, setMainTab] = useState<MainTab>('hisse');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const mainTab = (searchParams.get('tab') as MainTab) || 'hisse';
   const [sortTab, setSortTab] = useState<SortTab | null>(null);
   const [indexFilter, setIndexFilter] = useState<IndexFilter>('tumu');
   const [search, setSearch] = useState('');
   const [columnSort, setColumnSort] = useState<SortState>(DEFAULT_SORT);
   const [indexColumnSort, setIndexColumnSort] = useState<SortState>({ key: 'symbol', dir: 'asc' });
+
+  const setMainTab = useCallback((tab: MainTab) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === 'hisse') {
+      params.delete('tab');
+    } else {
+      params.set('tab', tab);
+    }
+    router.replace(`/borsa${params.size ? `?${params}` : ''}`, { scroll: false });
+  }, [router, searchParams]);
 
   const mainTabs: { key: MainTab; label: string }[] = [
     { key: 'hisse', label: 'Hisseler' },
@@ -133,27 +147,22 @@ export function BorsaClient() {
   const stockColumns = [
     { key: 'symbol', label: 'Sembol', align: 'left' as const },
     { key: 'buyPrice', label: 'Alış', align: 'right' as const },
-    { key: 'sellPrice', label: 'Satış', align: 'right' as const, hide: 'sm' as const },
-    { key: 'low', label: 'En Düşük', align: 'right' as const, hide: 'lg' as const },
-    { key: 'high', label: 'En Yüksek', align: 'right' as const, hide: 'lg' as const },
+    { key: 'sellPrice', label: 'Satış', align: 'right' as const },
+    { key: 'low', label: 'En Düşük', align: 'right' as const },
+    { key: 'high', label: 'En Yüksek', align: 'right' as const },
     { key: 'changePercent', label: 'Değişim', align: 'right' as const },
-    { key: 'volume', label: 'Hacim (Lot)', align: 'right' as const, hide: 'md' as const },
-    { key: 'turnover', label: 'Hacim (TL)', align: 'right' as const, hide: 'lg' as const },
+    { key: 'volume', label: 'Hacim (Lot)', align: 'right' as const },
+    { key: 'turnover', label: 'Hacim (TL)', align: 'right' as const },
   ];
 
   const indexColumns = [
     { key: 'symbol', label: 'Endeks', align: 'left' as const },
     { key: 'value', label: 'Değer', align: 'right' as const },
     { key: 'changePercent', label: 'Değişim', align: 'right' as const },
-    { key: 'low', label: 'En Düşük', align: 'right' as const, hide: 'sm' as const },
-    { key: 'high', label: 'En Yüksek', align: 'right' as const, hide: 'sm' as const },
-    { key: 'time', label: 'Saat', align: 'right' as const, hide: 'md' as const },
+    { key: 'low', label: 'En Düşük', align: 'right' as const },
+    { key: 'high', label: 'En Yüksek', align: 'right' as const },
+    { key: 'time', label: 'Saat', align: 'right' as const },
   ];
-
-  const hideClass = (hide?: string) => {
-    if (!hide) return '';
-    return `hidden ${hide}:table-cell`;
-  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
@@ -247,7 +256,6 @@ export function BorsaClient() {
                         className={cn(
                           'px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap',
                           col.align === 'right' ? 'text-right' : 'text-left',
-                          hideClass(col.hide),
                         )}
                       >
                         {col.label}
@@ -275,12 +283,12 @@ export function BorsaClient() {
                       >
                         <td className="px-4 py-3 font-medium">{s.symbol}</td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.buyPrice)}</td>
-                        <td className={cn('px-4 py-3 text-right font-mono tabular-nums', hideClass('sm'))}>{formatDecimal(s.sellPrice)}</td>
-                        <td className={cn('px-4 py-3 text-right font-mono tabular-nums text-muted-foreground', hideClass('lg'))}>{formatDecimal(s.low)}</td>
-                        <td className={cn('px-4 py-3 text-right font-mono tabular-nums text-muted-foreground', hideClass('lg'))}>{formatDecimal(s.high)}</td>
+                        <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.sellPrice)}</td>
+                        <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(s.low)}</td>
+                        <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(s.high)}</td>
                         <td className="px-4 py-3 text-right"><PriceChange value={s.changePercent} size="sm" /></td>
-                        <td className={cn('px-4 py-3 text-right font-mono tabular-nums text-muted-foreground', hideClass('md'))}>{formatInteger(s.volume)}</td>
-                        <td className={cn('px-4 py-3 text-right font-mono tabular-nums text-muted-foreground', hideClass('lg'))}>{formatTL(s.turnover)}</td>
+                        <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatInteger(s.volume)}</td>
+                        <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatTL(s.turnover)}</td>
                       </tr>
                     ))
                   )}
@@ -305,7 +313,6 @@ export function BorsaClient() {
                       className={cn(
                         'px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap',
                         col.align === 'right' ? 'text-right' : 'text-left',
-                        hideClass(col.hide),
                       )}
                     >
                       {col.label}
@@ -334,9 +341,9 @@ export function BorsaClient() {
                       <td className="px-4 py-3 font-medium">{idx.symbol}</td>
                       <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(idx.value)}</td>
                       <td className="px-4 py-3 text-right"><PriceChange value={idx.changePercent} size="sm" /></td>
-                      <td className={cn('px-4 py-3 text-right font-mono tabular-nums text-muted-foreground', hideClass('sm'))}>{formatDecimal(idx.low)}</td>
-                      <td className={cn('px-4 py-3 text-right font-mono tabular-nums text-muted-foreground', hideClass('sm'))}>{formatDecimal(idx.high)}</td>
-                      <td className={cn('px-4 py-3 text-right text-xs text-muted-foreground', hideClass('md'))}>{idx.time}</td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(idx.low)}</td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(idx.high)}</td>
+                      <td className="px-4 py-3 text-right text-xs text-muted-foreground">{idx.time}</td>
                     </tr>
                   ))
                 )}

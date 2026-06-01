@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useMarketStore } from '@/stores/market.store';
 import type { CurrencyStreamData } from '@/stores/market.store';
@@ -37,9 +38,22 @@ export function DovizClient() {
     setCurrencyStreamStatus,
   } = useMarketStore();
 
-  const [tab, setTab] = useState<Tab>('serbest-piyasa');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const tab = (searchParams.get('kaynak') as Tab) || 'serbest-piyasa';
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
+
+  const setTab = useCallback((newTab: Tab) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newTab === 'serbest-piyasa') {
+      params.delete('kaynak');
+    } else {
+      params.set('kaynak', newTab);
+    }
+    router.replace(`/doviz${params.size ? `?${params}` : ''}`, { scroll: false });
+  }, [router, searchParams]);
 
   // SSE for serbest piyasa (30s updates)
   const handleSerbestSSE = useCallback(

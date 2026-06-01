@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMarketStore } from '@/stores/market.store';
 import type { GoldStreamData } from '@/stores/market.store';
 import { useSSE } from '@/hooks/useSSE';
@@ -16,8 +17,21 @@ import { cn } from '@/lib/utils';
 
 export function AltinClient() {
   const { goldPrices, goldStreamStatus, flashMap, updateFromGoldStream } = useMarketStore();
-  const [activeSource, setActiveSource] = useState('harem');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const activeSource = searchParams.get('kaynak') || 'harem';
   const [search, setSearch] = useState('');
+
+  const setActiveSource = useCallback((source: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (source === 'harem') {
+      params.delete('kaynak');
+    } else {
+      params.set('kaynak', source);
+    }
+    router.replace(`/altin${params.size ? `?${params}` : ''}`, { scroll: false });
+  }, [router, searchParams]);
 
   // Connect to SSE stream for the selected source — reconnects automatically when source changes
   const handleGoldSSE = useCallback(

@@ -52,10 +52,11 @@ export function BlogSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: i * 0.08 }}
+              className="h-full"
             >
               <Link
                 href={`/blog/${post.slug}`}
-                className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-colors hover:border-primary/30"
+                className="group flex h-full flex-col rounded-xl border border-border bg-card overflow-hidden transition-colors hover:border-primary/30"
               >
                 {post.thumbnailUrl && (
                   <div className="aspect-video w-full overflow-hidden bg-muted">

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { BorsaClient } from './BorsaClient';
 
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function BorsaPage() {
-  return <BorsaClient />;
+  return (
+    <Suspense>
+      <BorsaClient />
+    </Suspense>
+  );
 }
