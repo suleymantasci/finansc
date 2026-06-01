@@ -50,6 +50,9 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=https://api.finanscozum.net
+            NEXT_PUBLIC_SITE_URL=https://finanscozum.net
+            NEXT_PUBLIC_SITE_NAME=FinansCozum
+            NEXT_PUBLIC_ADSENSE_CLIENT_ID=${{ secrets.ADSENSE_CLIENT_ID }}
           tags: |
             ${{ env.CLIENT_IMAGE }}-latest
             ${{ env.CLIENT_IMAGE }}-${{ github.sha }}
