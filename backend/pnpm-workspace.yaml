@@ -1,4 +1,4 @@
-onlyBuiltDependencies:
-  - "@nestjs/core"
-  - bcrypt
-  - "@scarf/scarf"
+allowBuilds:
+  '@nestjs/core': true
+  '@scarf/scarf': true
+  bcrypt: true
