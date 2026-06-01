@@ -1,6 +1,6 @@
 # FinansÇözüm — finanscozum.net
 
-Profesyonel finans platformu. Canlı altın/borsa verileri, blog, hesaplama araçları.
+Profesyonel finans platformu. Canlı altın/borsa verileri, blog, hesaplama araçları. v1.1
 
 ## Yapı
 
