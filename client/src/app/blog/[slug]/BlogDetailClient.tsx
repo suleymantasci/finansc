@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Calendar, ArrowLeft, Share2, Calculator, PiggyBank, TrendingDown, Banknote, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Calendar, ArrowLeft, Share2, Calculator, PiggyBank, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { AdInContent } from '@/components/ads/AdInContent';
@@ -14,8 +14,6 @@ import type { BlogPost } from '@/types';
 const SIDEBAR_TOOLS = [
   { slug: 'ihtiyac-kredisi', title: 'Kredi Hesaplama', desc: 'Taksit ve maliyet hesabı', icon: Calculator },
   { slug: 'vadeli-mevduat', title: 'Vadeli Mevduat', desc: 'Net getiri hesaplama', icon: PiggyBank },
-  { slug: 'reel-getiri', title: 'Reel Getiri', desc: 'Enflasyondan arındırılmış kazanç', icon: TrendingDown },
-  { slug: 'parasal-deger', title: 'Paranın Değeri', desc: 'Alım gücü hesaplama', icon: Banknote },
 ];
 
 interface Props {
@@ -24,7 +22,7 @@ interface Props {
 }
 
 export function BlogDetailClient({ post, relatedPosts }: Props) {
-  const { indices, goldPrices } = useMarketStore();
+  const { indices, goldPrices, flashMap } = useMarketStore();
 
   if (!post) {
     return (
@@ -126,7 +124,7 @@ export function BlogDetailClient({ post, relatedPosts }: Props) {
 
         {/* ── Sidebar ── */}
         <aside className="w-full shrink-0 lg:w-72 xl:w-80">
-          <div className="sticky top-20 space-y-5">
+          <div className="sticky top-20 max-h-[calc(100vh-6rem)] space-y-5 overflow-y-auto">
 
             {/* Borsa Mini Table */}
             {topIndices.length > 0 && (
@@ -143,7 +141,11 @@ export function BlogDetailClient({ post, relatedPosts }: Props) {
                     <div key={idx.symbol} className="flex items-center justify-between text-xs">
                       <span className="font-medium text-foreground">{idx.symbol}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono tabular-nums">{formatDecimal(idx.value)}</span>
+                        <span className={cn(
+                          'font-mono tabular-nums',
+                          flashMap[idx.symbol] === 'up' && 'text-flash-up',
+                          flashMap[idx.symbol] === 'down' && 'text-flash-down',
+                        )}>{formatDecimal(idx.value)}</span>
                         <span className={cn(
                           'flex items-center gap-0.5 font-mono tabular-nums font-semibold',
                           idx.changePercent > 0 && 'text-up',
@@ -175,7 +177,11 @@ export function BlogDetailClient({ post, relatedPosts }: Props) {
                     <div key={g.goldType} className="flex items-center justify-between text-xs">
                       <span className="font-medium text-foreground">{g.goldType}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono tabular-nums">{formatDecimal(g.buyPrice)}</span>
+                        <span className={cn(
+                          'font-mono tabular-nums',
+                          flashMap[`${g.source}-${g.goldType}`] === 'up' && 'text-flash-up',
+                          flashMap[`${g.source}-${g.goldType}`] === 'down' && 'text-flash-down',
+                        )}>{formatDecimal(g.buyPrice)}</span>
                         <span className={cn(
                           'flex items-center gap-0.5 font-mono tabular-nums font-semibold',
                           g.changePercent > 0 && 'text-up',

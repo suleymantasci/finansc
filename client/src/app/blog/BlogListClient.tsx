@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Calendar } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SectionIntro } from '@/components/shared/SectionIntro';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { AdInFeed } from '@/components/ads/AdInFeed';
 import { SkeletonCard } from '@/components/ui/Skeleton';
@@ -15,12 +15,24 @@ import { cn } from '@/lib/utils';
 import type { BlogPost, PaginatedResponse } from '@/types';
 
 export function BlogListClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [category, setCategory] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
+
+  const page = Number(searchParams.get('sayfa')) || 1;
+  const category = searchParams.get('kategori') || null;
+
+  const navigate = useCallback((newPage: number, newCategory: string | null) => {
+    const params = new URLSearchParams();
+    if (newPage > 1) params.set('sayfa', String(newPage));
+    if (newCategory) params.set('kategori', newCategory);
+    const qs = params.toString();
+    router.push(`/blog${qs ? `?${qs}` : ''}`, { scroll: false });
+  }, [router]);
 
   useEffect(() => {
     setLoading(true);
@@ -31,7 +43,6 @@ export function BlogListClient() {
       .then((res) => {
         setPosts(res.data);
         setTotalPages(res.totalPages);
-        // Extract unique categories
         const cats = [...new Set(res.data.map((p) => p.category).filter(Boolean))] as string[];
         if (cats.length > categories.length) setCategories(cats);
       })
@@ -53,7 +64,7 @@ export function BlogListClient() {
       {categories.length > 0 && (
         <div className="mb-6 flex flex-wrap gap-2">
           <button
-            onClick={() => { setCategory(null); setPage(1); }}
+            onClick={() => navigate(1, null)}
             className={cn(
               'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
               !category
@@ -66,7 +77,7 @@ export function BlogListClient() {
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => { setCategory(cat); setPage(1); }}
+              onClick={() => navigate(1, cat)}
               className={cn(
                 'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
                 category === cat
@@ -126,10 +137,11 @@ export function BlogListClient() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
+                  className="h-full"
                 >
                   <Link
                   href={`/blog/${post.slug}`}
-                  className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/30"
+                  className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/30"
                 >
                   {post.thumbnailUrl && (
                     <div className="aspect-video w-full overflow-hidden bg-muted">
@@ -165,15 +177,65 @@ export function BlogListClient() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-center gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                Önceki
-              </Button>
-              <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-                Sonraki
-              </Button>
-            </div>
+            <nav className="mt-8 flex items-center justify-center gap-1">
+              {/* First */}
+              <button
+                disabled={page <= 1}
+                onClick={() => navigate(1, category)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-30 disabled:pointer-events-none"
+                aria-label="İlk sayfa"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+              {/* Prev */}
+              <button
+                disabled={page <= 1}
+                onClick={() => navigate(page - 1, category)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-30 disabled:pointer-events-none"
+                aria-label="Önceki sayfa"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              {/* Page numbers */}
+              {getPageNumbers(page, totalPages).map((p, idx) =>
+                p === '...' ? (
+                  <span key={`dots-${idx}`} className="flex h-8 w-8 items-center justify-center text-xs text-muted-foreground">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => navigate(p as number, category)}
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium transition-colors',
+                      p === page
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-surface-hover',
+                    )}
+                  >
+                    {p}
+                  </button>
+                ),
+              )}
+
+              {/* Next */}
+              <button
+                disabled={page >= totalPages}
+                onClick={() => navigate(page + 1, category)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-30 disabled:pointer-events-none"
+                aria-label="Sonraki sayfa"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              {/* Last */}
+              <button
+                disabled={page >= totalPages}
+                onClick={() => navigate(totalPages, category)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-30 disabled:pointer-events-none"
+                aria-label="Son sayfa"
+              >
+                <ChevronsRight className="h-4 w-4" />
+              </button>
+            </nav>
           )}
         </>
       )}
@@ -181,4 +243,23 @@ export function BlogListClient() {
       <AdBanner page="blog" position="bottom" />
     </div>
   );
+}
+
+/** Generate page number array with ellipsis for large page counts */
+function getPageNumbers(current: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+  const pages: (number | '...')[] = [1];
+
+  if (current > 3) pages.push('...');
+
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+
+  for (let i = start; i <= end; i++) pages.push(i);
+
+  if (current < total - 2) pages.push('...');
+
+  pages.push(total);
+  return pages;
 }

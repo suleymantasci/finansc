@@ -27,8 +27,10 @@
   --radius: 0.75rem;
 
   --animate-shimmer: shimmer 1.5s ease-in-out infinite;
-  --animate-flash-up: flash-green 0.6s ease-out;
-  --animate-flash-down: flash-red 0.6s ease-out;
+  --animate-flash-up: flash-green 2s ease-out;
+  --animate-flash-down: flash-red 2s ease-out;
+  --animate-text-flash-up: text-flash-green 2s ease-out;
+  --animate-text-flash-down: text-flash-red 2s ease-out;
   --animate-ticker: ticker-scroll 30s linear infinite;
 }
 
@@ -45,6 +47,16 @@
 @keyframes flash-red {
   0%, 100% { background-color: transparent; }
   50% { background-color: color-mix(in srgb, var(--color-down) 20%, transparent); }
+}
+
+@keyframes text-flash-green {
+  0% { color: var(--color-up); }
+  100% { color: inherit; }
+}
+
+@keyframes text-flash-red {
+  0% { color: var(--color-down); }
+  100% { color: inherit; }
 }
 
 @keyframes ticker-scroll {
@@ -191,10 +203,27 @@
 
 @utility flash-up {
   animation: var(--animate-flash-up);
+
+  /* Flash text color on price cells */
+  & .font-mono {
+    animation: var(--animate-text-flash-up);
+  }
 }
 
 @utility flash-down {
   animation: var(--animate-flash-down);
+
+  & .font-mono {
+    animation: var(--animate-text-flash-down);
+  }
+}
+
+@utility text-flash-up {
+  animation: var(--animate-text-flash-up);
+}
+
+@utility text-flash-down {
+  animation: var(--animate-text-flash-down);
 }
 
 @utility ticker-animate {

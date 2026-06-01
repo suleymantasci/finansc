@@ -15,7 +15,7 @@ type Tab = 'hisseler' | 'altinlar';
 export default function FavorilerPage() {
   const [tab, setTab] = useState<Tab>('hisseler');
   const { favorites, fetchFavorites, removeFavorite } = useFavoriteStore();
-  const { stocks, goldPrices } = useMarketStore();
+  const { stocks, goldPrices, flashMap } = useMarketStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -73,7 +73,11 @@ export default function FavorilerPage() {
                   {stockFavs.map((fav) => {
                     const stock = stocks.find((s) => s.symbol === fav.symbol);
                     return (
-                      <tr key={fav.id} className="border-b border-border last:border-0">
+                      <tr key={fav.id} className={cn(
+                        'border-b border-border last:border-0',
+                        stock && flashMap[fav.symbol] === 'up' && 'flash-up',
+                        stock && flashMap[fav.symbol] === 'down' && 'flash-down',
+                      )}>
                         <td className="px-4 py-3 font-medium">{fav.symbol}</td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums">{stock ? formatDecimal(stock.buyPrice) : '—'}</td>
                         <td className="px-4 py-3 text-right">{stock ? <PriceChange value={stock.changePercent} size="sm" /> : '—'}</td>
@@ -105,9 +109,12 @@ export default function FavorilerPage() {
                   {goldFavs.map((fav) => {
                     const gold = goldPrices.find((g) => g.goldType === fav.symbol);
                     return (
-                      <tr key={fav.id} className="border-b border-border last:border-0">
+                      <tr key={fav.id} className={cn(
+                        'border-b border-border last:border-0',
+                        gold && flashMap[`${gold.source}-${gold.goldType}`] === 'up' && 'flash-up',
+                        gold && flashMap[`${gold.source}-${gold.goldType}`] === 'down' && 'flash-down',
+                      )}>
                         <td className="px-4 py-3 font-medium">{fav.symbol}</td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums">{gold ? (fav.symbol.toLowerCase().includes('ons') ? formatUSD(gold.buyPrice) : formatTL(gold.buyPrice)) : '—'}</td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums">{gold ? (fav.symbol.toLowerCase().includes('ons') ? formatUSD(gold.sellPrice) : formatTL(gold.sellPrice)) : '—'}</td>
                         <td className="px-4 py-3 text-right">
                           <button onClick={() => removeFavorite(fav.id)} className="text-muted-foreground hover:text-danger"><Trash2 className="h-4 w-4" /></button>

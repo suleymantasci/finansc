@@ -6,9 +6,10 @@ import { SectionIntro } from '@/components/shared/SectionIntro';
 import { PriceChange } from '@/components/shared/PriceChange';
 import { formatDecimal } from '@/lib/formatters';
 import { SkeletonTable } from '@/components/ui/Skeleton';
+import { cn } from '@/lib/utils';
 
 export function BorsaOzetSection() {
-  const { stocks, stocksLoading } = useMarketStore();
+  const { stocks, stocksLoading, flashMap } = useMarketStore();
 
   const sorted = [...stocks].sort((a, b) => b.changePercent - a.changePercent);
   const top5 = sorted.slice(0, 5);
@@ -47,7 +48,11 @@ export function BorsaOzetSection() {
               </thead>
               <tbody>
                 {top5.map((s) => (
-                  <tr key={s.symbol} className="border-b border-border last:border-0">
+                  <tr key={s.symbol} className={cn(
+                    'border-b border-border last:border-0',
+                    flashMap[s.symbol] === 'up' && 'flash-up',
+                    flashMap[s.symbol] === 'down' && 'flash-down',
+                  )}>
                     <td className="px-4 py-2.5 font-medium">{s.symbol}</td>
                     <td className="px-4 py-2.5 text-right font-mono tabular-nums">{formatDecimal(s.buyPrice)}</td>
                     <td className="px-4 py-2.5 text-right"><PriceChange value={s.changePercent} size="sm" /></td>
@@ -72,7 +77,11 @@ export function BorsaOzetSection() {
               </thead>
               <tbody>
                 {bottom5.map((s) => (
-                  <tr key={s.symbol} className="border-b border-border last:border-0">
+                  <tr key={s.symbol} className={cn(
+                    'border-b border-border last:border-0',
+                    flashMap[s.symbol] === 'up' && 'flash-up',
+                    flashMap[s.symbol] === 'down' && 'flash-down',
+                  )}>
                     <td className="px-4 py-2.5 font-medium">{s.symbol}</td>
                     <td className="px-4 py-2.5 text-right font-mono tabular-nums">{formatDecimal(s.buyPrice)}</td>
                     <td className="px-4 py-2.5 text-right"><PriceChange value={s.changePercent} size="sm" /></td>

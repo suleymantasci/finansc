@@ -15,7 +15,7 @@ const CURRENCY_TICKER_MAP: Record<string, string> = {
 
 function LiveTicker() {
   const {
-    indices, goldPrices, serbestCurrencies,
+    indices, goldPrices, serbestCurrencies, flashMap,
     updateFromBorsaStream, updateFromGoldStream, updateFromCurrencyStream,
     setBorsaStreamStatus, setGoldStreamStatus, setCurrencyStreamStatus,
   } = useMarketStore();
@@ -55,13 +55,13 @@ function LiveTicker() {
 
   // Derive ticker items from store data
   const tickerItems = useMemo(() => {
-    const items: { symbol: string; value: number; changePercent: number }[] = [];
+    const items: { symbol: string; value: number; changePercent: number; flashKey: string }[] = [];
     if (Array.isArray(indices)) {
       items.push(
         ...indices
           .filter((idx) => idx.symbol && idx.symbol !== 'code')
           .slice(0, 3)
-          .map((idx) => ({ symbol: idx.symbol, value: idx.value, changePercent: idx.changePercent })),
+          .map((idx) => ({ symbol: idx.symbol, value: idx.value, changePercent: idx.changePercent, flashKey: idx.symbol })),
       );
     }
     if (Array.isArray(goldPrices)) {
@@ -69,7 +69,7 @@ function LiveTicker() {
         ...goldPrices
           .filter((g) => ['Gram Altın', 'Çeyrek Altın', 'Ons Altın'].includes(g.goldType))
           .slice(0, 3)
-          .map((g) => ({ symbol: g.goldType, value: g.buyPrice, changePercent: g.changePercent })),
+          .map((g) => ({ symbol: g.goldType, value: g.buyPrice, changePercent: g.changePercent, flashKey: `${g.source}-${g.goldType}` })),
       );
     }
     // Add USD, EUR, GBP from serbest piyasa
@@ -77,7 +77,7 @@ function LiveTicker() {
       for (const [name, symbol] of Object.entries(CURRENCY_TICKER_MAP)) {
         const c = serbestCurrencies.find((cur) => cur.name === name);
         if (c) {
-          items.push({ symbol, value: c.sellPrice, changePercent: c.changePercent });
+          items.push({ symbol, value: c.sellPrice, changePercent: c.changePercent, flashKey: `currency-serbest-piyasa-${name}` });
         }
       }
     }
@@ -100,7 +100,11 @@ function LiveTicker() {
             <span className="font-medium text-foreground">
               {item.symbol}
             </span>
-            <span className="font-mono tabular-nums text-foreground">
+            <span className={cn(
+              'font-mono tabular-nums text-foreground',
+              flashMap[item.flashKey] === 'up' && 'text-flash-up',
+              flashMap[item.flashKey] === 'down' && 'text-flash-down',
+            )}>
               {item.symbol.toLowerCase().includes('ons') ? formatUSD(item.value) : formatDecimal(item.value)}
             </span>
             <span

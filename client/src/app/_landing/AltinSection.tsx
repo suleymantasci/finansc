@@ -6,11 +6,12 @@ import { SectionIntro } from '@/components/shared/SectionIntro';
 import { PriceChange } from '@/components/shared/PriceChange';
 import { formatTL, formatUSD } from '@/lib/formatters';
 import { SkeletonTable } from '@/components/ui/Skeleton';
+import { cn } from '@/lib/utils';
 
 const FEATURED_GOLD = ['Gram Altın', 'Çeyrek Altın', 'Yarım Altın', 'Tam Altın', 'Ons Altın', '22 Ayar Bilezik'];
 
 export function AltinSection() {
-  const { goldPrices, goldLoading } = useMarketStore();
+  const { goldPrices, goldLoading, flashMap } = useMarketStore();
 
   const featured = FEATURED_GOLD.map((name) => goldPrices.find((g) => g.goldType === name)).filter(Boolean);
 
@@ -43,7 +44,11 @@ export function AltinSection() {
             </thead>
             <tbody>
               {featured.map((gold) => (
-                <tr key={gold!.goldType} className="border-b border-border last:border-0 transition-colors hover:bg-surface-hover">
+                <tr key={gold!.goldType} className={cn(
+                  'border-b border-border last:border-0 transition-colors hover:bg-surface-hover',
+                  flashMap[`${gold!.source}-${gold!.goldType}`] === 'up' && 'flash-up',
+                  flashMap[`${gold!.source}-${gold!.goldType}`] === 'down' && 'flash-down',
+                )}>
                   <td className="px-4 py-3 font-medium">{gold!.goldType}</td>
                   <td className="px-4 py-3 text-right font-mono tabular-nums">{gold!.goldType.toLowerCase().includes('ons') ? formatUSD(gold!.buyPrice) : formatTL(gold!.buyPrice)}</td>
                   <td className="px-4 py-3 text-right font-mono tabular-nums">{gold!.goldType.toLowerCase().includes('ons') ? formatUSD(gold!.sellPrice) : formatTL(gold!.sellPrice)}</td>

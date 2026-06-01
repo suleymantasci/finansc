@@ -118,14 +118,14 @@ export const useMarketStore = create<MarketState>((set, get) => ({
       flashMap: { ...get().flashMap, ...newFlashes },
     });
 
-    // Clear flashes after animation completes
+    // Clear flashes after animation completes (2s)
     if (Object.keys(newFlashes).length > 0) {
       const keys = Object.keys(newFlashes);
       setTimeout(() => {
         const current = { ...get().flashMap };
         for (const k of keys) delete current[k];
         set({ flashMap: current });
-      }, 1000);
+      }, 2000);
     }
   },
 
@@ -163,7 +163,7 @@ export const useMarketStore = create<MarketState>((set, get) => ({
         const current = { ...get().flashMap };
         for (const k of keys) delete current[k];
         set({ flashMap: current });
-      }, 1000);
+      }, 2000);
     }
   },
 
@@ -195,7 +195,7 @@ export const useMarketStore = create<MarketState>((set, get) => ({
         const current = { ...get().flashMap };
         for (const k of keys) delete current[k];
         set({ flashMap: current });
-      }, 1000);
+      }, 2000);
     }
   },
 }));
