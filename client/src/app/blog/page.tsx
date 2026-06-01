@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { BlogListClient } from './BlogListClient';
 
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function BlogPage() {
-  return <BlogListClient />;
+  return (
+    <Suspense>
+      <BlogListClient />
+    </Suspense>
+  );
 }
