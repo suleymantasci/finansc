@@ -119,16 +119,15 @@ export function BlogListClient() {
 
           {/* Grid */}
           <div className="grid gap-4 sm:grid-cols-2">
-            {rest.map((post, i) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                {/* AdInFeed at position 3 */}
-                {i === 2 && <AdInFeed page="blog" className="mb-4" />}
-                <Link
+            {rest.map((post, i) => {
+              const card = (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <Link
                   href={`/blog/${post.slug}`}
                   className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/30"
                 >
@@ -148,7 +147,20 @@ export function BlogListClient() {
                   </div>
                 </Link>
               </motion.div>
-            ))}
+              );
+
+              // Insert ad as a separate grid item after position 2
+              if (i === 2) {
+                return (
+                  <>
+                    {card}
+                    <AdInFeed key="ad-infeed" page="blog" />
+                  </>
+                );
+              }
+
+              return card;
+            })}
           </div>
 
           {/* Pagination */}
