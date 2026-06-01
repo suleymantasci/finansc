@@ -1,0 +1,59 @@
+services:
+  finansc-backend:
+    image: ghcr.io/${GITHUB_REPOSITORY}:backend-latest
+    container_name: finansc-backend
+    restart: unless-stopped
+    networks:
+      - traefik-public
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_SSL=${DB_SSL:-false}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-15m}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+      - ALLOWED_ORIGINS=https://finanscozum.net,https://www.finanscozum.net
+      - THROTTLE_TTL=${THROTTLE_TTL:-60000}
+      - THROTTLE_LIMIT=${THROTTLE_LIMIT:-100}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.finansc-backend.rule=Host(`api.finanscozum.net`)"
+      - "traefik.http.routers.finansc-backend.entrypoints=websecure"
+      - "traefik.http.routers.finansc-backend.tls=true"
+      - "traefik.http.routers.finansc-backend.tls.certResolver=letsencrypt"
+      - "traefik.http.services.finansc-backend.loadbalancer.server.port=3001"
+      - "traefik.http.services.finansc-backend.loadbalancer.responseForwarding.flushInterval=100ms"
+
+  finansc-client:
+    image: ghcr.io/${GITHUB_REPOSITORY}:client-latest
+    container_name: finansc-client
+    restart: unless-stopped
+    networks:
+      - traefik-public
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.finansc-client.rule=Host(`finanscozum.net`) || Host(`www.finanscozum.net`)"
+      - "traefik.http.routers.finansc-client.entrypoints=websecure"
+      - "traefik.http.routers.finansc-client.tls=true"
+      - "traefik.http.routers.finansc-client.tls.certResolver=letsencrypt"
+      - "traefik.http.services.finansc-client.loadbalancer.server.port=3000"
+      - "traefik.http.services.finansc-client.loadbalancer.responseForwarding.flushInterval=100ms"
+      # www → apex redirect
+      - "traefik.http.middlewares.finansc-www-redirect.redirectregex.regex=^https://www\\.finanscozum\\.net/(.*)"
+      - "traefik.http.middlewares.finansc-www-redirect.redirectregex.replacement=https://finanscozum.net/$${1}"
+      - "traefik.http.middlewares.finansc-www-redirect.redirectregex.permanent=true"
+      - "traefik.http.routers.finansc-client.middlewares=finansc-www-redirect"
+
+networks:
+  traefik-public:
+    external: true

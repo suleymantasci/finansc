@@ -1,0 +1,80 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}:backend
+  CLIENT_IMAGE: ghcr.io/${{ github.repository }}:client
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ── Backend ─────────────────────────────────────────────────────────────
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}-latest
+            ${{ env.BACKEND_IMAGE }}-${{ github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      # ── Frontend ─────────────────────────────────────────────────────────────
+      - name: Build and push client image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./client
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://api.finanscozum.net
+          tags: |
+            ${{ env.CLIENT_IMAGE }}-latest
+            ${{ env.CLIENT_IMAGE }}-${{ github.sha }}
+          cache-from: type=gha,scope=client
+          cache-to: type=gha,mode=max,scope=client
+
+      # ── Deploy ───────────────────────────────────────────────────────────────
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          envs: GITHUB_REPOSITORY,GITHUB_ACTOR
+          script: |
+            # Login to GHCR
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull latest images
+            docker pull ghcr.io/${{ github.repository }}:backend-latest
+            docker pull ghcr.io/${{ github.repository }}:client-latest
+
+            # Go to compose directory and restart
+            cd /docker/finansc
+            docker compose up -d --remove-orphans
+
+            # Cleanup old images
+            docker image prune -f
