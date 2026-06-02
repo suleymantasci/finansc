@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Calendar, ArrowLeft, Share2, Calculator, PiggyBank, TrendingUp, ArrowUpRight, ArrowDownRight, Newspaper, Landmark, Coins, CreditCard, BarChart3, Wallet } from 'lucide-react';
+import { Calendar, ArrowLeft, Share2, Calculator, PiggyBank, TrendingUp, ArrowUpRight, ArrowDownRight, Newspaper, Landmark, Coins, CreditCard, BarChart3, Wallet, Clock, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { AdInContent } from '@/components/ads/AdInContent';
@@ -39,9 +39,10 @@ const SIDEBAR_TOOLS = [
 interface Props {
   post: BlogPost | null;
   relatedPosts: BlogPost[];
+  readingTime?: number;
 }
 
-export function BlogDetailClient({ post, relatedPosts }: Props) {
+export function BlogDetailClient({ post, relatedPosts, readingTime }: Props) {
   const { indices, goldPrices, flashMap } = useMarketStore();
 
   if (!post) {
@@ -74,10 +75,14 @@ export function BlogDetailClient({ post, relatedPosts }: Props) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 pb-20 md:pb-8">
-      {/* Back */}
-      <Link href="/blog" className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Bilgi Merkezi&apos;ne dön
-      </Link>
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
+        <Link href="/" className="hover:text-foreground">Ana Sayfa</Link>
+        <ChevronRight className="h-3 w-3" />
+        <Link href="/blog" className="hover:text-foreground">Bilgi Merkezi</Link>
+        <ChevronRight className="h-3 w-3" />
+        <span className="truncate max-w-[200px] text-foreground">{post.title}</span>
+      </nav>
 
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* ── Main Content ── */}
@@ -97,6 +102,11 @@ export function BlogDetailClient({ post, relatedPosts }: Props) {
             <time className="flex items-center gap-1 text-sm text-muted-foreground" dateTime={post.publishedAt || post.createdAt}>
               <Calendar className="h-3.5 w-3.5" /> {dateStr}
             </time>
+            {readingTime && (
+              <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" /> {readingTime} dk okuma
+              </span>
+            )}
             <button onClick={handleShare} className="ml-auto flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
               <Share2 className="h-3.5 w-3.5" /> Paylaş
             </button>

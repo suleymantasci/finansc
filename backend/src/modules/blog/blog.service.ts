@@ -52,6 +52,16 @@ export class BlogService {
   async findBySlug(slug: string) {
     const blog = await this.blogRepo.findOne({ where: { slug } });
     if (!blog) throw new NotFoundException('Blog yazısı bulunamadı');
+
+    // Increment view count in background (fire-and-forget)
+    this.blogRepo
+      .createQueryBuilder()
+      .update(Blog)
+      .set({ viewCount: () => '"viewCount" + 1' })
+      .where('slug = :slug', { slug })
+      .execute()
+      .catch(() => {});
+
     return blog;
   }
 

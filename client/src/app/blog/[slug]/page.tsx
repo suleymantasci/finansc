@@ -1,4 +1,5 @@
 import { api } from '@/lib/api';
+import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import type { BlogPost } from '@/types';
 import { BlogDetailClient } from './BlogDetailClient';
 import type { Metadata } from 'next';
@@ -7,18 +8,56 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+function extractFAQFromContent(html: string): { question: string; answer: string }[] {
+  const faqRegex = /<h[23][^>]*>(.*?\?)<\/h[23]>\s*<p>([\s\S]*?)<\/p>/gi;
+  const faqs: { question: string; answer: string }[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = faqRegex.exec(html)) !== null) {
+    const question = match[1].replace(/<[^>]*>/g, '').trim();
+    const answer = match[2].replace(/<[^>]*>/g, '').trim();
+    if (question && answer) faqs.push({ question, answer });
+  }
+  return faqs;
+}
+
+function estimateReadingTime(html: string): number {
+  const text = html.replace(/<[^>]*>/g, '');
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 200));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
     const post = await api.get<BlogPost>(`/api/blogs/${slug}`);
+    const title = post.seoTitle || post.title;
+    const description = post.seoDescription || post.excerpt || undefined;
+    const image = post.thumbnailUrl || `${SITE_URL}/og-default.png`;
+
     return {
-      title: post.seoTitle || post.title,
-      description: post.seoDescription || post.excerpt || undefined,
+      title,
+      description,
       keywords: post.seoKeywords ? post.seoKeywords.split(',').map((k) => k.trim()) : undefined,
+      alternates: {
+        canonical: `${SITE_URL}/blog/${post.slug}`,
+      },
       openGraph: {
-        title: post.seoTitle || post.title,
-        description: post.seoDescription || post.excerpt || undefined,
-        images: post.thumbnailUrl ? [post.thumbnailUrl] : undefined,
+        type: 'article',
+        title,
+        description,
+        url: `${SITE_URL}/blog/${post.slug}`,
+        siteName: SITE_NAME,
+        locale: 'tr_TR',
+        images: [{ url: image, width: 1200, height: 630, alt: post.title }],
+        publishedTime: post.publishedAt || post.createdAt,
+        modifiedTime: post.updatedAt,
+        section: post.category || 'Finans',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [image],
       },
     };
   } catch {
@@ -39,5 +78,65 @@ export default async function BlogSlugPage({ params }: Props) {
     // handled in client
   }
 
-  return <BlogDetailClient post={post} relatedPosts={relatedPosts} />;
+  const readingTime = post ? estimateReadingTime(post.content) : 0;
+  const faqs = post ? extractFAQFromContent(post.content) : [];
+
+  // Article JSON-LD
+  const articleJsonLd = post ? {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.seoTitle || post.title,
+    description: post.seoDescription || post.excerpt || '',
+    image: post.thumbnailUrl || `${SITE_URL}/og-default.png`,
+    datePublished: post.publishedAt || post.createdAt,
+    dateModified: post.updatedAt,
+    author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png` },
+    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
+    wordCount: post.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length,
+    articleSection: post.category || 'Finans',
+    inLanguage: 'tr',
+  } : null;
+
+  // BreadcrumbList JSON-LD
+  const breadcrumbJsonLd = post ? {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Bilgi Merkezi', item: `${SITE_URL}/blog` },
+      { '@type': 'ListItem', position: 3, name: post.title },
+    ],
+  } : null;
+
+  // FAQPage JSON-LD (only if questions found)
+  const faqJsonLd = faqs.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+    })),
+  } : null;
+
+  return (
+    <>
+      {articleJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+      )}
+      {breadcrumbJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      )}
+      {faqJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      )}
+      <BlogDetailClient post={post} relatedPosts={relatedPosts} readingTime={readingTime} />
+    </>
+  );
 }
