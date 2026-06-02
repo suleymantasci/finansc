@@ -315,20 +315,6 @@ export const STOCK_META: Record<string, StockMeta> = {
     description:
       'ENJSA (Enerjisa) hisse senedi canlı fiyat. Enerjisa, Türkiye\'nin en büyük elektrik dağıtım şirketlerinden biridir.',
   },
-  EREGL: {
-    symbol: 'EREGL',
-    name: 'Ereğli Demir Çelik',
-    sector: 'Metal Ana',
-    description:
-      'EREGL (Ereğli Demir Çelik) hisse senedi canlı fiyat. Ereğli Demir Çelik, Türkiye\'nin en büyük yassı çelik üreticisidir.',
-  },
-  FROTO: {
-    symbol: 'FROTO',
-    name: 'Ford Otosan',
-    sector: 'Otomotiv',
-    description:
-      'FROTO (Ford Otosan) hisse senedi canlı fiyat. Ford Otosan, Koç Holding bünyesinde otomotiv üreticisidir.',
-  },
   LOGO: {
     symbol: 'LOGO',
     name: 'Logo Yazılım',
