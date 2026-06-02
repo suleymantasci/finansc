@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Newspaper, TrendingUp, Landmark, Coins, PiggyBank, CreditCard, BarChart3, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SectionIntro } from '@/components/shared/SectionIntro';
 import { Badge } from '@/components/ui/Badge';
@@ -13,6 +13,26 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { BlogPost, PaginatedResponse } from '@/types';
+
+const CATEGORY_ICONS: Record<string, typeof Newspaper> = {
+  borsa: TrendingUp,
+  hisse: BarChart3,
+  altin: Coins,
+  doviz: Landmark,
+  kredi: CreditCard,
+  tasarruf: PiggyBank,
+  emeklilik: Wallet,
+  yatirim: TrendingUp,
+};
+
+function BlogPlaceholder({ category, title }: { category?: string | null; title: string }) {
+  const Icon = (category && CATEGORY_ICONS[category]) || Newspaper;
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+      <Icon className="h-12 w-12 text-muted-foreground/30" aria-hidden />
+    </div>
+  );
+}
 
 export function BlogListClient() {
   const router = useRouter();
@@ -36,7 +56,7 @@ export function BlogListClient() {
 
   useEffect(() => {
     setLoading(true);
-    const params = new URLSearchParams({ page: String(page), limit: '8', status: 'published' });
+    const params = new URLSearchParams({ page: String(page), limit: '10', status: 'published' });
     if (category) params.set('category', category);
 
     api.get<PaginatedResponse<BlogPost>>(`/api/blogs?${params}`)
@@ -110,11 +130,13 @@ export function BlogListClient() {
                 href={`/blog/${featured.slug}`}
                 className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card md:flex-row"
               >
-                {featured.thumbnailUrl && (
-                  <div className="aspect-video w-full overflow-hidden bg-muted md:w-1/2">
+                <div className="aspect-video w-full overflow-hidden bg-muted md:w-1/2">
+                  {featured.thumbnailUrl ? (
                     <img src={featured.thumbnailUrl} alt={featured.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
-                  </div>
-                )}
+                  ) : (
+                    <BlogPlaceholder category={featured.category} title={featured.title} />
+                  )}
+                </div>
                 <div className="flex flex-1 flex-col justify-center p-5 lg:p-8">
                   {featured.category && <Badge variant="default" className="mb-2 self-start">{featured.category}</Badge>}
                   <h2 className="text-xl font-bold lg:text-2xl">{featured.title}</h2>
@@ -129,7 +151,7 @@ export function BlogListClient() {
           )}
 
           {/* Grid */}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {rest.map((post, i) => {
               const card = (
                 <motion.div
@@ -143,11 +165,13 @@ export function BlogListClient() {
                   href={`/blog/${post.slug}`}
                   className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/30"
                 >
-                  {post.thumbnailUrl && (
-                    <div className="aspect-video w-full overflow-hidden bg-muted">
+                  <div className="aspect-video w-full overflow-hidden bg-muted">
+                    {post.thumbnailUrl ? (
                       <img src={post.thumbnailUrl} alt={post.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
-                    </div>
-                  )}
+                    ) : (
+                      <BlogPlaceholder category={post.category} title={post.title} />
+                    )}
+                  </div>
                   <div className="flex flex-1 flex-col p-4">
                     {post.category && <Badge variant="outline" className="mb-2 self-start">{post.category}</Badge>}
                     <h3 className="text-sm font-semibold line-clamp-2 lg:text-base">{post.title}</h3>

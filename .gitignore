@@ -36,3 +36,5 @@ coverage/
 # Misc
 *.pem
 *.key
+
+hermes-blog-prompt.md

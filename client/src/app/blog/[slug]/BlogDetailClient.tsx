@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Calendar, ArrowLeft, Share2, Calculator, PiggyBank, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Calendar, ArrowLeft, Share2, Calculator, PiggyBank, TrendingUp, ArrowUpRight, ArrowDownRight, Newspaper, Landmark, Coins, CreditCard, BarChart3, Wallet } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { AdInContent } from '@/components/ads/AdInContent';
@@ -10,6 +10,26 @@ import { useMarketStore } from '@/stores/market.store';
 import { formatDecimal, formatPercent } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import type { BlogPost } from '@/types';
+
+const CATEGORY_ICONS: Record<string, typeof Newspaper> = {
+  borsa: TrendingUp,
+  hisse: BarChart3,
+  altin: Coins,
+  doviz: Landmark,
+  kredi: CreditCard,
+  tasarruf: PiggyBank,
+  emeklilik: Wallet,
+  yatirim: TrendingUp,
+};
+
+function BlogPlaceholder({ category, className }: { category?: string | null; className?: string }) {
+  const Icon = (category && CATEGORY_ICONS[category]) || Newspaper;
+  return (
+    <div className={cn('flex items-center justify-center bg-gradient-to-br from-muted to-muted/50', className)}>
+      <Icon className="h-12 w-12 text-muted-foreground/30" aria-hidden />
+    </div>
+  );
+}
 
 const SIDEBAR_TOOLS = [
   { slug: 'ihtiyac-kredisi', title: 'Kredi Hesaplama', desc: 'Taksit ve maliyet hesabı', icon: Calculator },
@@ -63,11 +83,13 @@ export function BlogDetailClient({ post, relatedPosts }: Props) {
         {/* ── Main Content ── */}
         <article className="min-w-0 flex-1">
           {/* Hero Image */}
-          {post.thumbnailUrl && (
-            <div className="mb-6 aspect-video w-full overflow-hidden rounded-xl bg-muted">
+          <div className="mb-6 aspect-video w-full overflow-hidden rounded-xl bg-muted">
+            {post.thumbnailUrl ? (
               <img src={post.thumbnailUrl} alt={post.title} className="h-full w-full object-cover" />
-            </div>
-          )}
+            ) : (
+              <BlogPlaceholder category={post.category} className="h-full w-full rounded-xl" />
+            )}
+          </div>
 
           {/* Meta */}
           <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -107,11 +129,13 @@ export function BlogDetailClient({ post, relatedPosts }: Props) {
                     href={`/blog/${rp.slug}`}
                     className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/30"
                   >
-                    {rp.thumbnailUrl && (
-                      <div className="aspect-video w-full overflow-hidden bg-muted">
+                    <div className="aspect-video w-full overflow-hidden bg-muted">
+                      {rp.thumbnailUrl ? (
                         <img src={rp.thumbnailUrl} alt={rp.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
-                      </div>
-                    )}
+                      ) : (
+                        <BlogPlaceholder category={rp.category} />
+                      )}
+                    </div>
                     <div className="p-3">
                       <h3 className="text-sm font-semibold line-clamp-2">{rp.title}</h3>
                     </div>

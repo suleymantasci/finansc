@@ -1,20 +1,82 @@
 import type { MetadataRoute } from 'next';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://finanscozum.net';
+const BASE_URL = 'https://finanscozum.net';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-  const staticPages = [
-    '', '/altin', '/borsa', '/borsa/hisseler', '/blog', '/araclar',
-    '/araclar/kredi-hesaplama', '/araclar/vergi-hesaplama', '/araclar/mevduat-getiri',
-    '/araclar/doviz-cevirici', '/araclar/enflasyon-hesaplama', '/araclar/altin-cevirici',
-    '/araclar/kredi-karti-minimum', '/araclar/bilesik-faiz',
-    '/giris', '/kayit',
+interface BlogItem {
+  slug: string;
+  updatedAt: string;
+  publishedAt: string | null;
+}
+
+interface ToolItem {
+  slug: string;
+  updatedAt: string;
+}
+
+async function fetchAllBlogs(): Promise<BlogItem[]> {
+  try {
+    const items: BlogItem[] = [];
+    let page = 1;
+    let totalPages = 1;
+
+    do {
+      const res = await fetch(`${API_BASE}/api/blogs?page=${page}&limit=50&status=published`, {
+        next: { revalidate: 3600 },
+      });
+      if (!res.ok) break;
+      const data = await res.json();
+      items.push(...data.data);
+      totalPages = data.totalPages;
+      page++;
+    } while (page <= totalPages);
+
+    return items;
+  } catch {
+    return [];
+  }
+}
+
+async function fetchAllTools(): Promise<ToolItem[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/tools?active=true`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [blogs, tools] = await Promise.all([fetchAllBlogs(), fetchAllTools()]);
+
+  const staticPages: MetadataRoute.Sitemap = [
+    { url: BASE_URL, lastModified: new Date(), changeFrequency: 'hourly', priority: 1 },
+    { url: `${BASE_URL}/altin`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
+    { url: `${BASE_URL}/borsa`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
+    { url: `${BASE_URL}/borsa/hisseler`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.8 },
+    { url: `${BASE_URL}/doviz`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
+    { url: `${BASE_URL}/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    { url: `${BASE_URL}/araclar`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/hakkimizda`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${BASE_URL}/iletisim`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
   ];
 
-  return staticPages.map((path) => ({
-    url: `${baseUrl}${path}`,
-    lastModified: new Date(),
-    changeFrequency: path === '' || path === '/altin' || path === '/borsa' ? 'hourly' : 'weekly',
-    priority: path === '' ? 1 : path.startsWith('/araclar/') ? 0.7 : 0.8,
+  const blogPages: MetadataRoute.Sitemap = blogs.map((post) => ({
+    url: `${BASE_URL}/blog/${post.slug}`,
+    lastModified: new Date(post.updatedAt),
+    changeFrequency: 'weekly',
+    priority: 0.7,
   }));
+
+  const toolPages: MetadataRoute.Sitemap = tools.map((tool) => ({
+    url: `${BASE_URL}/araclar/${tool.slug}`,
+    lastModified: new Date(tool.updatedAt),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...blogPages, ...toolPages];
 }

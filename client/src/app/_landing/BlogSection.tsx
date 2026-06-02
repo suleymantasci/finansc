@@ -3,19 +3,39 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Calendar } from 'lucide-react';
+import { Calendar, Newspaper, TrendingUp, Landmark, Coins, PiggyBank, CreditCard, BarChart3, Wallet } from 'lucide-react';
 import { SectionIntro } from '@/components/shared/SectionIntro';
 import { Badge } from '@/components/ui/Badge';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { api } from '@/lib/api';
 import type { BlogPost } from '@/types';
 
+const CATEGORY_ICONS: Record<string, typeof Newspaper> = {
+  borsa: TrendingUp,
+  hisse: BarChart3,
+  altin: Coins,
+  doviz: Landmark,
+  kredi: CreditCard,
+  tasarruf: PiggyBank,
+  emeklilik: Wallet,
+  yatirim: TrendingUp,
+};
+
+function BlogPlaceholder({ category }: { category?: string | null }) {
+  const Icon = (category && CATEGORY_ICONS[category]) || Newspaper;
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+      <Icon className="h-12 w-12 text-muted-foreground/30" aria-hidden />
+    </div>
+  );
+}
+
 export function BlogSection() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get<{ data: BlogPost[] }>('/api/blogs?limit=4&status=published')
+    api.get<{ data: BlogPost[] }>('/api/blogs?limit=6&status=published')
       .then((res) => setPosts(res.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -36,15 +56,15 @@ export function BlogSection() {
       />
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
       ) : posts.length === 0 ? (
         <p className="text-sm text-muted-foreground">Henüz yazı bulunmuyor.</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post, i) => (
             <motion.div
               key={post.id}
@@ -58,15 +78,17 @@ export function BlogSection() {
                 href={`/blog/${post.slug}`}
                 className="group flex h-full flex-col rounded-xl border border-border bg-card overflow-hidden transition-colors hover:border-primary/30"
               >
-                {post.thumbnailUrl && (
-                  <div className="aspect-video w-full overflow-hidden bg-muted">
+                <div className="aspect-video w-full overflow-hidden bg-muted">
+                  {post.thumbnailUrl ? (
                     <img
                       src={post.thumbnailUrl}
                       alt={post.title}
                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
-                  </div>
-                )}
+                  ) : (
+                    <BlogPlaceholder category={post.category} />
+                  )}
+                </div>
                 <div className="flex flex-1 flex-col p-4">
                   {post.category && <Badge variant="outline" className="mb-2 self-start">{post.category}</Badge>}
                   <h3 className="text-sm font-semibold line-clamp-2 lg:text-base">{post.title}</h3>

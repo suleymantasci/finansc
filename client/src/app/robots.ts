@@ -6,6 +6,11 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
+        disallow: ['/admin/', '/hesabim/', '/api/', '/giris', '/kayit', '/sifremi-unuttum'],
+      },
+      {
+        userAgent: 'Googlebot',
+        allow: '/',
         disallow: ['/admin/', '/hesabim/', '/api/'],
       },
     ],
