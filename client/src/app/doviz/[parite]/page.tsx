@@ -136,7 +136,7 @@ export default async function CurrencyPage({ params }: Props) {
 
         <LiveCurrencyTicker code={meta.code} name={meta.name} />
 
-        <AdBanner position="in-article" className="my-8" />
+        <AdBanner page={`doviz-${meta.slug}`} position="in-article" className="my-8" />
 
         <section className="prose prose-slate dark:prose-invert max-w-none mt-8">
           <h2 className="text-xl font-semibold mb-3">{meta.name} ({meta.code}) Nedir?</h2>

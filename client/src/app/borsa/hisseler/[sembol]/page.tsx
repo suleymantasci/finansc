@@ -141,7 +141,7 @@ export default async function StockPage({ params }: Props) {
 
         <LivePriceTicker symbol={meta.symbol} />
 
-        <AdBanner position="in-article" className="my-8" />
+        <AdBanner page={`borsa-hisse-${meta.symbol}`} position="in-article" className="my-8" />
 
         <section className="prose prose-slate dark:prose-invert max-w-none mt-8">
           <h2 className="text-xl font-semibold mb-3">{meta.name} Hakkında</h2>
