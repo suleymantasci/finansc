@@ -14,7 +14,7 @@ import { SearchBar } from '@/components/shared/SearchBar';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { SkeletonTable } from '@/components/ui/Skeleton';
 import { formatDecimal4 } from '@/lib/formatters';
-import { currencyNameToCode, getCurrencyByCode, CURRENCY_META } from '@/lib/seo-data/currency';
+import { currencyNameToCode, CURRENCY_META } from '@/lib/seo-data/currency';
 import { cn } from '@/lib/utils';
 import type { Currency } from '@/types';
 

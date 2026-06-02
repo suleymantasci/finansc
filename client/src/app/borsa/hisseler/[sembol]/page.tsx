@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { STOCK_META, getStockMeta } from '@/lib/seo-data/stocks';
 import { LivePriceTicker } from './LivePriceTicker';
@@ -88,7 +87,7 @@ export default async function StockPage({ params }: Props) {
         isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
         speakable: {
           '@type': 'SpeakableSpecification',
-          xpath: ['/html/head/title', '#stock-summary'],
+          cssSelector: ['#stock-summary', 'h1'],
         },
       },
     ],

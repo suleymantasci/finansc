@@ -2,8 +2,10 @@
 // ChatGPT, Perplexity, Google SGE gibi motorlar bu tür 40-60 kelimelik
 // net cevapları "citation" olarak kullanır.
 
+import type { ReactNode } from 'react';
+
 interface Props {
-  children: React.ReactNode;
+  children: ReactNode;
   label?: string;
   // SpeakableSpecification xpath'te kullanılacak id
   id?: string;

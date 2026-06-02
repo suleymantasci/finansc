@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
-import { CURRENCY_META, getCurrencyBySlug, CURRENCY_SLUGS } from '@/lib/seo-data/currency';
+import { getCurrencyBySlug, CURRENCY_SLUGS } from '@/lib/seo-data/currency';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { LiveCurrencyTicker } from './LiveCurrencyTicker';
 import { AdBanner } from '@/components/ads/AdBanner';
@@ -88,7 +88,7 @@ export default async function CurrencyPage({ params }: Props) {
         isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
         speakable: {
           '@type': 'SpeakableSpecification',
-          xpath: ['/html/head/title', '#currency-summary'],
+          cssSelector: ['#currency-summary', 'h1'],
         },
       },
     ],

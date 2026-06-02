@@ -86,7 +86,7 @@ export default async function GoldTypePage({ params }: Props) {
         isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
         speakable: {
           '@type': 'SpeakableSpecification',
-          xpath: ['/html/head/title', '#gold-summary'],
+          cssSelector: ['#gold-summary', 'h1'],
         },
       },
     ],
