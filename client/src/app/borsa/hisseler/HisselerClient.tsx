@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useMarketStore } from '@/stores/market.store';
 import { SectionIntro } from '@/components/shared/SectionIntro';
 import { MarketStatus } from '@/components/shared/MarketStatus';
@@ -20,7 +21,14 @@ const columns: Column<Stock>[] = [
     header: 'Sembol',
     sortable: true,
     sortValue: (s) => s.symbol,
-    render: (s) => <span className="font-medium">{s.symbol}</span>,
+    render: (s) => (
+      <Link
+        href={`/borsa/hisseler/${s.symbol}`}
+        className="font-medium text-primary hover:underline"
+      >
+        {s.symbol}
+      </Link>
+    ),
   },
   {
     key: 'buyPrice',

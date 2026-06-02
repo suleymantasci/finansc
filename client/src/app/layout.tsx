@@ -66,10 +66,53 @@ export default function RootLayout({
               __html: JSON.stringify({
                 '@context': 'https://schema.org',
                 '@type': 'Organization',
+                '@id': 'https://finanscozum.net/#organization',
                 name: 'FinansCozum',
+                alternateName: 'FinansÇözüm',
                 url: 'https://finanscozum.net',
-                logo: 'https://finanscozum.net/logo.png',
-                sameAs: [],
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://finanscozum.net/logo.png',
+                  width: 512,
+                  height: 512,
+                },
+                description:
+                  "Türkiye'nin bağımsız finans bilgi platformu. Canlı altın, borsa ve döviz verileri, hesaplama araçları, güncel finans haberleri.",
+                foundingDate: '2025',
+                areaServed: { '@type': 'Country', name: 'Türkiye' },
+                inLanguage: 'tr-TR',
+                contactPoint: [
+                  {
+                    '@type': 'ContactPoint',
+                    contactType: 'customer support',
+                    email: 'destek@finanscozum.com',
+                    availableLanguage: ['Turkish'],
+                  },
+                  {
+                    '@type': 'ContactPoint',
+                    contactType: 'editorial',
+                    email: 'editor@finanscozum.com',
+                    availableLanguage: ['Turkish'],
+                    description: 'Editör ekibi, içerik düzeltme ve öneri için',
+                  },
+                ],
+                sameAs: [
+                  'https://twitter.com/finanscozum',
+                  'https://www.facebook.com/finanscozum',
+                  'https://www.linkedin.com/company/finanscozum',
+                  'https://www.instagram.com/finanscozum',
+                ],
+                knowsAbout: [
+                  'Altın Fiyatları',
+                  'Borsa İstanbul',
+                  'Döviz Kurları',
+                  'Hisse Senetleri',
+                  'Yatırım',
+                  'Finansal Hesaplama',
+                  'Türk Lirası',
+                  'Enflasyon',
+                  'Merkez Bankası Politikaları',
+                ],
               }),
             }}
           />
@@ -79,8 +122,14 @@ export default function RootLayout({
               __html: JSON.stringify({
                 '@context': 'https://schema.org',
                 '@type': 'WebSite',
+                '@id': 'https://finanscozum.net/#website',
                 name: 'FinansCozum',
+                alternateName: 'FinansÇözüm',
                 url: 'https://finanscozum.net',
+                description:
+                  "Türkiye'nin bağımsız finans bilgi platformu: canlı altın, borsa, döviz, hesaplama araçları, finansal içerikler.",
+                publisher: { '@id': 'https://finanscozum.net/#organization' },
+                inLanguage: 'tr-TR',
                 potentialAction: {
                   '@type': 'SearchAction',
                   target: 'https://finanscozum.net/borsa/hisseler?q={search_term_string}',

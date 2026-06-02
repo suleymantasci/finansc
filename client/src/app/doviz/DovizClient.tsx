@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useMarketStore } from '@/stores/market.store';
@@ -13,6 +14,7 @@ import { SearchBar } from '@/components/shared/SearchBar';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { SkeletonTable } from '@/components/ui/Skeleton';
 import { formatDecimal4 } from '@/lib/formatters';
+import { currencyNameToCode, getCurrencyByCode, CURRENCY_META } from '@/lib/seo-data/currency';
 import { cn } from '@/lib/utils';
 import type { Currency } from '@/types';
 
@@ -220,7 +222,23 @@ export function DovizClient() {
                         flashMap[flashKey] === 'down' && 'flash-down',
                       )}
                     >
-                      <td className="px-4 py-3 font-medium">{c.name}</td>
+                      <td className="px-4 py-3 font-medium">
+                        {(() => {
+                          const code = currencyNameToCode(c.name);
+                          const meta = code ? CURRENCY_META[code] : null;
+                          if (meta) {
+                            return (
+                              <Link
+                                href={`/doviz/${meta.slug}`}
+                                className="text-primary hover:underline"
+                              >
+                                {c.name}
+                              </Link>
+                            );
+                          }
+                          return c.name;
+                        })()}
+                      </td>
                       <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal4(c.buyPrice)}</td>
                       <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal4(c.sellPrice)}</td>
                       <td className="px-4 py-3 text-right"><PriceChange value={c.changePercent} size="sm" /></td>

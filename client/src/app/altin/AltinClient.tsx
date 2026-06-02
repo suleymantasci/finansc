@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMarketStore } from '@/stores/market.store';
 import type { GoldStreamData } from '@/stores/market.store';
@@ -13,6 +14,7 @@ import { AdBanner } from '@/components/ads/AdBanner';
 import { SkeletonTable } from '@/components/ui/Skeleton';
 import { formatTL, formatUSD, formatDate } from '@/lib/formatters';
 import { GOLD_SOURCES } from '@/lib/constants';
+import { goldTypeToSlug } from '@/lib/seo-data/gold';
 import { cn } from '@/lib/utils';
 
 export function AltinClient() {
@@ -125,7 +127,22 @@ export function AltinClient() {
                       flashMap[`${gold.source}-${gold.goldType}`] === 'down' && 'flash-down',
                     )}
                   >
-                    <td className="px-4 py-3 font-medium">{gold.goldType}</td>
+                    <td className="px-4 py-3 font-medium">
+                      {(() => {
+                        const slug = goldTypeToSlug(gold.goldType);
+                        if (slug) {
+                          return (
+                            <Link
+                              href={`/altin/${slug}`}
+                              className="text-primary hover:underline"
+                            >
+                              {gold.goldType}
+                            </Link>
+                          );
+                        }
+                        return gold.goldType;
+                      })()}
+                    </td>
                     <td className="px-4 py-3 text-right font-mono tabular-nums">
                       {isOns(gold.goldType) ? formatUSD(gold.buyPrice) : formatTL(gold.buyPrice)}
                     </td>

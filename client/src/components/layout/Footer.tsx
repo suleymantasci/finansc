@@ -72,6 +72,21 @@ function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/editor-ekibi" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Editör Ekibi
+                </Link>
+              </li>
+              <li>
+                <Link href="/kaynak-politikasi" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Kaynak Politikası
+                </Link>
+              </li>
+              <li>
+                <Link href="/duzeltme-politikasi" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Düzeltme Politikası
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

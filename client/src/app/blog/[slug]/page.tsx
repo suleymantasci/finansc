@@ -81,7 +81,7 @@ export default async function BlogSlugPage({ params }: Props) {
   const readingTime = post ? estimateReadingTime(post.content) : 0;
   const faqs = post ? extractFAQFromContent(post.content) : [];
 
-  // Article JSON-LD
+  // Article JSON-LD (GEO-friendly)
   const articleJsonLd = post ? {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -90,17 +90,39 @@ export default async function BlogSlugPage({ params }: Props) {
     image: post.thumbnailUrl || `${SITE_URL}/og-default.png`,
     datePublished: post.publishedAt || post.createdAt,
     dateModified: post.updatedAt,
-    author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+    author: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: SITE_URL,
+      '@id': `${SITE_URL}#organization`,
+    },
     publisher: {
       '@type': 'Organization',
       name: SITE_NAME,
       url: SITE_URL,
-      logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png` },
+      '@id': `${SITE_URL}#organization`,
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png`, width: 512, height: 512 },
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
     wordCount: post.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length,
     articleSection: post.category || 'Finans',
     inLanguage: 'tr',
+    // GEO: Voice search ve AI okuyucuları için
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['#snippet-summary', 'h1', '.article-summary'],
+    },
+    // AI motorlarına içerik bağlamı ver
+    about: [
+      { '@type': 'Thing', name: 'Finans' },
+      { '@type': 'Thing', name: 'Yatırım' },
+      { '@type': 'Thing', name: post.category || 'Piyasalar' },
+    ],
+    keywords: post.seoKeywords || 'finans, yatırım, piyasa',
+    citation: [
+      { '@type': 'CreativeWork', name: 'Türkiye Cumhuriyet Merkez Bankası', url: 'https://www.tcmb.gov.tr' },
+      { '@type': 'CreativeWork', name: 'Borsa İstanbul', url: 'https://www.borsaistanbul.com' },
+    ],
   } : null;
 
   // BreadcrumbList JSON-LD

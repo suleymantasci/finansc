@@ -1,4 +1,7 @@
 import type { MetadataRoute } from 'next';
+import { STOCK_META } from '@/lib/seo-data/stocks';
+import { GOLD_META } from '@/lib/seo-data/gold';
+import { CURRENCY_SLUGS } from '@/lib/seo-data/currency';
 
 const BASE_URL = 'https://finanscozum.net';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -78,5 +81,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...blogPages, ...toolPages];
+  // Programmatic SEO sayfaları
+  const stockPages: MetadataRoute.Sitemap = Object.keys(STOCK_META).map((symbol) => ({
+    url: `${BASE_URL}/borsa/hisseler/${symbol}`,
+    lastModified: new Date(),
+    changeFrequency: 'hourly' as const,
+    priority: 0.8,
+  }));
+
+  const goldPages: MetadataRoute.Sitemap = Object.values(GOLD_META).map((g) => ({
+    url: `${BASE_URL}/altin/${g.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'hourly' as const,
+    priority: 0.9,
+  }));
+
+  const currencyPages: MetadataRoute.Sitemap = CURRENCY_SLUGS.map((slug) => ({
+    url: `${BASE_URL}/doviz/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'hourly' as const,
+    priority: 0.9,
+  }));
+
+  return [
+    ...staticPages,
+    ...stockPages,
+    ...goldPages,
+    ...currencyPages,
+    ...blogPages,
+    ...toolPages,
+  ];
 }
