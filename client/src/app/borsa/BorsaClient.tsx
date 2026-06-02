@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useMarketStore } from '@/stores/market.store';
@@ -281,7 +282,14 @@ export function BorsaClient() {
                           flashMap[s.symbol] === 'down' && 'flash-down',
                         )}
                       >
-                        <td className="px-4 py-3 font-medium">{s.symbol}</td>
+                        <td className="px-4 py-3 font-medium">
+                          <Link
+                            href={`/borsa/hisseler/${s.symbol}`}
+                            className="text-primary hover:underline"
+                          >
+                            {s.symbol}
+                          </Link>
+                        </td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.buyPrice)}</td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.sellPrice)}</td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(s.low)}</td>
@@ -338,7 +346,14 @@ export function BorsaClient() {
                         flashMap[idx.symbol] === 'down' && 'flash-down',
                       )}
                     >
-                      <td className="px-4 py-3 font-medium">{idx.symbol}</td>
+                      <td className="px-4 py-3 font-medium">
+                        <Link
+                          href={`/borsa/endeksler/${idx.symbol}`}
+                          className="text-primary hover:underline"
+                        >
+                          {idx.symbol}
+                        </Link>
+                      </td>
                       <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(idx.value)}</td>
                       <td className="px-4 py-3 text-right"><PriceChange value={idx.changePercent} size="sm" /></td>
                       <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(idx.low)}</td>

@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { STOCK_META } from '@/lib/seo-data/stocks';
 import { GOLD_META } from '@/lib/seo-data/gold';
 import { CURRENCY_SLUGS } from '@/lib/seo-data/currency';
+import { INDEX_SYMBOLS } from '@/lib/seo-data/indices';
 
 const BASE_URL = 'https://finanscozum.net';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -103,11 +104,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
+  const indexPages: MetadataRoute.Sitemap = INDEX_SYMBOLS.map((symbol) => ({
+    url: `${BASE_URL}/borsa/endeksler/${symbol}`,
+    lastModified: new Date(),
+    changeFrequency: 'hourly' as const,
+    priority: 0.8,
+  }));
+
   return [
     ...staticPages,
     ...stockPages,
     ...goldPages,
     ...currencyPages,
+    ...indexPages,
     ...blogPages,
     ...toolPages,
   ];
