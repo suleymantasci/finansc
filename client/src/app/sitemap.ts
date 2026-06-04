@@ -53,6 +53,8 @@ async function fetchAllTools(): Promise<ToolItem[]> {
   }
 }
 
+export const revalidate = 3600; // 1 saatte bir yeniden oluştur
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [blogs, tools] = await Promise.all([fetchAllBlogs(), fetchAllTools()]);
 
@@ -82,7 +84,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // Programmatic SEO sayfaları
+  // Programmatic SEO sayfaları — lastModified saatlik değişim yansıtır
+  // (İlk deploy'da static; ileride API'den gerçek "son veri güncelleme" çekilebilir)
   const stockPages: MetadataRoute.Sitemap = Object.keys(STOCK_META).map((symbol) => ({
     url: `${BASE_URL}/borsa/hisseler/${symbol}`,
     lastModified: new Date(),

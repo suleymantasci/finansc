@@ -167,7 +167,7 @@ export function BlogListClient() {
                 >
                   <div className="aspect-video w-full overflow-hidden bg-muted">
                     {post.thumbnailUrl ? (
-                      <img src={post.thumbnailUrl} alt={post.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                      <img src={post.thumbnailUrl} alt={post.title} loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                     ) : (
                       <BlogPlaceholder category={post.category} title={post.title} />
                     )}

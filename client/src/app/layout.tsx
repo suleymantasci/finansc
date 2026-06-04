@@ -34,10 +34,68 @@ export const metadata: Metadata = {
     'hesaplama araçları',
     'canlı borsa',
   ],
+  // ── Favicon & Icons ──
+  icons: {
+    icon: [
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    other: [
+      { rel: 'android-chrome', url: '/android-chrome-192x192.png', sizes: '192x192' },
+    ],
+  },
+  manifest: '/site.webmanifest',
+  // ── OpenGraph (sosyal paylaşım) ──
   openGraph: {
     type: 'website',
     locale: 'tr_TR',
     siteName: SITE_NAME,
+    title: `${SITE_NAME} - Canlı Altın, Borsa, Döviz ve Finansal Araçlar`,
+    description: 'Türkiye\'nin en kapsamlı finans platformu. Anlık altın, borsa, döviz verileri, hesaplama araçları ve güncel finans içerikleri.',
+    url: 'https://finanscozum.net',
+    images: [
+      {
+        url: 'https://finanscozum.net/og-default.png',
+        width: 1200,
+        height: 630,
+        alt: 'FinansÇözüm - Canlı Finans Verileri Platformu',
+        type: 'image/png',
+      },
+    ],
+  },
+  // ── Twitter Card ──
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE_NAME} - Canlı Finans Verileri`,
+    description: 'Canlı altın, borsa, döviz ve finansal hesaplama araçları.',
+    images: ['https://finanscozum.net/og-default.png'],
+    creator: '@finanscozum',
+    site: '@finanscozum',
+  },
+  // ── Diğer ──
+  authors: [{ name: 'FinansÇözüm Editör Ekibi', url: 'https://finanscozum.net/editor-ekibi' }],
+  publisher: 'FinansÇözüm',
+  category: 'finance',
+  alternates: {
+    canonical: 'https://finanscozum.net',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  verification: {
+    // Google Search Console doğrulaması eklenecek
   },
 };
 

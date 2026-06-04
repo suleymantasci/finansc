@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { AdInContent } from '@/components/ads/AdInContent';
 import { ReportErrorButton } from '@/components/shared/ReportErrorButton';
+import { RelatedTools } from '@/components/blog/RelatedTools';
 import { useMarketStore } from '@/stores/market.store';
 import { formatDecimal, formatPercent } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
@@ -128,6 +129,9 @@ export function BlogDetailClient({ post, relatedPosts, readingTime }: Props) {
             <ReportErrorButton type="blog" slug={post.slug} pageTitle={post.title} />
           </div>
 
+          {/* Related Tools — category bazlı internal link juice */}
+          <RelatedTools category={post.category} slug={post.slug} />
+
           {/* Related Posts */}
           {relatedPosts.length > 0 && (
             <section className="mt-12 border-t border-border pt-8">
@@ -141,7 +145,7 @@ export function BlogDetailClient({ post, relatedPosts, readingTime }: Props) {
                   >
                     <div className="aspect-video w-full overflow-hidden bg-muted">
                       {rp.thumbnailUrl ? (
-                        <img src={rp.thumbnailUrl} alt={rp.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                        <img src={rp.thumbnailUrl} alt={rp.title} loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                       ) : (
                         <BlogPlaceholder category={rp.category} />
                       )}

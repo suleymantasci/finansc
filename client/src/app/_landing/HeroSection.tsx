@@ -31,19 +31,7 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-card to-background">
       <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8 lg:py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 text-center"
-        >
-          <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
-            Piyasaların Nabzı <span className="text-primary">Burada</span>
-          </h1>
-          <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground lg:text-lg">
-            Anlık altın fiyatları, borsa verileri ve finansal araçlarla doğru kararlar verin.
-          </p>
-        </motion.div>
+        {/* H1 server.tsx tarafından sağlanır (page.tsx); burada animasyonlu kartlar */}
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
           {cards.map((card, i) => (

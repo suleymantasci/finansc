@@ -4,7 +4,26 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   reactStrictMode: true,
   images: {
-    remotePatterns: [],
+    // Modern format desteği (CWV skoru için kritik)
+    formats: ['image/avif', 'image/webp'],
+    // Cihaz boyutlarına göre otomatik responsive
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Blog thumbnail'ları Unsplash'ten geliyor
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'plus.unsplash.com',
+        pathname: '/**',
+      },
+    ],
+    // Minimum cache TTL — yeni build sonrası eski versiyonun stale kullanımı için
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 gün
   },
   async rewrites() {
     return [
@@ -54,6 +73,13 @@ const nextConfig: NextConfig = {
         source: '/doviz',
         headers: [
           { key: 'Cache-Control', value: 'public, s-maxage=15, stale-while-revalidate=30' },
+        ],
+      },
+      // Favicon ve OG image uzun cache
+      {
+        source: '/(favicon|android-chrome|apple-touch-icon|og-default|logo|site.webmanifest).*:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' },
         ],
       },
     ];

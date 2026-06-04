@@ -81,44 +81,50 @@ export default async function BlogSlugPage({ params }: Props) {
   const readingTime = post ? estimateReadingTime(post.content) : 0;
   const faqs = post ? extractFAQFromContent(post.content) : [];
 
-  // Article JSON-LD (GEO-friendly)
+  // NewsArticle JSON-LD (Google News + GEO + AI citation)
   const articleJsonLd = post ? {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'NewsArticle',
     headline: post.seoTitle || post.title,
     description: post.seoDescription || post.excerpt || '',
-    image: post.thumbnailUrl || `${SITE_URL}/og-default.png`,
+    image: [post.thumbnailUrl || `${SITE_URL}/og-default.png`],
     datePublished: post.publishedAt || post.createdAt,
     dateModified: post.updatedAt,
+    inLanguage: 'tr-TR',
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${SITE_URL}/blog/${post.slug}`,
+    },
     author: {
       '@type': 'Organization',
       name: SITE_NAME,
       url: SITE_URL,
-      '@id': `${SITE_URL}#organization`,
     },
     publisher: {
       '@type': 'Organization',
       name: SITE_NAME,
       url: SITE_URL,
-      '@id': `${SITE_URL}#organization`,
-      logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png`, width: 512, height: 512 },
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/logo.png`,
+        width: 512,
+        height: 512,
+      },
     },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
-    wordCount: post.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length,
     articleSection: post.category || 'Finans',
-    inLanguage: 'tr',
-    // GEO: Voice search ve AI okuyucuları için
+    wordCount: post.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length,
+    timeRequired: `PT${readingTime}M`,
+    keywords: post.seoKeywords || post.category,
+    isAccessibleForFree: true,
     speakable: {
       '@type': 'SpeakableSpecification',
-      cssSelector: ['#snippet-summary', 'h1', '.article-summary'],
+      cssSelector: ['h1', 'h2', '.article-summary', '.faq-item'],
     },
-    // AI motorlarına içerik bağlamı ver
     about: [
       { '@type': 'Thing', name: 'Finans' },
       { '@type': 'Thing', name: 'Yatırım' },
       { '@type': 'Thing', name: post.category || 'Piyasalar' },
     ],
-    keywords: post.seoKeywords || 'finans, yatırım, piyasa',
     citation: [
       { '@type': 'CreativeWork', name: 'Türkiye Cumhuriyet Merkez Bankası', url: 'https://www.tcmb.gov.tr' },
       { '@type': 'CreativeWork', name: 'Borsa İstanbul', url: 'https://www.borsaistanbul.com' },
