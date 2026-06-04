@@ -130,7 +130,7 @@ export function BlogDetailClient({ post, relatedPosts, readingTime }: Props) {
           </div>
 
           {/* Related Tools — category bazlı internal link juice */}
-          <RelatedTools category={post.category} slug={post.slug} />
+          <RelatedTools category={post.category ?? undefined} slug={post.slug ?? ''} />
 
           {/* Related Posts */}
           {relatedPosts.length > 0 && (
