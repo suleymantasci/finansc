@@ -28,8 +28,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*`,
+        source: '/api/:path+',
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path+`,
       },
     ];
   },
@@ -46,13 +46,13 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: '/blog/:slug*',
+        source: '/blog/:slug+',
         headers: [
           { key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=86400' },
         ],
       },
       {
-        source: '/araclar/:slug*',
+        source: '/araclar/:slug+',
         headers: [
           { key: 'Cache-Control', value: 'public, s-maxage=86400, stale-while-revalidate=604800' },
         ],
@@ -64,7 +64,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: '/borsa/:path*',
+        source: '/borsa/:path+',
         headers: [
           { key: 'Cache-Control', value: 'public, s-maxage=15, stale-while-revalidate=30' },
         ],
@@ -75,13 +75,19 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'public, s-maxage=15, stale-while-revalidate=30' },
         ],
       },
-      // Favicon ve OG image uzun cache
-      {
-        source: '/(favicon|android-chrome|apple-touch-icon|og-default|logo|site.webmanifest).*:path*',
-        headers: [
-          { key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' },
-        ],
-      },
+      // Favicon ve OG image uzun cache — her dosya için ayrı kural
+      // (path-to-regexp alternation + modifier çakışması nedeniyle ayrı ayrı)
+      { source: '/favicon.ico', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/favicon-16x16.png', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/favicon-32x32.png', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/favicon-32x32.webp', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/apple-touch-icon.png', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/android-chrome-192x192.png', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/android-chrome-192x192.webp', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/android-chrome-512x512.png', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/og-default.png', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/logo.png', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
+      { source: '/site.webmanifest', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=31536000, immutable' }] },
     ];
   },
 };
