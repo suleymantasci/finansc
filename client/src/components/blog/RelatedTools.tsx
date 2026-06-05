@@ -11,7 +11,7 @@ interface Tool {
 }
 
 interface Props {
-  category?: string;
+  category?: string | null;
   slug: string;
 }
 
