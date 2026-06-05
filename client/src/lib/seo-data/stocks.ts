@@ -575,13 +575,6 @@ export const STOCK_META: Record<string, StockMeta> = {
     description:
       'PETUN (Pınar Et ve Un) hisse senedi canlı fiyat. Pınar, et ve unlu mamuller üreticisidir.',
   },
-  PGSUS: {
-    symbol: 'PGSUS',
-    name: 'Pegasus',
-    sector: 'Ulaştırma',
-    description:
-      'PGSUS (Pegasus Hava Yolları) hisse senedi canlı fiyat. Pegasus, Türkiye\'nin düşük maliyetli havayolu şirketidir.',
-  },
   SARKY: {
     symbol: 'SARKY',
     name: 'Sarkuysan',
