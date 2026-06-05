@@ -3,6 +3,7 @@ import { STOCK_META } from '@/lib/seo-data/stocks';
 import { GOLD_META } from '@/lib/seo-data/gold';
 import { CURRENCY_SLUGS } from '@/lib/seo-data/currency';
 import { INDEX_SYMBOLS } from '@/lib/seo-data/indices';
+import { GRAM_AMOUNTS, PIECE_AMOUNTS } from '@/lib/seo-data/altin-amounts';
 
 const BASE_URL = 'https://finanscozum.net';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -114,12 +115,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  // Programmatic altın miktar sayfaları (0.05-1000 gr)
+  const gramAmountPages: MetadataRoute.Sitemap = GRAM_AMOUNTS.map((g) => ({
+    url: `${BASE_URL}${g.path}`,
+    lastModified: new Date(),
+    changeFrequency: 'hourly' as const,
+    priority: 0.7,
+  }));
+
+  // Programmatic altın adet sayfaları (1-1000 adet × 6 tür)
+  const pieceAmountPages: MetadataRoute.Sitemap = PIECE_AMOUNTS.map((p) => ({
+    url: `${BASE_URL}${p.path}`,
+    lastModified: new Date(),
+    changeFrequency: 'hourly' as const,
+    priority: 0.7,
+  }));
+
   return [
     ...staticPages,
     ...stockPages,
     ...goldPages,
     ...currencyPages,
     ...indexPages,
+    ...gramAmountPages,
+    ...pieceAmountPages,
     ...blogPages,
     ...toolPages,
   ];
