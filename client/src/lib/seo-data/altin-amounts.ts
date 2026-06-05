@@ -39,13 +39,14 @@ function generateGramAmounts(): GramAmount[] {
     (n) => amounts.push(n)
   );
   return amounts.map((grams) => {
-    // Slug: 0.05 → "0-05", 1 → "1", 1000 → "1000"
-    const slug = grams.toString().replace('.', '-');
+    // Slug: 0.05 → "0-05-gram", 1 → "1-gram", 1000 → "1000-gram"
+    // URL path ile slug aynı ki getGramAmount eşleşsin
+    const slug = `${grams.toString().replace('.', '-')}-gram`;
     const label = GRAM_LABELS[grams] || `${grams} gram`;
     return {
       slug,
       grams,
-      path: `/altin/miktar/${slug}-gram`,
+      path: `/altin/miktar/${slug}`,
       title: `${label} altın kaç TL? (${grams} gr canlı fiyat)`,
       description: `${label} (${grams} gram) altının güncel TL fiyatı, son 24 saatlik değişim ve aylık performans. ${grams} gr altın yatırımı yapmadan önce canlı verileri inceleyin.`,
     };
