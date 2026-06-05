@@ -8,6 +8,38 @@ import { GRAM_AMOUNTS, PIECE_AMOUNTS } from '@/lib/seo-data/altin-amounts';
 const BASE_URL = 'https://finanscozum.net';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+// ── Fallback data — API erişilemezse veya boş dönerse kullanılır ───────────
+// Yeni blog/araç eklendiğinde buraya slug ekle; otomatik sitemap için API'ye güven
+const FALLBACK_BLOG_SLUGS = [
+  'altin-fiyatlarini-etkileyen-faktorler-2026',
+  'doviz-arbitraj-nedir-2026',
+  'bist-hisse-senedi-secimi-yeni-baslayanlar',
+  'bireysel-emeklilik-sistemi-bes-2026',
+  'enflasyon-nedir-bireyler-uzerindeki-etkisi-ve-korunma-yollari',
+  'basit-faiz-ve-bilesik-faiz-farklari-formulleri-ve-yatirima-etkisi',
+  'fiziki-altin-yatirim-yontemleri',
+  'doviz-kurlari-neden-degisiyor-2026',
+  'kredi-notu-nedir-nasil-yukseltilir',
+  'altin-yatirim-rehberi-2026',
+  'borsada-risk-yonetimi-stratejileri',
+  'doviz-ve-altin-arasinda-yatirim',
+  'faiz-oranlari-ve-sermaye-piyasasi',
+];
+
+const FALLBACK_TOOL_SLUGS = [
+  'ihtiyac-kredisi','konut-kredisi','tasit-kredisi','is-yeri-kredisi','ticari-kredi',
+  'ticari-ihtiyac-kredisi','ticari-arac-kredisi','kredi-hesaplama','ne-kadar-kredi-alabilirim',
+  'kredi-dosya-masrafi','kredi-erken-kapatma','kredi-gecikme-faizi','kredi-yapilandirma',
+  'kredi-yillik-maliyet-orani','kredi-karti-asgari-odeme','kredi-karti-ek-taksit',
+  'kredi-karti-gecikme-faizi','kredi-karti-islem-taksitlendirme','kredi-karti-taksitli-nakit-avans',
+  'altin-hesaplama','doviz-hesaplama','faiz-hesaplama','vadeli-mevduat','bono-hesaplama',
+  'tahvil-hesaplama','repo-hesaplama','eurobond-hesaplama','birikim-hesaplama',
+  'enflasyon-hesaplama','bilesik-buyume','reel-getiri','kira-artis-orani',
+  'parasal-deger','net-bugunku-deger','ic-verim-orani','ic-dis-iskonto',
+  'ortalama-vade','vadeli-islem-fiyati','sermaye-temettu','gecmis-altin-fiyatlari',
+  'gecmis-doviz-kurlari','iban-dogrulama',
+];
+
 interface BlogItem {
   slug: string;
   updatedAt: string;
@@ -28,15 +60,16 @@ async function fetchAllBlogs(): Promise<BlogItem[]> {
     do {
       const res = await fetch(`${API_BASE}/api/blogs?page=${page}&limit=50&status=published`, {
         next: { revalidate: 3600 },
+        signal: AbortSignal.timeout(5000),
       });
       if (!res.ok) break;
       const data = await res.json();
-      items.push(...data.data);
-      totalPages = data.totalPages;
+      items.push(...(data.data ?? []));
+      totalPages = data.totalPages ?? 1;
       page++;
     } while (page <= totalPages);
 
-    return items;
+    return items.length > 0 ? items : [];
   } catch {
     return [];
   }
@@ -46,15 +79,17 @@ async function fetchAllTools(): Promise<ToolItem[]> {
   try {
     const res = await fetch(`${API_BASE}/api/tools?active=true`, {
       next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return [];
-    return res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
   } catch {
     return [];
   }
 }
 
-export const revalidate = 3600; // 1 saatte bir yeniden oluştur
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [blogs, tools] = await Promise.all([fetchAllBlogs(), fetchAllTools()]);
@@ -71,22 +106,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/iletisim`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
   ];
 
-  const blogPages: MetadataRoute.Sitemap = blogs.map((post) => ({
-    url: `${BASE_URL}/blog/${post.slug}`,
-    lastModified: new Date(post.updatedAt),
+  // Blog sayfaları — API'den veya fallback'ten
+  const blogPages: MetadataRoute.Sitemap = (blogs.length > 0 ? blogs : FALLBACK_BLOG_SLUGS).map((item) => ({
+    url: `${BASE_URL}/blog/${typeof item === 'string' ? item : item.slug}`,
+    lastModified: typeof item === 'string' ? new Date() : new Date(item.updatedAt),
     changeFrequency: 'weekly',
     priority: 0.7,
   }));
 
-  const toolPages: MetadataRoute.Sitemap = tools.map((tool) => ({
-    url: `${BASE_URL}/araclar/${tool.slug}`,
-    lastModified: new Date(tool.updatedAt),
+  // Araç sayfaları — API'den veya fallback'ten
+  const toolPages: MetadataRoute.Sitemap = (tools.length > 0 ? tools : FALLBACK_TOOL_SLUGS).map((item) => ({
+    url: `${BASE_URL}/araclar/${typeof item === 'string' ? item : item.slug}`,
+    lastModified: typeof item === 'string' ? new Date() : new Date(item.updatedAt),
     changeFrequency: 'monthly',
     priority: 0.7,
   }));
 
-  // Programmatic SEO sayfaları — lastModified saatlik değişim yansıtır
-  // (İlk deploy'da static; ileride API'den gerçek "son veri güncelleme" çekilebilir)
   const stockPages: MetadataRoute.Sitemap = Object.keys(STOCK_META).map((symbol) => ({
     url: `${BASE_URL}/borsa/hisseler/${symbol}`,
     lastModified: new Date(),
@@ -115,7 +150,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // Programmatic altın miktar sayfaları (0.05-1000 gr)
   const gramAmountPages: MetadataRoute.Sitemap = GRAM_AMOUNTS.map((g) => ({
     url: `${BASE_URL}${g.path}`,
     lastModified: new Date(),
@@ -123,7 +157,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // Programmatic altın adet sayfaları (1-1000 adet × 6 tür)
   const pieceAmountPages: MetadataRoute.Sitemap = PIECE_AMOUNTS.map((p) => ({
     url: `${BASE_URL}${p.path}`,
     lastModified: new Date(),
