@@ -1,9 +1,9 @@
 import type { MetadataRoute } from 'next';
-import { STOCK_META } from '@/lib/seo-data/stocks';
 import { GOLD_META } from '@/lib/seo-data/gold';
 import { CURRENCY_SLUGS } from '@/lib/seo-data/currency';
 import { INDEX_SYMBOLS } from '@/lib/seo-data/indices';
 import { GRAM_AMOUNTS, PIECE_AMOUNTS } from '@/lib/seo-data/altin-amounts';
+import { getKnownStockSymbols, getWhitelistMeta } from '@/lib/seo-data/whitelist';
 
 const BASE_URL = 'https://finanscozum.net';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -122,7 +122,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  const stockPages: MetadataRoute.Sitemap = Object.keys(STOCK_META).map((symbol) => ({
+  // Hisse sayfaları: whitelist'ten (build-time API fetch + 24h cache).
+  // 615 gerçek BIST sembolünün HEPSİ sitemap'te → Google hepsini keşfeder.
+  // getWhitelistMeta kaynak bilgisini loglar (debug/monitoring).
+  const knownSymbols = await getKnownStockSymbols();
+  const whitelistMeta = await getWhitelistMeta();
+  // eslint-disable-next-line no-console
+  console.log(
+    `[sitemap] hisse sembolleri: ${whitelistMeta.count} (kaynak: ${whitelistMeta.source})`,
+  );
+  const stockPages: MetadataRoute.Sitemap = knownSymbols.map((symbol) => ({
     url: `${BASE_URL}/borsa/hisseler/${symbol}`,
     lastModified: new Date(),
     changeFrequency: 'hourly' as const,

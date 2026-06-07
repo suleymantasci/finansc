@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { STOCK_META, getStockMeta, type StockMeta } from '@/lib/seo-data/stocks';
+import {
+  isKnownStockSymbol,
+  getKnownStockSymbols,
+} from '@/lib/seo-data/whitelist';
 import { LivePriceTicker } from './LivePriceTicker';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -11,19 +15,10 @@ interface Props {
   params: Promise<{ sembol: string }>;
 }
 
-// Sembol biçim kontrolü — gevşek tut, "bilinmeyen sembol" semantiği
-// fallback meta'da işlenir. Çok sıkı regex gerçek sembolleri (ALTINS1 7
-// char, DMLKTG/ENTRAR 6 char) 404'e gönderir. BIST'te 4-5 char yaygın,
-// ama istisnalar var; format yerine whitelist mantığına güveniyoruz.
-//
-// Whitelist stratejisi:
-// - Hisse listesi (bist 600+) backend API'den gelir, dynamicParams=true
-//   fallback meta üretir
-// - Geçersiz format (küçük harf, özel karakter) → 404
-// - Geçerli format ama listede yok → zengin fallback (200) ile kullanıcı
-//   deneyimi korunur; sitemap'e girmediği için Google indekslemez
+// Sembol biçim kontrolü — gevşek tut, asıl doğrulama whitelist'te.
+// Sadece temel sanitizasyon: büyük harf + alphanumeric, 3-7 char.
+// Asıl "gerçek sembol mü?" kararı isKnownStockSymbol()'da.
 function isValidSymbolFormat(symbol: string): boolean {
-  // 3-7 char, harfle başla, alphanumeric
   return /^[A-Z][A-Z0-9]{2,6}$/.test(symbol);
 }
 
@@ -58,23 +53,31 @@ function getFallbackMeta(symbol: string): StockMeta {
   };
 }
 
-export function generateStaticParams() {
-  return Object.keys(STOCK_META).map((sembol) => ({ sembol }));
+// Whitelist'ten bilinen tüm sembolleri al (build-time API fetch + 24h cache).
+// 615 sembolün hepsi static prerender'a giremez; Next.js ISR (revalidate=60)
+// ile değişiklikleri yakalar, whitelist ise günlük yenilenir.
+export async function generateStaticParams() {
+  const symbols = await getKnownStockSymbols();
+  return symbols.map((sembol) => ({ sembol }));
 }
 
-// dynamicParams=true: STOCK_META'da olmayan ama geçerli formattaki semboller için
-// fallback meta üret, 404 dönme. Liste sayfası 600+ sembol dönüyor, hepsi
-// STATIC'e giremez; kullanıcı deneyimi için fallback zorunlu.
+// dynamicParams=true: whitelist'te olmayan semboller için runtime'da
+// generateMetadata/Page çalışır → whitelist kontrolü orada yapılır.
+// Geçersiz sembol (küçük harf, çok kısa/uzun) → 404.
 export const dynamicParams = true;
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { sembol: symbol } = await params;
-  // Geçersiz formatta sembol (küçük harf, özel karakter, >6 char) → noindex
+  // Geçersiz formatta sembol (küçük harf, özel karakter, 3-7 char dışı) → noindex
   if (!isValidSymbolFormat(symbol)) {
     return { title: 'Geçersiz Sembol', robots: { index: false, follow: false } };
   }
-  // Geçerli formatta → STOCK_META'da varsa tam meta, yoksa fallback
+  // Whitelist kontrolü: BIST'te gerçekten var mı? (24h cache'li API'den)
+  if (!(await isKnownStockSymbol(symbol))) {
+    return { title: 'Sembol Bulunamadı', robots: { index: false, follow: false } };
+  }
+  // Geçerli formatta ve gerçek sembol → STOCK_META'da varsa tam meta, yoksa fallback
   const meta = getStockMeta(symbol) ?? getFallbackMeta(symbol);
   // Title: page-prefix only. Template '%s | SITE_NAME' root layout'ta zaten ekliyor (Pit 28 fix).
   // 50 char hedefi → template ile birlikte max 65 char.
@@ -108,9 +111,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StockPage({ params }: Props) {
   const { sembol: symbol } = await params;
-  // Geçersiz formatta sembol → 404 (Pit 29)
+  // Geçersiz formatta sembol → 404
   if (!isValidSymbolFormat(symbol)) notFound();
-  // Geçerli formatta → STOCK_META'da varsa tam meta, yoksa fallback
+  // Whitelist kontrolü: BIST'te gerçekten var mı?
+  if (!(await isKnownStockSymbol(symbol))) notFound();
+  // Geçerli formatta ve gerçek sembol → STOCK_META'da varsa tam meta, yoksa fallback
   const meta = getStockMeta(symbol) ?? getFallbackMeta(symbol);
   const canonical = `${SITE_URL}/borsa/hisseler/${meta.symbol}`;
   const pageTitle = `${meta.name} (${meta.symbol}) Hisse Senedi Fiyatı ve Analiz`;
