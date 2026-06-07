@@ -59,8 +59,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const meta = TOOL_META[slug];
   if (!meta) return { title: 'Araç Bulunamadı', robots: { index: false, follow: false } };
-  // Description'ı 160 char sınırına kırp (Pit 28b)
-  const description = meta.desc.length > 160 ? meta.desc.slice(0, 158).trimEnd() + '…' : meta.desc;
+  // Description'ı 155 char sınırına kırp (Pit 28b)
+  const description = meta.desc.length > 155 ? meta.desc.slice(0, 153).trimEnd() + '…' : meta.desc;
   return {
     title: meta.title,
     description,

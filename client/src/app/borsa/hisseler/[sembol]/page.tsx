@@ -33,9 +33,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Title: page-prefix only. Template '%s | SITE_NAME' root layout'ta zaten ekliyor (Pit 28 fix).
   // 50 char hedefi → template ile birlikte max 65 char.
   const title = `${meta.name} (${meta.symbol}) Hisse Senedi`;
-  // Description: 155-160 char hedefi. meta.description zaten ~190 char; tail'i budayalım.
+  // Description: 150-155 char hedefi. meta.description uzun; tail'i budayalım.
   const baseDesc = meta.description;
-  const description = baseDesc.length > 155 ? baseDesc.slice(0, 152).trimEnd() + '…' : baseDesc;
+  const description = baseDesc.length > 155 ? baseDesc.slice(0, 153).trimEnd() + '…' : baseDesc;
   return {
     title,
     description,
