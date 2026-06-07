@@ -31,13 +31,6 @@ interface ApiStock {
   name: string;
 }
 
-interface WhitelistResult {
-  symbols: Set<string>;
-  source: 'api' | 'fallback';
-  count: number;
-  fetchedAt: number;
-}
-
 /**
  * Backend'den tüm BIST sembol listesini çek.
  * Build sırasında ve runtime'da 24 saat cache'lenir.
@@ -59,6 +52,17 @@ async function fetchSymbolsFromApi(): Promise<string[]> {
   }
 }
 
+// nextCache JSON-serializable data döndürmek zorundadır (Set, Map
+// çalışmaz). Bu yüzden sembolleri string[] olarak saklıyoruz, lookup
+// için includes() kullanıyoruz. 615 sembol için includes O(n) ama
+// prerender sırasında 1 kez çalışıyor, runtime'da her istekte bir kez.
+interface WhitelistResult {
+  symbols: string[];
+  source: 'api' | 'fallback';
+  count: number;
+  fetchedAt: number;
+}
+
 // nextCache ile 24 saatlik cache — generateStaticParams ve
 // isKnownSymbol aynı cache'i paylaşır (build sırasında 1 kez
 // çalışır, sonra 24 saat boyunca aynı sonucu döner).
@@ -67,17 +71,18 @@ const getWhitelist = nextCache(
     const apiSymbols = await fetchSymbolsFromApi();
     if (apiSymbols.length > 0) {
       return {
-        symbols: new Set(apiSymbols),
+        symbols: apiSymbols,
         source: 'api',
         count: apiSymbols.length,
         fetchedAt: Date.now(),
       };
     }
     // Fallback: STOCK_META'daki 99 sembol
+    const fallbackSymbols = Object.keys(STOCK_META);
     return {
-      symbols: new Set(Object.keys(STOCK_META)),
+      symbols: fallbackSymbols,
       source: 'fallback',
-      count: Object.keys(STOCK_META).length,
+      count: fallbackSymbols.length,
       fetchedAt: Date.now(),
     };
   },
@@ -91,7 +96,7 @@ const getWhitelist = nextCache(
  */
 export async function isKnownStockSymbol(symbol: string): Promise<boolean> {
   const result = await getWhitelist();
-  return result.symbols.has(symbol);
+  return result.symbols.includes(symbol);
 }
 
 /**
@@ -100,7 +105,7 @@ export async function isKnownStockSymbol(symbol: string): Promise<boolean> {
  */
 export async function getKnownStockSymbols(): Promise<string[]> {
   const result = await getWhitelist();
-  return Array.from(result.symbols);
+  return result.symbols;
 }
 
 /**
