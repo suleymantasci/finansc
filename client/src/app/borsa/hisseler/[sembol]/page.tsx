@@ -143,10 +143,11 @@ export default async function StockPage({ params }: Props) {
   // Citable snippet (GEO için) — 50 kelimelik özet
   const summary = `${meta.name} (${meta.symbol}) hisse senedi Borsa İstanbul'da ${meta.sector === 'BIST' ? '' : meta.sector + ' sektöründe'}işlem görmektedir. Canlı alış, satış, günlük değişim, hacim ve gün içi en yüksek/düşük fiyat verileri yukarıda anlık olarak güncellenmektedir.`;
 
-  // Aynı sektördeki diğer hisseler (related links). Fallback meta için relatedSlugs zaten set edilmiş.
+  // Aynı sektördeki diğer hisseler (related links). Fallback meta için relatedSlugs zaten set edilmiş;
+  // yine de ?? [] ile TS strict mode uyumu (StockMeta.relatedSlugs opsiyonel).
   const isFallback = !STOCK_META[symbol];
   const related = isFallback
-    ? meta.relatedSlugs.map((s) => STOCK_META[s]).filter(Boolean).slice(0, 6)
+    ? (meta.relatedSlugs ?? []).map((s) => STOCK_META[s]).filter(Boolean).slice(0, 6)
     : Object.values(STOCK_META)
         .filter((s) => s.sector === meta.sector && s.symbol !== meta.symbol)
         .slice(0, 6);
