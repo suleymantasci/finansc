@@ -11,14 +11,20 @@ interface Props {
   params: Promise<{ sembol: string }>;
 }
 
-// Sembol biçim kontrolü: BIST gerçek sembollerinin ortak formu.
-// - 3-5 karakter
-// - Her zaman HARFLE başlar (BIST sembolleri hiç rakamla başlamaz)
-// - Son karakter RAKAM olamaz (TBORG1, AEFES1 gibi varyantlar gerçek sembol değil)
-// Not: A1CAP, E1XEM, T1TK gibi içinde rakam geçen gerçek semboller de var
-// (BIST'te nadir), bunlar için orta karakter rakam olabilir.
+// Sembol biçim kontrolü — gevşek tut, "bilinmeyen sembol" semantiği
+// fallback meta'da işlenir. Çok sıkı regex gerçek sembolleri (ALTINS1 7
+// char, DMLKTG/ENTRAR 6 char) 404'e gönderir. BIST'te 4-5 char yaygın,
+// ama istisnalar var; format yerine whitelist mantığına güveniyoruz.
+//
+// Whitelist stratejisi:
+// - Hisse listesi (bist 600+) backend API'den gelir, dynamicParams=true
+//   fallback meta üretir
+// - Geçersiz format (küçük harf, özel karakter) → 404
+// - Geçerli format ama listede yok → zengin fallback (200) ile kullanıcı
+//   deneyimi korunur; sitemap'e girmediği için Google indekslemez
 function isValidSymbolFormat(symbol: string): boolean {
-  return /^[A-Z][A-Z0-9]{2,3}[A-Z]$/.test(symbol);
+  // 3-7 char, harfle başla, alphanumeric
+  return /^[A-Z][A-Z0-9]{2,6}$/.test(symbol);
 }
 
 // STOCK_META'da olmayan semboller için generic fallback meta üret.
