@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Hakkımızda',
-  description: 'FinansCozum hakkında bilgi edinin. Misyonumuz, vizyonumuz ve sunduğumuz hizmetler.',
+  title: 'Hakkımızda | FinansCozum Ekibi ve Misyon',
+  description: 'FinansCozum hakkında bilgi edinin. Türkiyenin bağımsız finans bilgi platformu olarak misyonumuz, vizyonumuz, editör ekibimiz ve sunduğumuz hizmetler.',
+  keywords: ['hakkımızda', 'finans platformu', 'editör ekibi', 'misyon', 'vizyon'],
+  alternates: { canonical: 'https://finanscozum.net/hakkimizda' },
 };
 
 export default function HakkimizdaPage() {

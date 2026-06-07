@@ -2,8 +2,10 @@ import type { Metadata } from 'next';
 import { Mail, MapPin, Clock } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'İletişim',
-  description: 'FinansCozum ile iletişime geçin. Soru, öneri ve geri bildirimlerinizi bekliyoruz.',
+  title: 'İletişim | FinansCozum',
+  description: 'FinansCozum ile iletişime geçin. Soru, öneri, geri bildirim ve editör talepleriniz için e-posta, iletişim formu ve çalışma saatleri.',
+  keywords: ['iletişim', 'editör', 'geri bildirim', 'destek', 'finanscozum iletişim'],
+  alternates: { canonical: 'https://finanscozum.net/iletisim' },
 };
 
 export default function IletisimPage() {
