@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: 'Hesaplama Araçları',
   description: 'Kredi, vergi, mevduat, döviz ve daha birçok finansal hesaplama aracı.',
   keywords: ['kredi hesaplama', 'faiz hesaplama', 'döviz hesaplama', 'altın hesaplama', 'vadeli mevduat'],
+  alternates: { canonical: 'https://finanscozum.net/araclar' },
 };
 
 const KREDI_TOOLS = [

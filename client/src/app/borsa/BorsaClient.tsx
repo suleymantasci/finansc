@@ -3,12 +3,11 @@
 import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useMarketStore } from '@/stores/market.store';
-import { SectionIntro } from '@/components/shared/SectionIntro';
 import { PriceChange } from '@/components/shared/PriceChange';
 import { MarketStatus } from '@/components/shared/MarketStatus';
 import { SearchBar } from '@/components/shared/SearchBar';
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { SkeletonTable } from '@/components/ui/Skeleton';
 import { formatDecimal, formatInteger, formatTL } from '@/lib/formatters';
@@ -167,12 +166,7 @@ export function BorsaClient() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <SectionIntro
-          as="page"
-          title="Borsa İstanbul"
-          description="Borsa İstanbul canlı endeks ve hisse verileri. XU100, XU030 ve diğer BIST endeksleri, yükselen/düşen hisseler, hacim sıralaması."
-        />
+      <div className="mb-6 flex items-center justify-end">
         <MarketStatus status={status} />
       </div>
 

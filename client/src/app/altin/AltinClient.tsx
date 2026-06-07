@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useMarketStore } from '@/stores/market.store';
 import type { GoldStreamData } from '@/stores/market.store';
 import { useSSE } from '@/hooks/useSSE';
-import { SectionIntro } from '@/components/shared/SectionIntro';
 import { PriceChange } from '@/components/shared/PriceChange';
 import { MarketStatus } from '@/components/shared/MarketStatus';
 import { SearchBar } from '@/components/shared/SearchBar';
@@ -61,12 +60,7 @@ export function AltinClient() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-      <div className="flex items-start justify-between gap-4">
-        <SectionIntro
-          as="page"
-          title="Altın Fiyatları"
-          description="Türkiye'deki tüm altın fiyatlarını anlık olarak karşılaştırın. Gram, çeyrek, yarım, tam, cumhuriyet, ata, ons altın ve gümüş için canlı fiyat, günlük değişim ve detaylı sayfa."
-        />
+      <div className="mb-4 flex items-center justify-end">
         <MarketStatus status={displayStatus} />
       </div>
 

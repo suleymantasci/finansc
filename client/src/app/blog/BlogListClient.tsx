@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Newspaper, TrendingUp, Landmark, Coins, PiggyBank, CreditCard, BarChart3, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { SectionIntro } from '@/components/shared/SectionIntro';
 import { Badge } from '@/components/ui/Badge';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { AdInFeed } from '@/components/ads/AdInFeed';
@@ -75,11 +74,6 @@ export function BlogListClient() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-      <SectionIntro
-        as="page"
-        title="Finans Bilgi Merkezi"
-        description="Piyasa analizleri, finansal rehberler ve güncel yorumlar. Borsa, altın, döviz, kredi ve yatırım konularında editör ekibimizin hazırladığı içerikler."
-      />
 
       {/* Category Filter */}
       {categories.length > 0 && (
