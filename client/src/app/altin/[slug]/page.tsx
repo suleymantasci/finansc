@@ -15,16 +15,20 @@ export function generateStaticParams() {
   return Object.values(GOLD_META).map((g) => ({ slug: g.slug }));
 }
 
-export const dynamicParams = true;
+export const dynamicParams = false; // bilinmeyen altın türü → 404
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const meta = GOLD_META[slug];
-  if (!meta) return { title: 'Altın Türü Bulunamadı' };
+  if (!meta) {
+    return { title: 'Altın Türü Bulunamadı', robots: { index: false, follow: false } };
+  }
 
-  const title = `${meta.name} Fiyatı Bugün | Canlı ${meta.shortName} Altın | ${SITE_NAME}`;
-  const description = `${meta.name} canlı fiyatı ve günlük değişimi. ${meta.description} Tüm kaynaklar (serbest piyasa, Kapalıçarşı, Harem Altın, Altınkaynak, Garanti BBVA, Akbank) tek sayfada.`;
+  // Title: page-prefix only. Layout template '%s | SITE_NAME' ekliyor (Pit 28 fix)
+  const title = `${meta.name} Fiyatı Bugün | Canlı ${meta.shortName} Altın`;
+  // Description: 155-160 char hedefi. "Tüm kaynaklar" fazlalığını budayalım.
+  const description = `${meta.name} canlı fiyatı ve günlük değişimi. ${meta.description}`.slice(0, 160).trimEnd() + '…';
 
   return {
     title,
@@ -55,7 +59,7 @@ export default async function GoldTypePage({ params }: Props) {
   if (!meta) notFound();
 
   const canonical = `${SITE_URL}/altin/${meta.slug}`;
-  const pageTitle = `${meta.name} Fiyatı Bugün | ${SITE_NAME}`;
+  const pageTitle = `${meta.name} Fiyatı Bugün`;
 
   const jsonLd = {
     '@context': 'https://schema.org',

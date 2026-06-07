@@ -1,4 +1,5 @@
 import { api } from '@/lib/api';
+import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import type { BlogPost } from '@/types';
 import { BlogDetailClient } from './BlogDetailClient';
@@ -28,41 +29,49 @@ function estimateReadingTime(html: string): number {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  let post: BlogPost | null = null;
   try {
-    const post = await api.get<BlogPost>(`/api/blogs/${slug}`);
-    const title = post.seoTitle || post.title;
-    const description = post.seoDescription || post.excerpt || undefined;
-    const image = post.thumbnailUrl || `${SITE_URL}/og-default.png`;
-
+    post = await api.get<BlogPost>(`/api/blogs/${slug}`);
+  } catch {
+    post = null;
+  }
+  // Yazı bulunamadı → noindex + canonical yok. Root layout'un global canonical'ı leak etmesin
+  if (!post) {
     return {
+      title: 'Yazı Bulunamadı',
+      robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+    };
+  }
+  const title = post.seoTitle || post.title;
+  const description = post.seoDescription || post.excerpt || undefined;
+  const image = post.thumbnailUrl || `${SITE_URL}/og-default.png`;
+
+  return {
+    title,
+    description,
+    keywords: post.seoKeywords ? post.seoKeywords.split(',').map((k) => k.trim()) : undefined,
+    alternates: {
+      canonical: `${SITE_URL}/blog/${post.slug}`,
+    },
+    openGraph: {
+      type: 'article',
       title,
       description,
-      keywords: post.seoKeywords ? post.seoKeywords.split(',').map((k) => k.trim()) : undefined,
-      alternates: {
-        canonical: `${SITE_URL}/blog/${post.slug}`,
-      },
-      openGraph: {
-        type: 'article',
-        title,
-        description,
-        url: `${SITE_URL}/blog/${post.slug}`,
-        siteName: SITE_NAME,
-        locale: 'tr_TR',
-        images: [{ url: image, width: 1200, height: 630, alt: post.title }],
-        publishedTime: post.publishedAt || post.createdAt,
-        modifiedTime: post.updatedAt,
-        section: post.category || 'Finans',
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title,
-        description,
-        images: [image],
-      },
-    };
-  } catch {
-    return { title: 'Bilgi Merkezi' };
-  }
+      url: `${SITE_URL}/blog/${post.slug}`,
+      siteName: SITE_NAME,
+      locale: 'tr_TR',
+      images: [{ url: image, width: 1200, height: 630, alt: post.title }],
+      publishedTime: post.publishedAt || post.createdAt,
+      modifiedTime: post.updatedAt,
+      section: post.category || 'Finans',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+  };
 }
 
 export default async function BlogSlugPage({ params }: Props) {
@@ -72,11 +81,16 @@ export default async function BlogSlugPage({ params }: Props) {
 
   try {
     post = await api.get<BlogPost>(`/api/blogs/${slug}`);
-    const res = await api.get<{ data: BlogPost[] }>(`/api/blogs?limit=3&status=published&category=${post.category || ''}`);
-    relatedPosts = (res.data || []).filter((p) => p.slug !== slug).slice(0, 3);
+    if (post) {
+      const res = await api.get<{ data: BlogPost[] }>(`/api/blogs?limit=3&status=published&category=${post.category || ''}`);
+      relatedPosts = (res.data || []).filter((p) => p.slug !== slug).slice(0, 3);
+    }
   } catch {
-    // handled in client
+    post = null;
   }
+
+  // Yazı yoksa 404 → Pit 26: 200 + canonical=root → "duplicate of homepage" riskini kapat
+  if (!post) notFound();
 
   const readingTime = post ? estimateReadingTime(post.content) : 0;
   const faqs = post ? extractFAQFromContent(post.content) : [];

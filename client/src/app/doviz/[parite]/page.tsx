@@ -15,16 +15,20 @@ export function generateStaticParams() {
   return CURRENCY_SLUGS.map((parite) => ({ parite }));
 }
 
-export const dynamicParams = true;
+export const dynamicParams = false; // bilinmeyen parite → 404
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { parite } = await params;
   const meta = getCurrencyBySlug(parite);
-  if (!meta) return { title: 'Döviz Bulunamadı' };
+  if (!meta) {
+    return { title: 'Döviz Bulunamadı', robots: { index: false, follow: false } };
+  }
 
-  const title = `${meta.code}/TRY ${meta.name} Kuru Bugün | Canlı ${meta.code} TL | ${SITE_NAME}`;
-  const description = `${meta.code}/TRY (${meta.name} / Türk Lirası) canlı kuru. ${meta.description} Serbest piyasa ve Merkez Bankası verileri.`;
+  // Title: page-prefix only. Layout template '%s | SITE_NAME' ekliyor (Pit 28 fix)
+  const title = `${meta.code}/TRY ${meta.name} Kuru Bugün | Canlı ${meta.code} TL`;
+  // Description: 155-160 char hedefi
+  const description = `${meta.code}/TRY (${meta.name} / Türk Lirası) canlı kuru. ${meta.description}`.slice(0, 160).trimEnd() + '…';
 
   return {
     title,
@@ -55,7 +59,7 @@ export default async function CurrencyPage({ params }: Props) {
   if (!meta) notFound();
 
   const canonical = `${SITE_URL}/doviz/${meta.slug}`;
-  const pageTitle = `${meta.code}/TRY ${meta.name} Kuru | ${SITE_NAME}`;
+  const pageTitle = `${meta.code}/TRY ${meta.name} Kuru`;
 
   // ExchangeRateSpecification schema (GEO-friendly)
   const jsonLd = {

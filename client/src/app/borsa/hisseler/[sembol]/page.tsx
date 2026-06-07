@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { STOCK_META, getStockMeta } from '@/lib/seo-data/stocks';
 import { LivePriceTicker } from './LivePriceTicker';
@@ -10,7 +11,7 @@ interface Props {
   params: Promise<{ sembol: string }>;
 }
 
-// Stokta olmayan sembol için fallback üret (yine de sayfayı oluştur)
+// Sembol bilinmiyorsa 404 — soft-404 / thin content engeli (Pit 29)
 function isKnownSymbol(symbol: string): boolean {
   return symbol in STOCK_META;
 }
@@ -19,14 +20,21 @@ export function generateStaticParams() {
   return Object.keys(STOCK_META).map((sembol) => ({ sembol }));
 }
 
-export const dynamicParams = true;
+export const dynamicParams = false; // bilinmeyen sembol → 404, 200 placeholder değil
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { sembol: symbol } = await params;
+  // Bilinmeyen sembol → metadata da dönme, root layout'un noindex davranışı devreye girsin
+  if (!isKnownSymbol(symbol)) {
+    return { title: 'Hisse Bulunamadı', robots: { index: false, follow: false } };
+  }
   const meta = getStockMeta(symbol);
-  const title = `${meta.name} (${meta.symbol}) Hisse Senedi Fiyatı ve Analiz | ${SITE_NAME}`;
-  const description = `${meta.description} Canlı fiyat, günlük değişim, hacim ve grafik verileri.`;
+  // Title: page-prefix only. Template '%s | SITE_NAME' root layout'ta zaten ekliyor (Pit 28 fix)
+  const title = `${meta.name} (${meta.symbol}) Hisse Senedi Fiyatı ve Analiz`;
+  // Description: 155-160 char hedefi. meta.description zaten ~190 char; tail'i budayalım.
+  const baseDesc = meta.description;
+  const description = baseDesc.length > 155 ? baseDesc.slice(0, 152).trimEnd() + '…' : baseDesc;
   return {
     title,
     description,
@@ -53,9 +61,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StockPage({ params }: Props) {
   const { sembol: symbol } = await params;
+  // Bilinmeyen sembol → 404. Liste sayfasındaki linkler sadece bilinen sembollere tıklar.
+  if (!isKnownSymbol(symbol)) notFound();
   const meta = getStockMeta(symbol);
   const canonical = `${SITE_URL}/borsa/hisseler/${meta.symbol}`;
-  const pageTitle = `${meta.name} (${meta.symbol}) Hisse Senedi Fiyatı ve Analiz | ${SITE_NAME}`;
+  const pageTitle = `${meta.name} (${meta.symbol}) Hisse Senedi Fiyatı ve Analiz`;
 
   // Quote + FinancialProduct JSON-LD (GEO-friendly)
   const jsonLd = {
@@ -201,11 +211,9 @@ export default async function StockPage({ params }: Props) {
           </section>
         )}
 
-        {!isKnownSymbol(symbol) && (
-          <p className="mt-6 text-xs text-muted-foreground italic">
-            Bu hisse için detaylı şirket bilgisi henüz eklenmemiştir. Yatırım tavsiyesi niteliği taşımaz.
-          </p>
-        )}
+        <p className="mt-8 text-xs text-muted-foreground italic">
+          Yatırım tavsiyesi değildir. Veriler bilgi amaçlıdır, işlem öncesi kaynak sitelerden teyit ediniz.
+        </p>
       </div>
     </>
   );

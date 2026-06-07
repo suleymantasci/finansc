@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { INDEX_META, INDEX_SYMBOLS, getIndexMeta } from '@/lib/seo-data/indices';
 import { LiveIndexTicker } from './LiveIndexTicker';
@@ -10,18 +11,28 @@ interface Props {
   params: Promise<{ sembol: string }>;
 }
 
+function isKnownIndex(symbol: string): boolean {
+  return symbol in INDEX_META;
+}
+
 export function generateStaticParams() {
   return INDEX_SYMBOLS.map((sembol) => ({ sembol }));
 }
 
-export const dynamicParams = true;
+export const dynamicParams = false; // bilinmeyen endeks → 404
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { sembol } = await params;
+  if (!isKnownIndex(sembol)) {
+    return { title: 'Endeks Bulunamadı', robots: { index: false, follow: false } };
+  }
   const meta = getIndexMeta(sembol);
-  const title = `${meta.name} (${meta.symbol}) Endeksi Canlı | ${SITE_NAME}`;
-  const description = `${meta.name} (${meta.symbol}) endeksi canlı değer, günlük değişim, en yüksek/düşük veriler. ${meta.description.slice(0, 120)}`;
+  // Title: page-prefix only. Layout template '%s | SITE_NAME' ekliyor (Pit 28 fix)
+  const title = `${meta.name} (${meta.symbol}) Endeksi Canlı`;
+  // Description: 155-160 char hedefi
+  const shortDesc = meta.description.slice(0, 140).trimEnd();
+  const description = `${meta.name} (${meta.symbol}) endeksi canlı değer, günlük değişim. ${shortDesc}${meta.description.length > 140 ? '…' : ''}`;
   return {
     title,
     description,
@@ -47,9 +58,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function IndexPage({ params }: Props) {
   const { sembol } = await params;
+  if (!isKnownIndex(sembol)) notFound();
   const meta = getIndexMeta(sembol);
   const canonical = `${SITE_URL}/borsa/endeksler/${meta.symbol}`;
-  const pageTitle = `${meta.name} (${meta.symbol}) Endeksi | ${SITE_NAME}`;
+  const pageTitle = `${meta.name} (${meta.symbol}) Endeksi`;
 
   // JSON-LD schema (GEO-friendly)
   const jsonLd = {
