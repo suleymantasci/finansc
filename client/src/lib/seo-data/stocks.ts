@@ -714,12 +714,20 @@ export const STOCK_META: Record<string, StockMeta> = {
 
 // Bilinmeyen sembol için fallback
 export function getStockMeta(symbol: string): StockMeta {
+  // BIST 30'dan 6 hisse fallback related olarak kullanılır (unknown sembol için)
+  const fallbackRelated = Object.keys(STOCK_META).slice(0, 6);
   return (
     STOCK_META[symbol] ?? {
       symbol,
       name: symbol,
       sector: 'BIST',
       description: `${symbol} hisse senedi canlı fiyat, günlük değişim, hacim ve teknik veriler. ${symbol} Borsa İstanbul'da işlem görmektedir.`,
+      faq: [
+        { q: `${symbol} hangi endekste işlem görüyor?`, a: `${symbol} hisse senedi Borsa İstanbul (BIST) bünyesinde işlem görmektedir.` },
+        { q: `${symbol} hissesi nasıl alınır?`, a: `${symbol} hissesi BIST'te işlem gören aracı kurumlardan (banka, online aracı kurum) alınabilir.` },
+        { q: `${symbol} günlük değişim yüzdesi nasıl hesaplanır?`, a: 'Günlük değişim yüzdesi, kapanış fiyatının bir önceki kapanışa göre yüzdesel farkıdır.' },
+      ],
+      relatedSlugs: fallbackRelated,
     }
   );
 }
