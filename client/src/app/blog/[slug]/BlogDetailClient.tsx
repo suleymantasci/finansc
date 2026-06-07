@@ -91,7 +91,7 @@ export function BlogDetailClient({ post, relatedPosts, readingTime }: Props) {
           {/* Hero Image */}
           <div className="mb-6 aspect-video w-full overflow-hidden rounded-xl bg-muted">
             {post.thumbnailUrl ? (
-              <img src={post.thumbnailUrl} alt={post.title} className="h-full w-full object-cover" />
+              <img src={post.thumbnailUrl} alt={post.title} loading="eager" fetchPriority="high" className="h-full w-full object-cover" />
             ) : (
               <BlogPlaceholder category={post.category} className="h-full w-full rounded-xl" />
             )}
