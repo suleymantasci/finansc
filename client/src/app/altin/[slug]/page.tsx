@@ -27,8 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   // Title: page-prefix only. Layout template '%s | SITE_NAME' ekliyor (Pit 28 fix)
   const title = `${meta.name} Fiyatı Bugün | Canlı ${meta.shortName} Altın`;
-  // Description: 155-160 char hedefi. "Tüm kaynaklar" fazlalığını budayalım.
-  const description = `${meta.name} canlı fiyatı ve günlük değişimi. ${meta.description}`.slice(0, 160).trimEnd() + '…';
+  // Description: 155-160 char hedefi. meta.description uzun, slice ile sınırla.
+  const description = (meta.description.length > 160
+    ? meta.description.slice(0, 158).trimEnd() + '…'
+    : meta.description);
 
   return {
     title,

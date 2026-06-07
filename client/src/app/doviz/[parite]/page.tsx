@@ -27,8 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   // Title: page-prefix only. Layout template '%s | SITE_NAME' ekliyor (Pit 28 fix)
   const title = `${meta.code}/TRY ${meta.name} Kuru Bugün | Canlı ${meta.code} TL`;
-  // Description: 155-160 char hedefi
-  const description = `${meta.code}/TRY (${meta.name} / Türk Lirası) canlı kuru. ${meta.description}`.slice(0, 160).trimEnd() + '…';
+  // Description: 155-160 char hedefi. meta.description zaten "USD/TRY (ABD Doları / Türk Lirası) canlı kuru..." diye başlıyor — duplicate önlemek için doğrudan onu kullan, slice ile sınırla.
+  const description = (meta.description.length > 160
+    ? meta.description.slice(0, 158).trimEnd() + '…'
+    : meta.description);
 
   return {
     title,

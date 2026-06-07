@@ -30,9 +30,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const meta = getIndexMeta(sembol);
   // Title: page-prefix only. Layout template '%s | SITE_NAME' ekliyor (Pit 28 fix)
   const title = `${meta.name} (${meta.symbol}) Endeksi Canlı`;
-  // Description: 155-160 char hedefi
-  const shortDesc = meta.description.slice(0, 140).trimEnd();
-  const description = `${meta.name} (${meta.symbol}) endeksi canlı değer, günlük değişim. ${shortDesc}${meta.description.length > 140 ? '…' : ''}`;
+  // Description: 155-160 char hedefi. meta.description zaten sembolü içerir, duplicate önlemek için direkt kullan.
+  const description = (meta.description.length > 160
+    ? meta.description.slice(0, 158).trimEnd() + '…'
+    : meta.description);
   return {
     title,
     description,
