@@ -11,9 +11,14 @@ interface Props {
   params: Promise<{ sembol: string }>;
 }
 
-// Sembol biçim kontrolü: sadece 1-6 büyük harf + rakam. Aksi halde 404.
+// Sembol biçim kontrolü: BIST gerçek sembollerinin ortak formu.
+// - 3-5 karakter
+// - Her zaman HARFLE başlar (BIST sembolleri hiç rakamla başlamaz)
+// - Son karakter RAKAM olamaz (TBORG1, AEFES1 gibi varyantlar gerçek sembol değil)
+// Not: A1CAP, E1XEM, T1TK gibi içinde rakam geçen gerçek semboller de var
+// (BIST'te nadir), bunlar için orta karakter rakam olabilir.
 function isValidSymbolFormat(symbol: string): boolean {
-  return /^[A-Z0-9]{1,6}$/.test(symbol);
+  return /^[A-Z][A-Z0-9]{2,3}[A-Z]$/.test(symbol);
 }
 
 // STOCK_META'da olmayan semboller için generic fallback meta üret.

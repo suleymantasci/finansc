@@ -599,10 +599,10 @@ export const STOCK_META: Record<string, StockMeta> = {
   },
   TBORG: {
     symbol: 'TBORG',
-    name: 'T-Bank Bonosu',
-    sector: 'Bankacılık',
+    name: 'Türk Tuborg',
+    sector: 'İçecek',
     description:
-      'TBORG (Türkiye İş Bankası Bonosu) hisse senedi canlı fiyat. Bankacılık sektörü tahvili.',
+      'TBORG (Türk Tuborg) hisse senedi canlı fiyat ve analiz. Türk Tuborg, Türkiye\'nin en büyük bira üreticilerinden biridir ve Carlsberg Grubu bünyesinde faaliyet gösterir.',
   },
   TMSN: {
     symbol: 'TMSN',
