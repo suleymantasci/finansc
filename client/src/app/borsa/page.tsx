@@ -11,20 +11,9 @@ export const metadata: Metadata = {
 
 export default function BorsaPage() {
   return (
-    <>
-      {/* Server-rendered H1 (Pit 11 fix). Suspense dışında → BAILOUT engellendi. */}
-      <section className="mx-auto max-w-7xl px-4 pt-6 lg:px-8">
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-          Borsa İstanbul — Canlı Hisse ve Endeks Verileri
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-3xl">
-          XU100, XU030 ve diğer BIST endekslerini, yükselen/düşen hisseleri, hacim sıralamasını
-          anlık olarak takip edin. Her hisse ve endeks için detaylı fiyat, grafik ve analiz sayfası.
-        </p>
-      </section>
-      <Suspense>
-        <BorsaClient />
-      </Suspense>
-    </>
+    // H1/description BorsaClient içindeki SectionIntro (as="page") tarafından render ediliyor (Pit 11 fix).
+    <Suspense>
+      <BorsaClient />
+    </Suspense>
   );
 }

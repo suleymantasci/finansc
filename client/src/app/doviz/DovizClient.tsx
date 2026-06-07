@@ -143,8 +143,9 @@ export function DovizClient() {
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
       <div className="flex items-start justify-between gap-4 mb-6">
         <SectionIntro
+          as="page"
           title="Döviz Kurları"
-          description="Anlık döviz kurlarını canlı takip edin"
+          description="Anlık döviz kurlarını canlı takip edin. Serbest piyasa ve Merkez Bankası kurları; dolar, euro, sterlin, İsviçre frangı başta olmak üzere tüm majör pariteler."
         />
         <MarketStatus status={displayStatus} />
       </div>

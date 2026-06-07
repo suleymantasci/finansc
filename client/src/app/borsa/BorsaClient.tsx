@@ -169,8 +169,9 @@ export function BorsaClient() {
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
       <div className="flex items-start justify-between gap-4 mb-6">
         <SectionIntro
+          as="page"
           title="Borsa İstanbul"
-          description="Borsa İstanbul canlı endeks ve hisse verileri"
+          description="Borsa İstanbul canlı endeks ve hisse verileri. XU100, XU030 ve diğer BIST endeksleri, yükselen/düşen hisseler, hacim sıralaması."
         />
         <MarketStatus status={status} />
       </div>

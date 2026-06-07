@@ -11,21 +11,9 @@ export const metadata: Metadata = {
 
 export default function DovizPage() {
   return (
-    <>
-      {/* Server-rendered H1 (Pit 11 fix). Suspense dışında → BAILOUT engellendi. */}
-      <section className="mx-auto max-w-7xl px-4 pt-6 lg:px-8">
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-          Döviz Kurları — Anlık Serbest Piyasa ve Merkez Bankası
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-3xl">
-          Dolar, euro, sterlin, İsviçre frangı, Japon yeni, Çin yuanı ve Rus rublesi başta olmak
-          üzere tüm majör döviz kurlarını canlı takip edin. Her parite için detaylı grafik ve
-          Merkez Bankası kuru karşılaştırması.
-        </p>
-      </section>
-      <Suspense>
-        <DovizClient />
-      </Suspense>
-    </>
+    // H1/description DovizClient içindeki SectionIntro (as="page") tarafından render ediliyor (Pit 11 fix).
+    <Suspense>
+      <DovizClient />
+    </Suspense>
   );
 }

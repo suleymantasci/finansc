@@ -8,6 +8,7 @@ export interface StockMeta {
   sector: string;
   description: string;
   faq?: { q: string; a: string }[];
+  relatedSlugs?: string[]; // fallback generator için (opsiyonel)
 }
 
 export const STOCK_META: Record<string, StockMeta> = {

@@ -115,8 +115,9 @@ export function HisselerClient() {
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
       <div className="flex items-start justify-between gap-4">
         <SectionIntro
+          as="page"
           title="Hisse Senetleri"
-          description="Tüm BIST hisselerini anlık takip edin"
+          description="Tüm BIST hisselerini anlık takip edin. Sembol, fiyat, değişim, hacim ve ciro bilgileri canlı olarak güncellenir."
         />
         <MarketStatus status={status} />
       </div>

@@ -76,8 +76,9 @@ export function BlogListClient() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
       <SectionIntro
-        title="Bilgi Merkezi"
-        description="Piyasa analizleri, finansal rehberler ve güncel yorumlar"
+        as="page"
+        title="Finans Bilgi Merkezi"
+        description="Piyasa analizleri, finansal rehberler ve güncel yorumlar. Borsa, altın, döviz, kredi ve yatırım konularında editör ekibimizin hazırladığı içerikler."
       />
 
       {/* Category Filter */}

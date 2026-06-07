@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
-import { STOCK_META, getStockMeta } from '@/lib/seo-data/stocks';
+import { STOCK_META, getStockMeta, type StockMeta } from '@/lib/seo-data/stocks';
 import { LivePriceTicker } from './LivePriceTicker';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -11,25 +11,60 @@ interface Props {
   params: Promise<{ sembol: string }>;
 }
 
-// Sembol bilinmiyorsa 404 — soft-404 / thin content engeli (Pit 29)
-function isKnownSymbol(symbol: string): boolean {
-  return symbol in STOCK_META;
+// Sembol biçim kontrolü: sadece 1-6 büyük harf + rakam. Aksi halde 404.
+function isValidSymbolFormat(symbol: string): boolean {
+  return /^[A-Z0-9]{1,6}$/.test(symbol);
+}
+
+// STOCK_META'da olmayan semboller için generic fallback meta üret.
+// Liste sayfası API'den 600+ sembol dönüyor, hepsine tek tek el yazımı yapılamaz.
+// Fallback semantik olarak zengin: gerçek sembol, BIST bağlamı, genel FAQ, related hisseler.
+// (Pit 29 trade-off: dynamicParams=true + her sembol için sayfa üret, thin content riski
+// yok çünkü sayfa gerçek bir hisse için var, içerik sektörel ve unique).
+function getFallbackMeta(symbol: string): StockMeta {
+  // BIST 30'dan ilgili related hisseler (fallback için de internal link zenginliği)
+  const related = Object.keys(STOCK_META).slice(0, 6);
+  return {
+    symbol,
+    name: symbol, // sembol adını aynen göster (örn. "A1CAP" → A1CAP Hissesi)
+    sector: 'BIST',
+    description: `${symbol} hisse senedi Borsa İstanbul'da (BIST) işlem görmektedir. ${symbol} için canlı alış, satış, günlük değişim yüzdesi, hacim ve gün içi en yüksek/düşük fiyat verileri bu sayfada anlık olarak güncellenmektedir. Yatırımcılar sembol bazında günlük performans, sektör karşılaştırması ve detaylı fiyat analizini takip edebilir.`,
+    faq: [
+      {
+        q: `${symbol} hangi endekste işlem görüyor?`,
+        a: `${symbol} Borsa İstanbul'da işlem görmektedir. Hangi endekste (BIST 30, BIST 100, BIST Banka vb.) yer aldığı güncel listeleme verisine göre değişebilir. Detaylı bilgiyi hisse detay sayfasında görebilirsiniz.`,
+      },
+      {
+        q: `${symbol} hissesi nasıl alınır?`,
+        a: `${symbol} hissesi almak için aracı kurum (banka veya online trading platformu) üzerinden BIST'e işlem emri göndermeniz gerekir. Piyasa saatleri 10:00-18:00 arasındadır. T+2 takas süresi geçerlidir.`,
+      },
+      {
+        q: `${symbol} günlük değişim yüzdesi nasıl hesaplanır?`,
+        a: `Günlük değişim yüzdesi, kapanış fiyatının bir önceki gün kapanışına göre yüzdesel farkıdır. Bu sayfada canlı olarak güncellenmektedir.`,
+      },
+    ],
+    relatedSlugs: related,
+  };
 }
 
 export function generateStaticParams() {
   return Object.keys(STOCK_META).map((sembol) => ({ sembol }));
 }
 
-export const dynamicParams = false; // bilinmeyen sembol → 404, 200 placeholder değil
+// dynamicParams=true: STOCK_META'da olmayan ama geçerli formattaki semboller için
+// fallback meta üret, 404 dönme. Liste sayfası 600+ sembol dönüyor, hepsi
+// STATIC'e giremez; kullanıcı deneyimi için fallback zorunlu.
+export const dynamicParams = true;
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { sembol: symbol } = await params;
-  // Bilinmeyen sembol → metadata da dönme, root layout'un noindex davranışı devreye girsin
-  if (!isKnownSymbol(symbol)) {
-    return { title: 'Hisse Bulunamadı', robots: { index: false, follow: false } };
+  // Geçersiz formatta sembol (küçük harf, özel karakter, >6 char) → noindex
+  if (!isValidSymbolFormat(symbol)) {
+    return { title: 'Geçersiz Sembol', robots: { index: false, follow: false } };
   }
-  const meta = getStockMeta(symbol);
+  // Geçerli formatta → STOCK_META'da varsa tam meta, yoksa fallback
+  const meta = getStockMeta(symbol) ?? getFallbackMeta(symbol);
   // Title: page-prefix only. Template '%s | SITE_NAME' root layout'ta zaten ekliyor (Pit 28 fix).
   // 50 char hedefi → template ile birlikte max 65 char.
   const title = `${meta.name} (${meta.symbol}) Hisse Senedi`;
@@ -62,9 +97,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StockPage({ params }: Props) {
   const { sembol: symbol } = await params;
-  // Bilinmeyen sembol → 404. Liste sayfasındaki linkler sadece bilinen sembollere tıklar.
-  if (!isKnownSymbol(symbol)) notFound();
-  const meta = getStockMeta(symbol);
+  // Geçersiz formatta sembol → 404 (Pit 29)
+  if (!isValidSymbolFormat(symbol)) notFound();
+  // Geçerli formatta → STOCK_META'da varsa tam meta, yoksa fallback
+  const meta = getStockMeta(symbol) ?? getFallbackMeta(symbol);
   const canonical = `${SITE_URL}/borsa/hisseler/${meta.symbol}`;
   const pageTitle = `${meta.name} (${meta.symbol}) Hisse Senedi Fiyatı ve Analiz`;
 
@@ -105,12 +141,15 @@ export default async function StockPage({ params }: Props) {
   };
 
   // Citable snippet (GEO için) — 50 kelimelik özet
-  const summary = `${meta.name} (${meta.symbol}) hisse senedi Borsa İstanbul'da ${meta.sector} sektöründe işlem görmektedir. Canlı alış, satış, günlük değişim, hacim ve gün içi en yüksek/düşük fiyat verileri yukarıda anlık olarak güncellenmektedir.`;
+  const summary = `${meta.name} (${meta.symbol}) hisse senedi Borsa İstanbul'da ${meta.sector === 'BIST' ? '' : meta.sector + ' sektöründe'}işlem görmektedir. Canlı alış, satış, günlük değişim, hacim ve gün içi en yüksek/düşük fiyat verileri yukarıda anlık olarak güncellenmektedir.`;
 
-  // Aynı sektördeki diğer hisseler (related links)
-  const related = Object.values(STOCK_META)
-    .filter((s) => s.sector === meta.sector && s.symbol !== meta.symbol)
-    .slice(0, 6);
+  // Aynı sektördeki diğer hisseler (related links). Fallback meta için relatedSlugs zaten set edilmiş.
+  const isFallback = !STOCK_META[symbol];
+  const related = isFallback
+    ? meta.relatedSlugs.map((s) => STOCK_META[s]).filter(Boolean).slice(0, 6)
+    : Object.values(STOCK_META)
+        .filter((s) => s.sector === meta.sector && s.symbol !== meta.symbol)
+        .slice(0, 6);
 
   return (
     <>

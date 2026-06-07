@@ -8,15 +8,32 @@ interface SectionIntroProps {
   ctaLabel?: string;
   ctaHref?: string;
   className?: string;
+  /**
+   * "page" (default) → server-side H1, used on listing pages as the primary SEO heading.
+   * "section" → H2, used as a sub-section heading inside a page.
+   */
+  as?: 'page' | 'section';
 }
 
-function SectionIntro({ title, description, ctaLabel, ctaHref, className }: SectionIntroProps) {
+function SectionIntro({ title, description, ctaLabel, ctaHref, className, as = 'page' }: SectionIntroProps) {
+  const headingClass = cn(
+    'font-bold tracking-tight',
+    as === 'page'
+      ? 'text-2xl lg:text-3xl'
+      : 'text-2xl lg:text-3xl',
+  );
+  const descClass = cn(
+    'mt-1 text-muted-foreground',
+    as === 'page' ? 'text-sm max-w-3xl' : 'text-base lg:text-lg',
+  );
+  const HeadingTag = as === 'page' ? 'h1' : 'h2';
+
   return (
     <div className={cn('mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between', className)}>
-      <div className="max-w-2xl">
-        <h2 className="text-2xl font-bold tracking-tight lg:text-3xl">{title}</h2>
+      <div className={as === 'page' ? 'flex-1' : 'max-w-2xl'}>
+        <HeadingTag className={headingClass}>{title}</HeadingTag>
         {description && (
-          <p className="mt-1 text-base text-muted-foreground lg:text-lg">
+          <p className={descClass}>
             {description}
           </p>
         )}

@@ -63,8 +63,9 @@ export function AltinClient() {
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
       <div className="flex items-start justify-between gap-4">
         <SectionIntro
+          as="page"
           title="Altın Fiyatları"
-          description="Türkiye'deki tüm altın fiyatlarını anlık olarak karşılaştırın"
+          description="Türkiye'deki tüm altın fiyatlarını anlık olarak karşılaştırın. Gram, çeyrek, yarım, tam, cumhuriyet, ata, ons altın ve gümüş için canlı fiyat, günlük değişim ve detaylı sayfa."
         />
         <MarketStatus status={displayStatus} />
       </div>
