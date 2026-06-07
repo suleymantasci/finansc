@@ -157,7 +157,7 @@ export default async function StockPage({ params }: Props) {
   };
 
   // Citable snippet (GEO için) — 50 kelimelik özet
-  const summary = `${meta.name} (${meta.symbol}) hisse senedi Borsa İstanbul'da ${meta.sector === 'BIST' ? '' : meta.sector + ' sektöründe'}işlem görmektedir. Canlı alış, satış, günlük değişim, hacim ve gün içi en yüksek/düşük fiyat verileri yukarıda anlık olarak güncellenmektedir.`;
+  const summary = `${meta.name} (${meta.symbol}) hisse senedi Borsa İstanbul'da ${meta.sector === 'BIST' ? '' : meta.sector + ' sektöründe '}işlem görmektedir. Canlı alış, satış, günlük değişim, hacim ve gün içi en yüksek/düşük fiyat verileri yukarıda anlık olarak güncellenmektedir.`;
 
   // Aynı sektördeki diğer hisseler (related links). Fallback meta için relatedSlugs zaten set edilmiş;
   // yine de ?? [] ile TS strict mode uyumu (StockMeta.relatedSlugs opsiyonel).
