@@ -79,7 +79,7 @@ export default function Home() {
               <h3 className="font-semibold text-foreground mb-2">Borsa İstanbul</h3>
               <ul className="space-y-1">
                 <li><Link href="/borsa" className="hover:text-primary">BIST anlık veriler</Link></li>
-                <li><Link href="/borsa/hisseler" className="hover:text-primary">Hisse senetleri</Link></li>
+                <li><Link href="/borsa?tab=hisseler" className="hover:text-primary">Hisse senetleri</Link></li>
                 <li><Link href="/borsa?tab=endeksler" className="hover:text-primary">Borsa endeksleri</Link></li>
                 <li><Link href="/borsa/hisseler/THYAO" className="hover:text-primary">THYAO hissesi</Link></li>
                 <li><Link href="/borsa/hisseler/GARAN" className="hover:text-primary">Garanti BBVA</Link></li>

@@ -14,7 +14,7 @@ import { SkeletonTable } from '@/components/ui/Skeleton';
 import { formatDecimal, formatInteger, formatTL } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
-type MainTab = 'hisse' | 'endeksler';
+type MainTab = 'hisseler' | 'endeksler';
 type SortTab = 'yukselenler' | 'dusenler' | 'hacim';
 type IndexFilter = 'tumu' | 'BIST30' | 'BIST50' | 'BIST100';
 type SortDir = 'asc' | 'desc';
@@ -37,7 +37,7 @@ export function BorsaClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const mainTab = (searchParams.get('tab') as MainTab) || 'hisse';
+  const mainTab = (searchParams.get('tab') as MainTab) || 'hisseler';
   const [sortTab, setSortTab] = useState<SortTab | null>(null);
   const [indexFilter, setIndexFilter] = useState<IndexFilter>('tumu');
   const [search, setSearch] = useState('');
@@ -46,7 +46,7 @@ export function BorsaClient() {
 
   const setMainTab = useCallback((tab: MainTab) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (tab === 'hisse') {
+    if (tab === 'hisseler') {
       params.delete('tab');
     } else {
       params.set('tab', tab);
@@ -55,7 +55,7 @@ export function BorsaClient() {
   }, [router, searchParams]);
 
   const mainTabs: { key: MainTab; label: string }[] = [
-    { key: 'hisse', label: 'Hisseler' },
+    { key: 'hisseler', label: 'Hisseler' },
     { key: 'endeksler', label: 'Endeksler' },
   ];
 
@@ -196,7 +196,7 @@ export function BorsaClient() {
         </nav>
       </div>
 
-      {mainTab === 'hisse' ? (
+      {mainTab === 'hisseler' ? (
         <>
           {/* Filters row — index filters left, sort tabs right */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">

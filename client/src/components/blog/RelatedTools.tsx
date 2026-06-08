@@ -29,7 +29,7 @@ const TOOLS_BY_CATEGORY: Record<string, Tool[]> = {
     { title: 'Bileşik Faiz Hesaplama', description: 'Uzun vadeli birikim gücü', href: '/araclar/bilesik-buyume', icon: '🧮' },
   ],
   borsa: [
-    { title: 'BIST 100 Anlık', description: 'Endeks ve hisse verileri', href: '/borsa/hisseler', icon: '📊' },
+    { title: 'BIST 100 Anlık', description: 'Endeks ve hisse verileri', href: '/borsa?tab=hisseler', icon: '📊' },
     { title: 'Net Bugünkü Değer', description: 'Hisse değerleme NPV', href: '/araclar/net-bugunku-deger', icon: '💹' },
     { title: 'İç Verim Oranı (IRR)', description: 'Yatırım getiri analizi', href: '/araclar/ic-verim-orani', icon: '📈' },
   ],

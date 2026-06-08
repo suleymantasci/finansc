@@ -98,7 +98,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: BASE_URL, lastModified: new Date(), changeFrequency: 'hourly', priority: 1 },
     { url: `${BASE_URL}/altin`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
     { url: `${BASE_URL}/borsa`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
-    { url: `${BASE_URL}/borsa/hisseler`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.8 },
+    // /borsa?tab=hisseler ve /borsa?tab=endeksler aynı sayfada query ile
+    // değişiyor; canonical /borsa, tab query canonical'ı bozmaz (Google
+    // canonical'a query eklenmiş URL'leri de tanır). Bu yüzden ayrı
+    // sitemap entry gerekmiyor. /borsa/hisseler ve /borsa/endeksler
+    // listing URL'leri 308 redirect olduğu için sitemap'te YER ALMAZ
+    // (redirect'lenen URL'leri Google çıkarsın diye sitemap dışı tutarız).
     { url: `${BASE_URL}/doviz`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
     { url: `${BASE_URL}/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${BASE_URL}/araclar`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },

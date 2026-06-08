@@ -17,7 +17,7 @@ export const FOOTER_LINKS = {
     { label: 'Altın Fiyatları', href: '/altin' },
     { label: 'Döviz Kurları', href: '/doviz' },
     { label: 'Borsa', href: '/borsa' },
-    { label: 'Hisse Senetleri', href: '/borsa/hisseler' },
+    { label: 'Hisse Senetleri', href: '/borsa?tab=hisseler' },
   ],
   araclar: [
     { label: 'Kredi Hesaplama', href: '/araclar/ihtiyac-kredisi' },

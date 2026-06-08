@@ -26,7 +26,7 @@ export function BorsaOzetSection() {
         title="Borsa İstanbul"
         description="Borsa İstanbul'dan anlık veriler"
         ctaLabel="Tüm hisseleri gör"
-        ctaHref="/borsa/hisseler"
+        ctaHref="/borsa?tab=hisseler"
       />
 
       {stocksLoading ? (
