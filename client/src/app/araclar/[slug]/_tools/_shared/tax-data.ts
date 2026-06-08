@@ -153,9 +153,9 @@ export const maasFormSchema = z.object({
   childCount: z.coerce.number().int().min(0).max(10),
   disability: z.enum(['yok', 'birinci', 'ikinci', 'ucuncu']),
   /** Kümülatif gelir vergisi matrahı (yıl başından beri) */
-  cumulativeMatrah: z.coerce.number().min(0).default(0),
+  cumulativeMatrah: z.coerce.number().min(0),
   /** İşveren maliyetini göster */
-  showEmployerCost: z.boolean().default(false),
+  showEmployerCost: z.boolean(),
 });
 
 export type MaasFormData = z.infer<typeof maasFormSchema>;

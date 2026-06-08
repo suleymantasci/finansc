@@ -224,31 +224,21 @@ export function MaasHesaplama() {
           </div>
 
           {/* Grafik */}
-          <MaasChart result={result} showEmployer={watch('showEmployerCost')} />
+          <MaasChart result={result} showEmployer={watch('showEmployerCost') ?? false} />
 
           {/* Detay Tablosu */}
           <MaasResultTable lines={result.lines} />
 
           {/* PDF İndir + Hata Bildir */}
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Button type="button" onClick={handlePdfDownload} variant="default">
+            <Button type="button" onClick={handlePdfDownload} variant="primary">
               <Download className="mr-2 h-4 w-4" />
               PDF İndir
             </Button>
             <ReportErrorButton
-              toolName="Maaş Hesaplama"
-              details={{
-                year: watchedYear,
-                direction: watchedDirection,
-                amount: watchedAmount,
-                employeeType: watch('employeeType'),
-                result: {
-                  gross: result.gross,
-                  net: result.net,
-                  totalDeduction: result.totalDeduction,
-                  lines: result.lines,
-                },
-              }}
+              type="tool"
+              slug="maas-hesaplama"
+              pageTitle="Maaş Hesaplama"
             />
           </div>
         </div>
@@ -420,7 +410,7 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
               a: "AGİ, çalışanın medeni durumu ve çocuk sayısına göre yıllık olarak belirlenen ve aylık gelir vergisinden düşülen tutardır. Bekâr çalışan için en düşük, evli ve 4+ çocuklu çalışan için en yüksek tutardadır. Engellilik derecesine göre ayrıca indirim uygulanır.",
             },
             {
-              q: 'İşveren maliyeti neleri kapsar?",
+              q: 'İşveren maliyeti neleri kapsar?',
               a: 'İşveren maliyeti, brüt maaş + SGK primi işveren payı (%15.5 veya %20.5 teşvik kapsamı) + işsizlik sigortası işveren payı (%2) toplamından oluşur. Bir çalışanın toplam maliyeti genellikle brüt maaşın %117-122’si kadardır.',
             },
             {
