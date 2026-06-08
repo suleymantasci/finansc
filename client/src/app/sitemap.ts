@@ -35,7 +35,7 @@ const FALLBACK_TOOL_SLUGS = [
   'altin-hesaplama','doviz-hesaplama','faiz-hesaplama','vadeli-mevduat','bono-hesaplama',
   'tahvil-hesaplama','repo-hesaplama','eurobond-hesaplama','birikim-hesaplama',
   'enflasyon-hesaplama','bilesik-buyume','reel-getiri','kira-artis-orani',
-  'parasal-deger','net-bugunku-deger','ic-verim-orani','ic-dis-iskonto',
+  'parasal-deger','net-bugunku-deger','ic-verim-orani','ic-dis-iskonto','maas-hesaplama',
   'ortalama-vade','vadeli-islem-fiyati','sermaye-temettu','gecmis-altin-fiyatlari',
   'gecmis-doviz-kurlari','iban-dogrulama',
 ];

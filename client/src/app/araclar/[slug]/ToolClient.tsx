@@ -50,6 +50,7 @@ import { SermayeTemettu } from './_tools/SermayeTemettu';
 import { TahvilHesaplama } from './_tools/TahvilHesaplama';
 import { VadeliIslemFiyati } from './_tools/VadeliIslemFiyati';
 import { VadeliMevduat } from './_tools/VadeliMevduat';
+import { MaasHesaplama } from './_tools/MaasHesaplama';
 
 interface Props {
   slug: string;
@@ -101,6 +102,7 @@ const TOOL_MAP: Record<string, React.FC> = {
   'tahvil-hesaplama': TahvilHesaplama,
   'vadeli-islem-fiyati': VadeliIslemFiyati,
   'vadeli-mevduat': VadeliMevduat,
+  'maas-hesaplama': MaasHesaplama,
 };
 
 export function ToolClient({ slug, title }: Props) {

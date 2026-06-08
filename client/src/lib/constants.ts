@@ -21,6 +21,7 @@ export const FOOTER_LINKS = {
   ],
   araclar: [
     { label: 'Kredi Hesaplama', href: '/araclar/ihtiyac-kredisi' },
+    { label: 'Maaş Hesaplama', href: '/araclar/maas-hesaplama' },
     { label: 'Vadeli Mevduat', href: '/araclar/vadeli-mevduat' },
     { label: 'Reel Getiri', href: '/araclar/reel-getiri' },
     { label: 'Paranın Değeri', href: '/araclar/parasal-deger' },

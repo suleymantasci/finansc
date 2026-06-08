@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Calculator, PiggyBank, TrendingDown, Banknote } from 'lucide-react';
+import { Calculator, PiggyBank, TrendingDown, Banknote, Wallet } from 'lucide-react';
 import { SectionIntro } from '@/components/shared/SectionIntro';
 
 const TOOLS = [
+  { slug: 'maas-hesaplama', title: 'Maaş Hesaplama', desc: 'Brütten nete, SGK, gelir vergisi, AGİ 2025', icon: Wallet },
   { slug: 'ihtiyac-kredisi', title: 'Kredi Hesaplama', desc: 'Aylık taksit ve toplam maliyeti hesaplayın', icon: Calculator },
   { slug: 'vadeli-mevduat', title: 'Vadeli Mevduat', desc: 'Net ve brüt mevduat getirinizi hesaplayın', icon: PiggyBank },
   { slug: 'reel-getiri', title: 'Reel Getiri', desc: 'Enflasyondan arındırılmış gerçek kazancınız', icon: TrendingDown },
-  { slug: 'parasal-deger', title: 'Paranın Değeri', desc: 'Paranızın bugünkü alım gücünü öğrenin', icon: Banknote },
 ];
 
 export function AraclarSection() {
