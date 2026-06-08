@@ -1,0 +1,27 @@
+# Root .dockerignore — Docker build context is now the monorepo root
+.git
+.github
+docs
+node_modules
+.next
+dist
+.turbo
+coverage
+.vscode
+.idea
+
+# Environment files (secrets)
+.env
+.env.*
+!.env.example
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# Docs & prompts
+*.md
+!client/README.md
+!backend/README.md
+hermes-blog-prompt.md

@@ -1,15 +1,12 @@
-// ── Türkiye Maaş Hesaplama Mevzuat Verileri (2024-2025) ──
+// ── Türkiye Maaş Hesaplama Mevzuat Verileri (2024-2026) ──
 //
 // Kaynak: Gelir İdaresi Başkanlığı (GİB), Sosyal Güvenlik Kurumu (SGK),
-// Resmi Gazete. 2026 yılı değerleri Aralık 2025/Ocak 2026'da
-// Resmi Gazete ile açıklanır; yeni yıl eklendiğinde bu dosyaya
+// Resmi Gazete. Yeni yıl eklendiğinde bu dosyaya
 // TAX_DATA[<yıl>] entry'si eklemek yeterli — hesaplama motoru yıl
 // parametresi ile otomatik doğru oranları seçer.
 //
-// 2025 değerleri 1 Ocak 2025 itibarıyla geçerli. Asgari ücret istisnası
-// 2022'den beri uygulanıyor (Türkiye Yüzyılı paketi), AGİ dahil değil.
-// 4/a (SSK) ücretli çalışan için hesaplama yapılır; 4/b (Bağ-Kur) ve
-// 4/c (Memur) için farklı oranlar/istisnalar ayrıca modelledi.
+// NOT: AGİ (Asgari Geçim İndirimi) 2022 yılından itibaren kaldırılmıştır.
+// Yerine asgari ücret istisnası uygulanmaktadır.
 //
 // Tüm tutarlar aylık TL cinsindendir. Oranlar ondalık (0.14) formattadır.
 
@@ -26,8 +23,6 @@ export type EmployeeType =
   | '4a-ev-hizmet-10'   // 4/a Ev Hizmetleri 10 gün
   | '4a-ev-hizmet-30';  // 4/a Ev Hizmetleri 30 gün
 
-export type MaritalStatus = 'bekar' | 'evli-es-calismiyor' | 'evli-es-calisiyor';
-
 export type DisabilityDegree = 'yok' | 'birinci' | 'ikinci' | 'ucuncu';
 
 export interface TaxBracket {
@@ -35,11 +30,6 @@ export interface TaxBracket {
   limit: number;
   /** Bu dilimde uygulanan oran (0.15 = %15) */
   rate: number;
-}
-
-export interface AgiRow {
-  /** Yıllık AGİ (TL/yıl) — Gelir İdaresi'nin yayımladığı tam yıllık tutar */
-  annual: number;
 }
 
 export interface TaxDataYear {
@@ -60,8 +50,6 @@ export interface TaxDataYear {
   stampTax: number;
   /** Gelir vergisi dilimleri (ücretli, kümülatif matrah) */
   incomeTaxBrackets: TaxBracket[];
-  /** AGİ tablosu (16 kombinasyon: medeni durum × çocuk sayısı) */
-  agiTable: Record<MaritalStatus, Record<0 | 1 | 2 | 3 | 4, AgiRow>>;
   /** Engellilik indirimi (yıllık, TL) */
   disabilityDeduction: Record<DisabilityDegree, number>;
   /** SGK tavan (aylık üst sınır TL) — brüt asgari ücretin 7.5 katı */
@@ -72,28 +60,22 @@ export interface TaxDataYear {
 
 // ── 2024 Verileri ─────────────────────────────────────────────────
 
-const agi2024Table: Record<MaritalStatus, Record<0 | 1 | 2 | 3 | 4, AgiRow>> = {
-  'bekar':                  { 0: { annual: 13250.40 }, 1: { annual: 18929.28 }, 2: { annual: 22608.12 }, 3: { annual: 25530.48 }, 4: { annual: 25530.48 } },
-  'evli-es-calismiyor':     { 0: { annual: 18929.28 }, 1: { annual: 22608.12 }, 2: { annual: 25530.48 }, 3: { annual: 28452.84 }, 4: { annual: 28452.84 } },
-  'evli-es-calisiyor':      { 0: { annual: 15143.04 }, 1: { annual: 18929.28 }, 2: { annual: 22608.12 }, 3: { annual: 25530.48 }, 4: { annual: 25530.48 } },
-};
-
 const taxData2024: TaxDataYear = {
   year: 2024,
   minWageBrut: 20002.50,
   minWageNet: 17002.12,
   sgkEmployee: 0.14,
-  sgkEmployer: 0.155,
+  sgkEmployer: 0.205,
   unemploymentEmployee: 0.01,
   unemploymentEmployer: 0.02,
   stampTax: 0.00759, // ‰7.59
   incomeTaxBrackets: [
-    { limit: 0,         rate: 0.15 },
-    { limit: 110000,    rate: 0.20 },
-    { limit: 230000,    rate: 0.27 },
-    { limit: 580000,    rate: 0.35 },
+    { limit: 0,          rate: 0.15 },
+    { limit: 110000,     rate: 0.20 },
+    { limit: 230000,     rate: 0.27 },
+    { limit: 870000,     rate: 0.35 },
+    { limit: 3000000,    rate: 0.40 },
   ],
-  agiTable: agi2024Table,
   disabilityDeduction: { yok: 0, birinci: 69000, ikinci: 40000, ucuncu: 17000 },
   sgkCeilingMultiplier: 7.5,
   minimumWageExemption: true,
@@ -101,29 +83,46 @@ const taxData2024: TaxDataYear = {
 
 // ── 2025 Verileri (1 Ocak 2025 itibarıyla) ─────────────────────────
 
-const agi2025Table: Record<MaritalStatus, Record<0 | 1 | 2 | 3 | 4, AgiRow>> = {
-  'bekar':                  { 0: { annual: 16563.00 }, 1: { annual: 23661.60 }, 2: { annual: 28260.12 }, 3: { annual: 31913.16 }, 4: { annual: 31913.16 } },
-  'evli-es-calismiyor':     { 0: { annual: 23661.60 }, 1: { annual: 28260.12 }, 2: { annual: 31913.16 }, 3: { annual: 35566.20 }, 4: { annual: 35566.20 } },
-  'evli-es-calisiyor':      { 0: { annual: 18929.28 }, 1: { annual: 23661.60 }, 2: { annual: 28260.12 }, 3: { annual: 31913.16 }, 4: { annual: 31913.16 } },
-};
-
 const taxData2025: TaxDataYear = {
   year: 2025,
   minWageBrut: 26005.50,
   minWageNet: 22104.67,
   sgkEmployee: 0.14,
-  sgkEmployer: 0.155,
+  sgkEmployer: 0.205,
   unemploymentEmployee: 0.01,
   unemploymentEmployer: 0.02,
   stampTax: 0.00759, // ‰7.59
   incomeTaxBrackets: [
-    { limit: 0,         rate: 0.15 },
-    { limit: 158000,    rate: 0.20 },
-    { limit: 330000,    rate: 0.27 },
-    { limit: 800000,    rate: 0.35 },
+    { limit: 0,          rate: 0.15 },
+    { limit: 158000,     rate: 0.20 },
+    { limit: 330000,     rate: 0.27 },
+    { limit: 1200000,    rate: 0.35 },
+    { limit: 4300000,    rate: 0.40 },
   ],
-  agiTable: agi2025Table,
   disabilityDeduction: { yok: 0, birinci: 91000, ikinci: 53000, ucuncu: 22000 },
+  sgkCeilingMultiplier: 7.5,
+  minimumWageExemption: true,
+};
+
+// ── 2026 Verileri (1 Ocak 2026 itibarıyla) ─────────────────────
+
+const taxData2026: TaxDataYear = {
+  year: 2026,
+  minWageBrut: 33030.00,
+  minWageNet: 28075.50,
+  sgkEmployee: 0.14,
+  sgkEmployer: 0.205,
+  unemploymentEmployee: 0.01,
+  unemploymentEmployer: 0.02,
+  stampTax: 0.00759,
+  incomeTaxBrackets: [
+    { limit: 0,          rate: 0.15 },
+    { limit: 190000,     rate: 0.20 },
+    { limit: 400000,     rate: 0.27 },
+    { limit: 1500000,    rate: 0.35 },
+    { limit: 5300000,    rate: 0.40 },
+  ],
+  disabilityDeduction: { yok: 0, birinci: 120000, ikinci: 70000, ucuncu: 29000 },
   sgkCeilingMultiplier: 7.5,
   minimumWageExemption: true,
 };
@@ -133,6 +132,7 @@ const taxData2025: TaxDataYear = {
 export const TAX_DATA: Record<number, TaxDataYear> = {
   2024: taxData2024,
   2025: taxData2025,
+  2026: taxData2026,
 };
 
 export const AVAILABLE_YEARS: number[] = Object.keys(TAX_DATA).map(Number).sort();
@@ -149,11 +149,11 @@ export const maasFormSchema = z.object({
   direction: z.enum(['brutten-nete', 'netten-brute']),
   employeeType: z.enum(['4a-ucretli', '4a-emekli', '4b-esnaf', '4c-memur', '4a-stajyer', '4a-ev-hizmet-10', '4a-ev-hizmet-30']),
   amount: z.coerce.number().min(1, 'Maaş tutarı giriniz'),
-  maritalStatus: z.enum(['bekar', 'evli-es-calismiyor', 'evli-es-calisiyor']),
-  childCount: z.coerce.number().int().min(0).max(10),
   disability: z.enum(['yok', 'birinci', 'ikinci', 'ucuncu']),
   /** Kümülatif gelir vergisi matrahı (yıl başından beri) */
   cumulativeMatrah: z.coerce.number().min(0),
+  /** Asgari ücret istisnasi kümülatif matrahı */
+  minWageCumulativeMatrah: z.coerce.number().min(0),
   /** İşveren maliyetini göster */
   showEmployerCost: z.boolean(),
 });
@@ -172,23 +172,9 @@ export const EMPLOYEE_TYPE_LABELS: Record<EmployeeType, string> = {
   '4a-ev-hizmet-30':'4/a Ev Hizmetleri (30 gün üzeri)',
 };
 
-export const MARITAL_STATUS_LABELS: Record<MaritalStatus, string> = {
-  'bekar':              'Bekâr',
-  'evli-es-calismiyor': 'Evli (eş çalışmıyor)',
-  'evli-es-calisiyor':  'Evli (eş çalışıyor)',
-};
-
 export const DISABILITY_LABELS: Record<DisabilityDegree, string> = {
   yok: 'Yok',
   birinci: '1. derece (tam)',
   ikinci: '2. derece (kısmi)',
   ucuncu: '3. derece',
 };
-
-// ── AGİ aylık tutar (yardımcı) ───────────────────────────────────
-
-export function getAgiMonthly(year: number, m: MaritalStatus, children: number): number {
-  const td = getTaxData(year);
-  const c = Math.min(4, Math.max(0, children)) as 0 | 1 | 2 | 3 | 4;
-  return td.agiTable[m][c].annual / 12;
-}

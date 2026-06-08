@@ -49,7 +49,7 @@ const TOOL_META: Record<string, { title: string; desc: string }> = {
   'tahvil-hesaplama': { title: 'Tahvil Hesaplama', desc: 'Devlet tahvili kupon ve vadeye kadar getiri (YTM) hesaplaması. Kupon oranı ve piyasa fiyatına göre yıllık getiri.' },
   'vadeli-islem-fiyati': { title: 'Vadeli İşlem Fiyatı', desc: 'Vadeli işlem teorik fiyat hesaplaması. Dayanak varlık spot fiyatı, vade ve faiz oranına göre vadeli işlem teorik fiyatı.' },
   'vadeli-mevduat': { title: 'Vadeli Mevduat', desc: 'Vadeli mevduat getiri ve stopaj hesaplaması. Anapara, faiz oranı ve vade ile net kazanç tutarını görün.' },
-  'maas-hesaplama': { title: 'Maaş Hesaplama - Brütten Nete 2025 Güncel', desc: 'Brütten nete ve netten brüte maaş hesaplama. 2025 SGK, gelir vergisi dilimleri, damga vergisi, AGİ ve işveren maliyeti dahil. Sonuç PDF indirilebilir.' },
+  'maas-hesaplama': { title: 'Maaş Hesaplama | Brütten Nete ve Netten Brüte', desc: 'Brütten nete ve netten brüte maaş hesaplama aracı. SGK primi, gelir vergisi dilimleri, damga vergisi, asgari ücret istisnası ve işveren maliyeti dahil. Sonuç PDF indirilebilir.' },
 };
 
 interface Props {

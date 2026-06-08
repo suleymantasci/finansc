@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { PROTECTED_ROUTES, AUTH_ROUTES, ADMIN_ROUTES } from '@/lib/constants';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if user has auth token in cookies (set by client-side auth flow)

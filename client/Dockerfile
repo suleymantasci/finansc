@@ -5,10 +5,17 @@ RUN corepack enable && corepack prepare pnpm@11.5.2 --activate
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+# Copy workspace config + package manifests for layer caching
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY client/package.json ./client/
+COPY backend/package.json ./backend/
 
-COPY . .
+RUN pnpm install --frozen-lockfile --filter @finanscozum/client...
+
+# Copy client source only
+COPY client/ ./client/
+
+WORKDIR /app/client
 
 # Ensure public dir exists (even if empty) so COPY won't fail
 RUN mkdir -p public
@@ -36,11 +43,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 WORKDIR /app
 
-# standalone output bundles everything needed
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+# standalone output (outputFileTracingRoot = workspace root)
+# Next.js mirrors the monorepo structure inside .next/standalone/
+COPY --from=builder /app/client/.next/standalone ./
+COPY --from=builder /app/client/.next/static ./client/.next/static
+COPY --from=builder /app/client/public ./client/public
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["node", "client/server.js"]

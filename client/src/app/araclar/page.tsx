@@ -6,13 +6,13 @@ import {
   RefreshCw, Percent, Wallet, Truck, Briefcase, Building,
   TrendingUp, Target, Receipt, Globe, ChartLine, Landmark, History,
   Search, Scissors, GitBranch, HousePlus, LineChart, Scale, Banknote,
-  ShieldCheck, BarChart, Award, BookOpen, Zap, Vault,
+  ShieldCheck, BarChart, Award, BookOpen, Zap, Vault, CircleDollarSign,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Hesaplama Araçları',
   description: 'Kredi, vergi, mevduat, döviz ve daha birçok finansal hesaplama aracı.',
-  keywords: ['kredi hesaplama', 'faiz hesaplama', 'döviz hesaplama', 'altın hesaplama', 'vadeli mevduat'],
+  keywords: ['kredi hesaplama', 'faiz hesaplama', 'döviz hesaplama', 'altın hesaplama', 'vadeli mevduat', 'maaş hesaplama', 'brütten nete'],
   alternates: { canonical: 'https://finanscozum.net/araclar' },
 };
 
@@ -64,6 +64,10 @@ const FINANS_TOOLS = [
   { slug: 'iban-dogrulama', title: 'IBAN Doğrulama', desc: 'IBAN numaranızın geçerliliğini kontrol edin.', icon: ShieldCheck },
 ];
 
+const MAAS_TOOLS = [
+  { slug: 'maas-hesaplama', title: 'Maaş Hesaplama', desc: 'Brütten nete ve netten brüte maaş hesaplama. SGK, gelir vergisi, damga vergisi dahil.', icon: CircleDollarSign },
+];
+
 export default async function AraclarPage() {
   let activeSlugs: Set<string> | null = null;
   try {
@@ -77,6 +81,7 @@ export default async function AraclarPage() {
 
   const krediFiltered = activeSlugs ? KREDI_TOOLS.filter((t) => activeSlugs!.has(t.slug)) : KREDI_TOOLS;
   const finansFiltered = activeSlugs ? FINANS_TOOLS.filter((t) => activeSlugs!.has(t.slug)) : FINANS_TOOLS;
+  const maasFiltered = activeSlugs ? MAAS_TOOLS.filter((t) => activeSlugs!.has(t.slug)) : MAAS_TOOLS;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
@@ -85,23 +90,47 @@ export default async function AraclarPage() {
         Finansal kararlarınızı kolaylaştıran ücretsiz araçlar
       </p>
 
+      {maasFiltered.length > 0 && (
+        <>
+          <h2 className="mt-8 text-lg font-semibold">Maaş & Bordro</h2>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4">
+            {maasFiltered.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Link
+                  key={tool.slug}
+                  href={`/araclar/${tool.slug}`}
+                  className="group flex flex-col rounded-xl border border-border bg-card p-4 sm:p-5 transition-colors hover:border-primary/30 hover:bg-surface-hover"
+                >
+                  <div className="mb-2 sm:mb-3 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-primary/10">
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  </div>
+                  <h3 className="text-sm sm:text-base font-semibold">{tool.title}</h3>
+                  <p className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.desc}</p>
+                </Link>
+              );
+            })}
+          </div>
+        </>
+      )}
+
       {krediFiltered.length > 0 && (
         <>
-          <h2 className="mt-8 text-lg font-semibold">Kredi Hesaplamaları</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <h2 className="mt-10 text-lg font-semibold">Kredi Hesaplamaları</h2>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4">
             {krediFiltered.map((tool) => {
               const Icon = tool.icon;
               return (
                 <Link
                   key={tool.slug}
                   href={`/araclar/${tool.slug}`}
-                  className="group flex flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/30 hover:bg-surface-hover"
+                  className="group flex flex-col rounded-xl border border-border bg-card p-4 sm:p-5 transition-colors hover:border-primary/30 hover:bg-surface-hover"
                 >
-                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10">
-                    <Icon className="h-5 w-5 text-primary" />
+                  <div className="mb-2 sm:mb-3 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-primary/10">
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
-                  <h3 className="text-base font-semibold">{tool.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{tool.desc}</p>
+                  <h3 className="text-sm sm:text-base font-semibold">{tool.title}</h3>
+                  <p className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.desc}</p>
                 </Link>
               );
             })}
@@ -112,20 +141,20 @@ export default async function AraclarPage() {
       {finansFiltered.length > 0 && (
         <>
           <h2 className="mt-10 text-lg font-semibold">Finansal Hesaplamalar</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4">
             {finansFiltered.map((tool) => {
               const Icon = tool.icon;
               return (
                 <Link
                   key={tool.slug}
                   href={`/araclar/${tool.slug}`}
-                  className="group flex flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/30 hover:bg-surface-hover"
+                  className="group flex flex-col rounded-xl border border-border bg-card p-4 sm:p-5 transition-colors hover:border-primary/30 hover:bg-surface-hover"
                 >
-                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10">
-                    <Icon className="h-5 w-5 text-primary" />
+                  <div className="mb-2 sm:mb-3 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-primary/10">
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
-                  <h3 className="text-base font-semibold">{tool.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{tool.desc}</p>
+                  <h3 className="text-sm sm:text-base font-semibold">{tool.title}</h3>
+                  <p className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.desc}</p>
                 </Link>
               );
             })}

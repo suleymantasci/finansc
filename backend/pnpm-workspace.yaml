@@ -1,6 +1,0 @@
-minimumReleaseAge: 0
-
-allowBuilds:
-  '@nestjs/core': true
-  '@scarf/scarf': true
-  bcrypt: true

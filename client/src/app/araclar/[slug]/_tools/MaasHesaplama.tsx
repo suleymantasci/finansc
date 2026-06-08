@@ -1,45 +1,44 @@
 'use client';
 
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Download, TrendingUp, TrendingDown, Calculator, AlertCircle } from 'lucide-react';
+import { Calculator, Clock, Utensils, Percent, Receipt } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { ReportErrorButton } from '@/components/shared/ReportErrorButton';
 import {
   maasFormSchema,
   EMPLOYEE_TYPE_LABELS,
-  MARITAL_STATUS_LABELS,
   DISABILITY_LABELS,
   AVAILABLE_YEARS,
   getTaxData,
-  getAgiMonthly,
   type MaasFormData,
 } from './_shared/tax-data';
-import { bruttenNete, nettenBrute, fmtTL, type MaasResult } from './_shared/maas-engine';
+import { calculateYearlyTable, fmtTL, type YearlyTableResult } from './_shared/maas-engine';
 import { generateMaasPdf } from './_shared/pdfExport';
 import { MaasChart } from './_shared/MaasChart';
-import { MaasResultTable } from './_shared/MaasResultTable';
+import { YearlyMaasTable } from './_shared/YearlyMaasTable';
 
 // ── Default değerler ─────────────────────────────────────────────
 
+const currentMonth = new Date().getMonth(); // 0-indexed
+
 const defaults: MaasFormData = {
   year: AVAILABLE_YEARS[AVAILABLE_YEARS.length - 1],
-  month: new Date().getMonth() + 1,
+  month: currentMonth + 1,
   direction: 'brutten-nete',
   employeeType: '4a-ucretli',
-  amount: 30000,
-  maritalStatus: 'bekar',
-  childCount: 0,
+  amount: 50000,
   disability: 'yok',
   cumulativeMatrah: 0,
+  minWageCumulativeMatrah: 0,
   showEmployerCost: false,
 };
 
 export function MaasHesaplama() {
-  const [result, setResult] = useState<MaasResult | null>(null);
+  const [yearlyResult, setYearlyResult] = useState<YearlyTableResult | null>(null);
+  const [monthlyAmounts, setMonthlyAmounts] = useState<number[]>(Array(12).fill(0));
   const resultRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -54,36 +53,93 @@ export function MaasHesaplama() {
   });
 
   const watchedYear = watch('year');
-  const watchedAmount = watch('amount');
   const watchedDirection = watch('direction');
+  const watchedShowEmployer = watch('showEmployerCost');
   const taxData = useMemo(() => getTaxData(watchedYear), [watchedYear]);
 
+  const runCalculation = useCallback(
+    (form: MaasFormData, amounts: number[]) => {
+      const { month: _m, cumulativeMatrah: _c, ...baseForm } = form;
+      const result = calculateYearlyTable(baseForm, amounts);
+      setYearlyResult(result);
+    },
+    [],
+  );
+
+  // Direction değiştiğinde mevcut verilerle yeniden hesapla
+  useEffect(() => {
+    if (!yearlyResult) return;
+    const hasData = monthlyAmounts.some((a) => a > 0);
+    if (!hasData) return;
+    const formValues = watch();
+    runCalculation(formValues, monthlyAmounts);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedDirection]);
+
   const onSubmit = (data: MaasFormData) => {
-    const r = data.direction === 'brutten-nete' ? bruttenNete(data) : nettenBrute(data);
-    setResult(r);
-    // Mobilde sonuç bölümüne kaydır
+    // Seçilen aydan yıl sonuna kadar girilen maaşı doldur
+    const amounts = Array(12).fill(0);
+    for (let i = data.month - 1; i < 12; i++) {
+      amounts[i] = data.amount;
+    }
+    setMonthlyAmounts(amounts);
+    runCalculation(data, amounts);
+
     setTimeout(() => {
       resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
 
+  const handleMonthAmountChange = useCallback(
+    (monthIndex: number, amount: number) => {
+      setMonthlyAmounts((prev) => {
+        const next = [...prev];
+        next[monthIndex] = amount;
+        return next;
+      });
+      // Yeniden hesapla (bir sonraki render'da)
+      setTimeout(() => {
+        const formValues = watch();
+        const { month: _m, cumulativeMatrah: _c, ...baseForm } = formValues;
+        setMonthlyAmounts((current) => {
+          const result = calculateYearlyTable(baseForm, current);
+          setYearlyResult(result);
+          return current;
+        });
+      }, 0);
+    },
+    [watch],
+  );
+
   const handlePdfDownload = () => {
-    if (!result) return;
+    if (!yearlyResult) return;
     const formValues = watch();
-    generateMaasPdf(result, formValues, taxData);
+    generateMaasPdf(yearlyResult, formValues, taxData);
   };
 
   return (
     <div className="w-full space-y-6">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Brütten nete veya netten brüte maaş hesaplaması yapın. 2024-2025 yılları için güncel SGK primi,
-        işsizlik sigortası, gelir vergisi dilimleri, damga vergisi ve AGİ (Asgari Geçim İndirimi)
-        oranları kullanılır. İşveren maliyetini de dahil edebilir, sonucu PDF olarak indirebilirsiniz.
+        Brütten nete ve netten brüte maaş hesaplama aracı. Güncel SGK primi,
+        işsizlik sigortası, gelir vergisi dilimleri ve damga vergisi oranları ile
+        12 aylık yıllık tablo ve kümülatif vergi matrahı otomatik hesaplanır.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* ── Satır 1: Yıl + Ay + Yön + Çalışan Tipi ── */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {/* ── Yön (radio) ── */}
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" value="brutten-nete" {...register('direction')} className="accent-primary" />
+            <span className="text-sm font-medium">Brütten Nete</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" value="netten-brute" {...register('direction')} className="accent-primary" />
+            <span className="text-sm font-medium">Netten Brüte</span>
+          </label>
+        </div>
+
+        {/* ── Form alanları: Yıl + Ay + Maaş + Çalışma + Engellilik ── */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <Select
             label="Yıl"
             options={AVAILABLE_YEARS.map((y) => ({ value: String(y), label: String(y) }))}
@@ -97,154 +153,133 @@ export function MaasHesaplama() {
             }))}
             {...register('month')}
           />
-          <Select
-            label="Hesaplama Yönü"
-            options={[
-              { value: 'brutten-nete', label: 'Brütten Nete' },
-              { value: 'netten-brute', label: 'Netten Brüte' },
-            ]}
-            {...register('direction')}
+          <Input
+            label={watchedDirection === 'brutten-nete' ? 'Maaş (Brüt ₺)' : 'Maaş (Net ₺)'}
+            type="number"
+            step="0.01"
+            placeholder="Örn. 50000"
+            {...register('amount')}
+            error={errors.amount?.message}
           />
           <Select
-            label="Çalışan Durumu"
+            label="Çalışma durumu"
             options={Object.entries(EMPLOYEE_TYPE_LABELS).map(([v, l]) => ({ value: v, label: l }))}
             {...register('employeeType')}
           />
-        </div>
-
-        {/* ── Satır 2: Maaş + Kümülatif Matrah ── */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Input
-            label={watchedDirection === 'brutten-nete' ? 'Brüt Maaş (₺)' : 'Net Maaş (₺)'}
-            type="number"
-            step="0.01"
-            placeholder={watchedDirection === 'brutten-nete' ? 'Örn. 30000' : 'Örn. 25000'}
-            {...register('amount')}
-            error={errors.amount?.message}
-            hint={
-              watchedYear
-                ? `${watchedYear} brüt asgari ücret: ${fmtTL(taxData.minWageBrut, 0)}`
-                : undefined
-            }
-          />
-          <Input
-            label="Kümülatif Vergi Matrahı (₺, yıl başından beri)"
-            type="number"
-            step="0.01"
-            placeholder="0"
-            {...register('cumulativeMatrah')}
-            error={errors.cumulativeMatrah?.message}
-            hint="Yıl içinde maaş değiştiyse bu ay dahil önceki ayların gelir vergisi matrahı toplamı"
-          />
-        </div>
-
-        {/* ── Satır 3: Medeni Durum + Çocuk + Engellilik ── */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Select
-            label="Medeni Durum"
-            options={Object.entries(MARITAL_STATUS_LABELS).map(([v, l]) => ({ value: v, label: l }))}
-            {...register('maritalStatus')}
-          />
-          <Input
-            label="Çocuk Sayısı"
-            type="number"
-            min="0"
-            max="10"
-            placeholder="0"
-            {...register('childCount')}
-            error={errors.childCount?.message}
-            hint={`AGİ: ${fmtTL(getAgiMonthly(watchedYear, watch('maritalStatus'), Number(watch('childCount')) || 0), 0)}/ay`}
-          />
-          <Select
-            label="Engellilik İndirimi"
+            label="Engellilik durumu"
             options={Object.entries(DISABILITY_LABELS).map(([v, l]) => ({ value: v, label: l }))}
             {...register('disability')}
           />
         </div>
 
-        {/* ── Satır 4: İşveren Maliyeti Toggle ── */}
+        {/* ── İşveren maliyeti toggle ── */}
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             {...register('showEmployerCost')}
             className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary/30"
           />
-          <span className="text-sm font-medium">İşveren maliyetini de göster (SGK + işsizlik işveren payı)</span>
+          <span className="text-sm font-medium">İşveren maliyetini göster</span>
         </label>
 
         {/* ── Submit ── */}
         <div className="flex gap-2">
-          <Button type="submit" className="flex-1">
+          <Button type="submit" className="flex-1 sm:flex-none">
             <Calculator className="mr-2 h-4 w-4" />
-            Hesapla
+            Yeniden Hesapla
           </Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              reset();
+              setYearlyResult(null);
+              setMonthlyAmounts(Array(12).fill(0));
+            }}
+          >
             Sıfırla
           </Button>
         </div>
       </form>
 
       {/* ── Sonuç Bölümü ── */}
-      {result && (
-        <div ref={resultRef} className="space-y-6 pt-4 border-t border-border">
-          {/* Uyarılar */}
-          {result.warnings.length > 0 && (
-            <div className="space-y-2">
-              {result.warnings.map((w, i) => (
-                <div key={i} className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/20 p-3 text-sm text-amber-900 dark:text-amber-200">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <p>{w}</p>
-                </div>
-              ))}
-            </div>
-          )}
+      {yearlyResult && (
+        <div ref={resultRef} className="space-y-8 pt-4 border-t border-border">
+          {/* 12 Aylık Tablo */}
+          <YearlyMaasTable
+            yearlyResult={yearlyResult}
+            monthlyAmounts={monthlyAmounts}
+            onMonthAmountChange={handleMonthAmountChange}
+            showEmployer={watchedShowEmployer ?? false}
+            onPdfDownload={handlePdfDownload}
+            direction={watchedDirection}
+          />
 
-          {/* Özet Kartlar — Brüt, Net, Kesinti, İşveren */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <SummaryCard label="Brüt Maaş" value={fmtTL(result.gross, 0)} color="neutral" />
-            <SummaryCard
-              label="Net Maaş"
-              value={fmtTL(result.net, 0)}
-              color="success"
-              icon={<TrendingUp className="h-4 w-4" />}
-            />
-            <SummaryCard
-              label="Toplam Kesinti"
-              value={fmtTL(result.totalDeduction, 0)}
-              color="warning"
-              icon={<TrendingDown className="h-4 w-4" />}
-            />
-            {watch('showEmployerCost') && (
-              <SummaryCard
-                label="İşveren Maliyeti"
-                value={fmtTL(result.totalEmployerCost, 0)}
-                color="info"
+          {/* Maaş Analizi */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold">Maaş Analizi</h2>
+
+            {/* Özet Kartlar */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <AnalysisCard
+                icon={<Clock className="h-5 w-5 text-blue-500" />}
+                label="Saatlik Ücret"
+                sublabel="(Aylık ort. / 180 saat)"
+                value={fmtTL(yearlyResult.averageNet / 180, 2)}
               />
-            )}
-          </div>
+              <AnalysisCard
+                icon={<Utensils className="h-5 w-5 text-orange-500" />}
+                label="Günlük Ücret"
+                sublabel="(Aylık ort. / 22 gün)"
+                value={fmtTL(yearlyResult.averageNet / 22, 2)}
+              />
+              <AnalysisCard
+                icon={<Percent className="h-5 w-5 text-red-500" />}
+                label="Kesinti Oranı"
+                sublabel="(Ortalama)"
+                value={`%${(yearlyResult.deductionRate * 100).toFixed(2)}`}
+              />
+              <AnalysisCard
+                icon={<Receipt className="h-5 w-5 text-purple-500" />}
+                label="Yıllık Vergi"
+                sublabel="(Gelir vergisi toplamı)"
+                value={fmtTL(yearlyResult.totalTax, 0)}
+              />
+            </div>
 
-          {/* Grafik */}
-          <MaasChart result={result} showEmployer={watch('showEmployerCost') ?? false} />
-
-          {/* Detay Tablosu */}
-          <MaasResultTable lines={result.lines} />
-
-          {/* PDF İndir + Hata Bildir */}
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Button type="button" onClick={handlePdfDownload} variant="primary">
-              <Download className="mr-2 h-4 w-4" />
-              PDF İndir
-            </Button>
-            <ReportErrorButton
-              type="tool"
-              slug="maas-hesaplama"
-              pageTitle="Maaş Hesaplama"
-            />
+            {/* Donut Grafik — Aylık Ortalama */}
+            {yearlyResult.totals.gross > 0 && (() => {
+              const activeCount = Math.max(1, yearlyResult.rows.filter(r => r.gross > 0).length);
+              return (
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Aylık Ortalama Maaş Analizi</h3>
+                  <MaasChart
+                    result={{
+                      gross: yearlyResult.totals.gross / activeCount,
+                      net: yearlyResult.averageNet,
+                      totalDeduction: (yearlyResult.totals.gross - yearlyResult.totals.net) / activeCount,
+                      totalEmployerCost: yearlyResult.totals.totalEmployerCost / activeCount,
+                      cumulativeMatrah: 0,
+                      minWageCumulativeMatrah: 0,
+                      lines: [
+                        { label: 'SGK Primi', amount: yearlyResult.totals.sgkEmployee / activeCount, kind: 'deduction' },
+                        { label: 'İşsizlik Sigortası', amount: yearlyResult.totals.unemployment / activeCount, kind: 'deduction' },
+                        { label: 'Gelir Vergisi', amount: yearlyResult.totals.incomeTax / activeCount, kind: 'deduction' },
+                        { label: 'Damga Vergisi', amount: yearlyResult.totals.stampTax / activeCount, kind: 'deduction' },
+                      ],
+                      warnings: [],
+                    }}
+                    showEmployer={watchedShowEmployer ?? false}
+                  />
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
 
-      {/* ── SEO İçerik: Açıklama + Dilimler + AGİ + FAQ ── */}
+      {/* ── SEO İçerik: Açıklama + Dilimler + FAQ ── */}
       <MaasSeoContent taxData={taxData} />
     </div>
   );
@@ -252,28 +287,25 @@ export function MaasHesaplama() {
 
 // ── Sub Components ───────────────────────────────────────────────
 
-function SummaryCard({
-  label,
-  value,
-  color,
+function AnalysisCard({
   icon,
+  label,
+  sublabel,
+  value,
 }: {
+  icon: React.ReactNode;
   label: string;
+  sublabel?: string;
   value: string;
-  color: 'success' | 'warning' | 'info' | 'neutral';
-  icon?: React.ReactNode;
 }) {
-  const colorMap = {
-    success: 'border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-100',
-    warning: 'border-amber-200 bg-amber-50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-100',
-    info: 'border-blue-200 bg-blue-50 dark:bg-blue-950/20 text-blue-900 dark:text-blue-100',
-    neutral: 'border-border bg-card text-foreground',
-  };
   return (
-    <div className={`rounded-xl border p-4 ${colorMap[color]}`}>
-      <p className="text-xs font-medium opacity-80">{label}</p>
-      <p className="mt-1 text-xl font-bold tabular-nums sm:text-2xl">{value}</p>
-      {icon && <div className="mt-1 opacity-60">{icon}</div>}
+    <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center text-center gap-2">
+      <div className="rounded-full bg-muted p-2">{icon}</div>
+      <div>
+        <p className="text-xs text-muted-foreground">{label}</p>
+        {sublabel && <p className="text-[10px] text-muted-foreground/60">{sublabel}</p>}
+      </div>
+      <p className="text-lg font-bold tabular-nums">{value}</p>
     </div>
   );
 }
@@ -287,18 +319,17 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
         <p className="text-muted-foreground">
           Brüt maaştan çalışanın eline geçen net maaşı bulmak için sırasıyla şu kesintiler yapılır:
           SGK primi (işçi payı <strong>%14</strong>), işsizlik sigortası (işçi payı <strong>%1</strong>),
-          kalan tutar üzerinden gelir vergisi (kümülatif matraha göre dilimli: %15, %20, %27, %35),
-          brüt üzerinden damga vergisi (<strong>binde 7.59</strong>) ve asgari ücret istisnası
-          uygulanır. Son olarak hesaplanan gelir vergisinden AGİ (Asgari Geçim İndirimi) düşülür.
+          kalan tutar üzerinden gelir vergisi (kümülatif matraha göre dilimli), brüt üzerinden damga
+          vergisi (<strong>binde 7.59</strong>) ve asgari ücret istisnası uygulanır.
         </p>
         <p className="text-muted-foreground mt-2">
-          <strong>Asgari ücret istisnası:</strong> Brüt asgari ücret ve altındaki maaşlarda gelir vergisi ve
-          damga vergisi tamamen muaftır. Asgari ücretin üzerindeki maaşlarda ise asgari ücrete kadar olan
-          kısım için kısmi istisna uygulanır.
+          <strong>Asgari ücret istisnası:</strong> 2022 yılından itibaren brüt asgari ücret ve altındaki
+          maaşlarda gelir vergisi ve damga vergisi tamamen muaftır. Asgari ücretin üzerindeki maaşlarda
+          ise asgari ücrete kadar olan kısım için kısmi istisna uygulanır.
         </p>
       </section>
 
-      {/* 2026 Gelir Vergisi Dilimleri */}
+      {/* Gelir Vergisi Dilimleri */}
       <section>
         <h2 className="text-xl font-bold mb-3">{taxData.year} Yılı Gelir Vergisi Dilimleri (Ücretli)</h2>
         <div className="overflow-x-auto rounded-xl border border-border">
@@ -336,102 +367,42 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
         </p>
       </section>
 
-      {/* AGİ Tablosu */}
-      <section>
-        <h2 className="text-xl font-bold mb-3">{taxData.year} Yılı AGİ (Asgari Geçim İndirimi) Tutarları</h2>
-        <p className="text-muted-foreground mb-3">
-          AGİ, çalışanın medeni durumu ve çocuk sayısına göre yıllık olarak hesaplanan ve aylık gelir
-          vergisinden düşülen tutardır. Mevcut hesaplama motorumuzda otomatik uygulanır.
-        </p>
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-3 py-2 text-left font-semibold">Medeni Durum</th>
-                <th className="px-3 py-2 text-right font-semibold">0 Çocuk</th>
-                <th className="px-3 py-2 text-right font-semibold">1 Çocuk</th>
-                <th className="px-3 py-2 text-right font-semibold">2 Çocuk</th>
-                <th className="px-3 py-2 text-right font-semibold">3 Çocuk</th>
-                <th className="px-3 py-2 text-right font-semibold">4+ Çocuk</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-t border-border">
-                <td className="px-3 py-2">Bekâr</td>
-                {[0, 1, 2, 3, 4].map((c) => (
-                  <td key={c} className="px-3 py-2 text-right tabular-nums">
-                    {fmtTL(taxData.agiTable.bekar[c as 0 | 1 | 2 | 3 | 4].annual / 12, 0)}
-                  </td>
-                ))}
-              </tr>
-              <tr className="border-t border-border">
-                <td className="px-3 py-2">Evli (eş çalışmıyor)</td>
-                {[0, 1, 2, 3, 4].map((c) => (
-                  <td key={c} className="px-3 py-2 text-right tabular-nums">
-                    {fmtTL(taxData.agiTable['evli-es-calismiyor'][c as 0 | 1 | 2 | 3 | 4].annual / 12, 0)}
-                  </td>
-                ))}
-              </tr>
-              <tr className="border-t border-border">
-                <td className="px-3 py-2">Evli (eş çalışıyor)</td>
-                {[0, 1, 2, 3, 4].map((c) => (
-                  <td key={c} className="px-3 py-2 text-right tabular-nums">
-                    {fmtTL(taxData.agiTable['evli-es-calisiyor'][c as 0 | 1 | 2 | 3 | 4].annual / 12, 0)}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          * Tutarlar aylık (TL/ay) gösterilmiştir. Engellilik indirimi ayrıca eklenir.
-        </p>
-      </section>
-
       {/* FAQ */}
       <section>
-        <h2 className="text-xl font-bold mb-3">Sıkça Sorulan Sorular (SSS)</h2>
+        <h2 className="text-xl font-bold mb-3">Brütten Nete Maaş Hesaplama Hakkında Merak Edilenler</h2>
         <div className="space-y-3">
           {[
             {
-              q: 'Brütten nete hesaplama nasıl yapılır?',
-              a: 'Brüt maaştan sırasıyla SGK primi (%14), işsizlik sigortası (%1), gelir vergisi (kümülatif matraha göre %15-20-27-35 dilimli) ve damga vergisi (binde 7.59) kesilir. Asgari ücret istisnası uygulanır ve gelir vergisinden AGİ düşülür. Kalan tutar net maaşı verir.',
+              q: 'Net Maaş Nedir?',
+              a: 'Net maaş çalışanın maaşını alırken en çok karşılaştığı sorudur. Net maaş, isminden de anlaşıldığı gibi işverenin yaptığı tüm kesintilerin sonucunda size verdiğiniz karşılığı olarak direkt verdiği tutardır. Net maaş, brütten vergilerin ve diğer kesintilerin çıkarılmasından sonra ortaya çıkar. Brüt maaş kesintileri otomatik olarak yapılır ve sizden herhangi bir ödeme talep edilmez.',
             },
             {
-              q: 'Netten brüte hesaplama nasıl yapılır?',
-              a: 'Net maaşı elde etmek için gereken brüt maaşı bulmak iteratif (binary search) yöntemle hesaplanır. Her brüt denemesi için brütten nete hesaplama yapılır, hedef nete yaklaşana kadar brüt artırılıp azaltılır.',
+              q: 'Brüt Maaş Nedir?',
+              a: 'Brüt maaş, çalışana yapılan tüm kesintiler öncesindeki toplam maaş tutarıdır. SGK primi, işsizlik sigortası, gelir vergisi ve damga vergisi gibi kesintiler brüt maaş üzerinden hesaplanır.',
             },
             {
-              q: 'Asgari ücret istisnası nedir?',
-              a: '2022 yılından itibaren uygulanan istisna kapsamında, brüt asgari ücret ve altındaki maaşlarda gelir vergisi ve damga vergisi tamamen muaftır. Asgari ücretin üzerindeki maaşlarda ise asgari ücrete kadar olan kısım için kısmi istisna uygulanır.',
+              q: 'Net Maaş ve Brüt Maaş Arasındaki Farklar Nelerdir?',
+              a: 'Brüt maaş kesinti öncesi toplam tutarı, net maaş ise tüm yasal kesintiler sonrası çalışanın eline geçen tutarı ifade eder. Aradaki fark SGK primi, işsizlik sigortası, gelir vergisi ve damga vergisinden oluşur.',
             },
             {
-              q: 'AGİ (Asgari Geçim İndirimi) nedir?',
-              a: "AGİ, çalışanın medeni durumu ve çocuk sayısına göre yıllık olarak belirlenen ve aylık gelir vergisinden düşülen tutardır. Bekâr çalışan için en düşük, evli ve 4+ çocuklu çalışan için en yüksek tutardadır. Engellilik derecesine göre ayrıca indirim uygulanır.",
-            },
-            {
-              q: 'İşveren maliyeti neleri kapsar?',
-              a: 'İşveren maliyeti, brüt maaş + SGK primi işveren payı (%15.5 veya %20.5 teşvik kapsamı) + işsizlik sigortası işveren payı (%2) toplamından oluşur. Bir çalışanın toplam maliyeti genellikle brüt maaşın %117-122’si kadardır.',
+              q: 'Brütten Net Maaş Hesaplanırken Baz Alınan Oranlar',
+              a: `SGK primi işçi payı %14, işsizlik sigortası işçi payı %1, damga vergisi binde 7.59. Gelir vergisi kümülatif matraha göre dilimli olarak uygulanır: ${taxData.incomeTaxBrackets.map((b) => `%${(b.rate * 100).toFixed(0)}`).join(', ')}. Asgari ücret istisnası kapsamında brüt asgari ücrete kadar olan kısım gelir vergisinden muaftır.`,
             },
             {
               q: 'Kümülatif vergi matrahı neden önemli?',
-              a: 'Gelir vergisi dilimleri yıl başından beri biriken kümülatif matrah üzerinden uygulanır. Yıl içinde maaş artışı veya iş değişikliği olan çalışanlar yılın başındaki dilimlerden tekrar başlamaz. Aracımız, yıl başından beri ödediğiniz gelir vergisi matrahını girip tam doğru hesaplama yapmanızı sağlar.',
+              a: 'Gelir vergisi dilimleri yıl başından beri biriken kümülatif matrah üzerinden uygulanır. Yıl içinde aynı maaşı alsanız bile yılın sonlarına doğru üst dilimlere geçersiniz ve net maaşınız düşer. 12 aylık tablomuz bu etkiyi otomatik hesaplar.',
             },
             {
-              q: 'SGK tavanı nedir?',
-              a: 'SGK primi, brüt asgari ücretin 7.5 katını aşan maaşlarda bu tavan üzerinden hesaplanır. 2025 yılı SGK tavanı = 26.005,50 × 7,5 = 195.041,25 TL. Bu tutarın üzerindeki maaşlar için SGK primi sabit kalır.',
+              q: 'Brütten Net Maaş Nasıl Hesaplanır?',
+              a: 'Brüt maaştan sırasıyla SGK primi (%14), işsizlik sigortası (%1) kesilir. Kalan tutar gelir vergisi matrahıdır. Bu matrah üzerinden kümülatif dilimlere göre gelir vergisi hesaplanır. Brüt maaş üzerinden damga vergisi (binde 7.59) uygulanır. Asgari ücret istisnası düşülür. Tüm kesintiler toplamı brütten çıkarılarak net maaş bulunur.',
             },
             {
-              q: 'Stajyer/çırak maaşı hesaplaması farklı mı?',
-              a: 'Evet. Stajyer ve çıraklar için SGK primi %7, gelir vergisi ve damga vergisi muaftır. Sadece asgari ücret seviyesinde olabilirler.',
-            },
-            {
-              q: 'PDF raporunda neler yer alır?',
-              a: "PDF raporunda brütten nete / netten brüte hesaplama özeti, detaylı gelir-gider tablosu, grafik, kullanılan 2025 oranları (SGK, işsizlik, gelir vergisi dilimleri, damga vergisi), AGİ tablosu, yasal uyarı ve FinansÇözüm branding yer alır. Resmi PDF formatındadır (A4 dikey).",
+              q: 'İşveren maliyeti neleri kapsar?',
+              a: `İşveren maliyeti, brüt maaş + SGK primi işveren payı (%${(taxData.sgkEmployer * 100).toFixed(1)}) + işsizlik sigortası işveren payı (%${(taxData.unemploymentEmployer * 100).toFixed(0)}) toplamından oluşur.`,
             },
             {
               q: 'Bu hesaplama yasal olarak bağlayıcı mı?',
-              a: 'Hayır. Aracımız bilgi amaçlıdır ve yatırım tavsiyesi niteliği taşımaz. Bordro hesaplamaları için işvereninizden veya mali müşavirinizden doğrulama almanız önerilir. Hesaplama motoru, 2025 yılı için geçerli olan SGK primi, işsizlik sigortası, gelir vergisi dilimleri ve AGİ oranlarını kullanır.',
+              a: 'Hayır. Aracımız bilgi amaçlıdır ve yatırım tavsiyesi niteliği taşımaz. Bordro hesaplamaları için işvereninizden veya mali müşavirinizden doğrulama almanız önerilir.',
             },
           ].map((f, i) => (
             <details key={i} className="group rounded-lg border border-border bg-card p-3">

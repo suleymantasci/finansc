@@ -1,8 +1,14 @@
 import type { NextConfig } from 'next';
+import path from 'path';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  // Monorepo: standalone output dosya izlemesini workspace root'tan başlat
+  outputFileTracingRoot: path.resolve(__dirname, '..'),
   reactStrictMode: true,
+  turbopack: {
+    root: path.resolve(__dirname, '..'),
+  },
   images: {
     // Modern format desteği (CWV skoru için kritik)
     formats: ['image/avif', 'image/webp'],

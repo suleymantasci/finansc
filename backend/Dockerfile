@@ -8,11 +8,17 @@ RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# pnpm-workspace.yaml contains allowBuilds config (required by pnpm v11)
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+# Copy workspace config + package manifests for layer caching
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY client/package.json ./client/
+COPY backend/package.json ./backend/
 
-COPY . .
+RUN pnpm install --frozen-lockfile --filter @finanscozum/backend...
+
+# Copy backend source only
+COPY backend/ ./backend/
+
+WORKDIR /app/backend
 RUN pnpm build
 
 # Prune devDependencies in-place
@@ -26,9 +32,9 @@ RUN apk add --no-cache libstdc++
 
 WORKDIR /app
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/backend/node_modules ./node_modules
+COPY --from=builder /app/backend/dist ./dist
+COPY --from=builder /app/backend/package.json ./package.json
 
 EXPOSE 3001
 

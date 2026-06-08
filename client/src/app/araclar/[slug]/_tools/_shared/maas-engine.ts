@@ -7,9 +7,8 @@
 //   4) Kümülatif matrah dikkate alınarak gelir vergisi dilimleri uygulanır
 //   5) Asgari ücret istisnası (varsa) gelir vergisinden düşülür
 //   6) Damga vergisi (binde 7.59) brüt üzerinden hesaplanır
-//   7) AGİ (Asgari Geçim İndirimi) hesaplanan gelir vergisinden düşülür
-//   8) Net maaş = Brüt - (SGK + İşsizlik + Gelir Vergisi + Damga - AGİ)
-//   9) İşveren maliyeti = Brüt + SGK işveren + İşsizlik işveren
+//   7) Net maaş = Brüt - (SGK + İşsizlik + Gelir Vergisi + Damga)
+//   8) İşveren maliyeti = Brüt + SGK işveren + İşsizlik işveren
 //
 // Stajyer/Çırak: SGK %7, gelir vergisi muaf, damga vergisi muaf
 // Ev Hizmetleri 10 gün: SGK muaf, gelir vergisi var
@@ -19,13 +18,17 @@
 
 import {
   getTaxData,
-  getAgiMonthly,
   type MaasFormData,
   type TaxDataYear,
   type EmployeeType,
 } from './tax-data';
 
 // ── Tipler ─────────────────────────────────────────────────────────
+
+/** Kuruş hassasiyetinde yuvarlama (2 ondalık) */
+function round2(v: number): number {
+  return Math.round(v * 100) / 100;
+}
 
 export interface MaasLineItem {
   label: string;
@@ -44,7 +47,7 @@ export interface MaasResult {
   totalDeduction: number;      // Toplam işçi kesintisi
   totalEmployerCost: number;   // Toplam işveren maliyeti (opsiyonel)
   cumulativeMatrah: number;    // Bu ay sonrası kümülatif matrah
-  agiMonthly: number;          // Uygulanan AGİ (aylık)
+  minWageCumulativeMatrah: number; // Asgari ücret istisnası kümülatif matrahı
   lines: MaasLineItem[];       // Detay tablosu
   warnings: string[];          // Tavan, muafiyet vb. uyarılar
 }
@@ -58,12 +61,12 @@ export function bruttenNete(form: MaasFormData): MaasResult {
   const lines: MaasLineItem[] = [];
 
   // Tavan kontrolü
-  const ceiling = td.minWageBrut * td.sgkCeilingMultiplier;
+  const ceiling = round2(td.minWageBrut * td.sgkCeilingMultiplier);
   const sgkBase = Math.min(gross, ceiling);
 
   // ── 1) SGK primi (işçi) ──
   const sgkEmployeeRate = getSgkEmployeeRate(form.employeeType);
-  const sgkEmployee = sgkBase * sgkEmployeeRate;
+  const sgkEmployee = round2(sgkBase * sgkEmployeeRate);
   lines.push({
     label: 'SGK Primi (işçi)',
     amount: sgkEmployee,
@@ -73,7 +76,7 @@ export function bruttenNete(form: MaasFormData): MaasResult {
 
   // ── 2) İşsizlik sigortası (işçi) ──
   const unemploymentRate = getUnemploymentEmployeeRate(form.employeeType);
-  const unemployment = sgkBase * unemploymentRate;
+  const unemployment = round2(sgkBase * unemploymentRate);
   if (unemployment > 0) {
     lines.push({
       label: 'İşsizlik Sigortası (işçi)',
@@ -83,23 +86,41 @@ export function bruttenNete(form: MaasFormData): MaasResult {
     });
   }
 
-  // ── 3) Gelir vergisi matrahı ──
-  const matrah = gross - sgkEmployee - unemployment;
+  // ── 3) Gelir vergisi matrahı (ham) ──
+  const rawMatrah = round2(gross - sgkEmployee - unemployment);
+
+  // ── 4) Engellilik indirimi (matrahtan düşülür — GVK md. 31) ──
+  const disabilityAnnual = td.disabilityDeduction[form.disability] || 0;
+  const disabilityMonthly = round2(disabilityAnnual / 12);
+  let disabilityApplied = 0;
+  if (disabilityMonthly > 0) {
+    disabilityApplied = Math.min(disabilityMonthly, rawMatrah);
+    lines.push({
+      label: `Engellilik İndirimi (${form.disability} derece)`,
+      amount: -disabilityApplied,
+      kind: 'info',
+    });
+  }
+  const matrah = round2(rawMatrah - disabilityApplied);
+
   lines.push({
     label: 'Gelir Vergisi Matrahı',
     amount: matrah,
     kind: 'info',
   });
 
-  // ── 4) Gelir vergisi (kümülatif matrah dahil) ──
-  const incomeTax = calculateIncomeTax(matrah, form.cumulativeMatrah, td);
+  // ── 5) Gelir vergisi (kümülatif matrah dahil) ──
+  const incomeTax = round2(calculateIncomeTax(matrah, form.cumulativeMatrah, td));
   lines.push({
     label: 'Hesaplanan Gelir Vergisi',
     amount: incomeTax,
     kind: 'deduction',
   });
 
-  // ── 5) Asgari ücret istisnası ──
+  // ── 6) Asgari ücret istisnası ──
+  const minWageMatrah = round2(td.minWageBrut * (1 - sgkEmployeeRate - unemploymentRate));
+  const minWageCumBefore = form.minWageCumulativeMatrah ?? 0;
+  const minWageCumAfter = round2(minWageCumBefore + minWageMatrah);
   let minimumWageExemption = 0;
   if (td.minimumWageExemption && gross <= td.minWageBrut) {
     // Asgari ücretlinin gelir vergisi tamamen muaf
@@ -110,11 +131,9 @@ export function bruttenNete(form: MaasFormData): MaasResult {
       kind: 'info',
     });
   } else if (td.minimumWageExemption) {
-    // Brüt asgari ücret kadar kısmi istisna
-    const minWageMatrah = td.minWageBrut - (td.minWageBrut * (sgkEmployeeRate + unemploymentRate));
-    const minWageCumulative = form.cumulativeMatrah;
-    const minWageTax = calculateIncomeTax(minWageMatrah, minWageCumulative, td);
-    minimumWageExemption = Math.min(minWageTax, incomeTax);
+    // Kümülatif asgari ücret matrahı üzerinden vergi farkı ile istisna hesapla
+    const exemptionTax = round2(calculateIncomeTax(minWageMatrah, minWageCumBefore, td));
+    minimumWageExemption = Math.min(exemptionTax, incomeTax);
     if (minimumWageExemption > 0) {
       lines.push({
         label: 'Asgari Ücret İstisnası (kısmi)',
@@ -124,8 +143,8 @@ export function bruttenNete(form: MaasFormData): MaasResult {
     }
   }
 
-  // ── 6) Damga vergisi ──
-  const stampTax = getStampTax(gross, form.employeeType, td);
+  // ── 7) Damga vergisi ──
+  const stampTax = round2(getStampTax(gross, form.employeeType, td));
   if (stampTax > 0) {
     lines.push({
       label: 'Damga Vergisi (binde 7.59)',
@@ -135,27 +154,10 @@ export function bruttenNete(form: MaasFormData): MaasResult {
     });
   }
 
-  // ── 7) AGİ (gelir vergisinden düşüm) ──
-  const agiMonthly = getAgiMonthly(form.year, form.maritalStatus, form.childCount);
-  // AGİ engellilik indirimi
-  const disabilityAnnual = td.disabilityDeduction[form.disability] || 0;
-  const disabilityMonthly = disabilityAnnual / 12;
-  const agiTotal = agiMonthly + disabilityMonthly;
-
-  // AGİ gelir vergisini aşamaz (aşan kısmı ödenmez)
-  const agiApplied = Math.min(agiTotal, incomeTax - minimumWageExemption);
-  if (agiTotal > 0) {
-    lines.push({
-      label: `AGİ (${form.maritalStatus === 'bekar' ? 'Bekâr' : 'Evli'}, ${form.childCount} çocuk${form.disability !== 'yok' ? `, ${form.disability} derece engelli` : ''})`,
-      amount: -agiApplied,
-      kind: 'info',
-    });
-  }
-
   // ── 8) Net maaş ──
-  const incomeTaxAfter = incomeTax - minimumWageExemption - agiApplied;
-  const totalDeduction = sgkEmployee + unemployment + incomeTaxAfter + stampTax;
-  const net = gross - totalDeduction;
+  const incomeTaxAfter = round2(incomeTax - minimumWageExemption);
+  const totalDeduction = round2(sgkEmployee + unemployment + incomeTaxAfter + stampTax);
+  const net = round2(gross - totalDeduction);
 
   lines.push({
     label: 'NET MAAŞ',
@@ -167,8 +169,8 @@ export function bruttenNete(form: MaasFormData): MaasResult {
   // ── 9) İşveren maliyeti (opsiyonel) ──
   let totalEmployerCost = gross;
   if (form.showEmployerCost) {
-    const sgkEmployer = sgkBase * td.sgkEmployer;
-    const unemploymentEmployer = sgkBase * td.unemploymentEmployer;
+    const sgkEmployer = round2(sgkBase * td.sgkEmployer);
+    const unemploymentEmployer = round2(sgkBase * td.unemploymentEmployer);
     lines.push({
       label: 'SGK Primi (işveren)',
       amount: sgkEmployer,
@@ -181,7 +183,7 @@ export function bruttenNete(form: MaasFormData): MaasResult {
       rate: td.unemploymentEmployer,
       kind: 'employer',
     });
-    totalEmployerCost = gross + sgkEmployer + unemploymentEmployer;
+    totalEmployerCost = round2(gross + sgkEmployer + unemploymentEmployer);
     lines.push({
       label: 'TOPLAM İŞVEREN MALİYETİ',
       amount: totalEmployerCost,
@@ -210,7 +212,7 @@ export function bruttenNete(form: MaasFormData): MaasResult {
     totalDeduction,
     totalEmployerCost: form.showEmployerCost ? totalEmployerCost : gross,
     cumulativeMatrah: form.cumulativeMatrah + matrah,
-    agiMonthly,
+    minWageCumulativeMatrah: minWageCumAfter,
     lines,
     warnings,
   };
@@ -275,7 +277,8 @@ function taxOnCumulative(matrah: number, td: TaxDataYear): number {
     const cur = brackets[i];
     const next = brackets[i + 1];
     if (matrah > cur.limit) {
-      const span = (next ? next.limit : matrah) - cur.limit;
+      const upperBound = next ? Math.min(next.limit, matrah) : matrah;
+      const span = upperBound - cur.limit;
       tax += span * cur.rate;
     } else {
       break;
@@ -287,15 +290,14 @@ function taxOnCumulative(matrah: number, td: TaxDataYear): number {
 // ── Çalışan Türüne Göre Oran ─────────────────────────────────────
 
 function getSgkEmployeeRate(type: EmployeeType): number {
-  const td = getTaxData(2025); // oran yıldan bağımsız, sabit
   switch (type) {
-    case '4a-ucretli':       return td.sgkEmployee;
-    case '4a-emekli':        return td.sgkEmployee; // yeniden çalışan emekli
-    case '4b-esnaf':         return 0.20; // Bağ-Kur
-    case '4c-memur':         return 0.16; // memur
-    case '4a-stajyer':       return 0.07; // stajyer SGK
-    case '4a-ev-hizmet-10':  return 0; // ilk 10 gün muaf
-    case '4a-ev-hizmet-30':  return td.sgkEmployee; // 30 gün üzeri tam
+    case '4a-ucretli':       return 0.14;
+    case '4a-emekli':        return 0.14;
+    case '4b-esnaf':         return 0.20;
+    case '4c-memur':         return 0.16;
+    case '4a-stajyer':       return 0.07;
+    case '4a-ev-hizmet-10':  return 0;
+    case '4a-ev-hizmet-30':  return 0.14;
   }
 }
 
@@ -314,10 +316,155 @@ function getUnemploymentEmployeeRate(type: EmployeeType): number {
 function getStampTax(gross: number, type: EmployeeType, td: TaxDataYear): number {
   switch (type) {
     case '4a-stajyer':       return 0; // stajyer damga vergisi muaf
-    case '4a-ev-hizmet-10':  return gross * td.stampTax; // var
-    default:                  return gross * td.stampTax;
+    case '4a-ev-hizmet-10':  return gross * td.stampTax; // tam damga vergisi
+    default: {
+      // Asgari ücret istisnası: brüt asgari ücret kadar damga vergisinden muaf
+      if (td.minimumWageExemption) {
+        if (gross <= td.minWageBrut) return 0;
+        return (gross - td.minWageBrut) * td.stampTax;
+      }
+      return gross * td.stampTax;
+    }
   }
 }
+
+// ── Yıllık Tablo Hesaplama (12 Ay) ────────────────────────────────
+
+export interface MonthlyRow {
+  month: number;          // 1-12
+  monthName: string;
+  gross: number;
+  net: number;
+  incomeTax: number;      // Aylık gelir vergisi (istisna düşülmüş)
+  sgkEmployee: number;
+  unemployment: number;
+  stampTax: number;
+  sgkEmployer: number;
+  unemploymentEmployer: number;
+  totalEmployerCost: number;
+  cumulativeMatrah: number;
+}
+
+export interface YearlyTableResult {
+  rows: MonthlyRow[];
+  totals: Omit<MonthlyRow, 'month' | 'monthName' | 'cumulativeMatrah'>;
+  averageNet: number;
+  totalTax: number;        // Yıllık toplam gelir vergisi
+  deductionRate: number;   // Ortalama kesinti oranı
+}
+
+const MONTH_NAMES = [
+  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+];
+
+export function calculateYearlyTable(
+  baseForm: Omit<MaasFormData, 'month' | 'cumulativeMatrah'>,
+  monthlyAmounts: number[], // 12 eleman, her ay için brüt veya net maaş (direction'a göre)
+): YearlyTableResult {
+  const td = getTaxData(baseForm.year);
+  const rows: MonthlyRow[] = [];
+  let cumulativeMatrah = 0;
+  let minWageCumulative = 0;
+  const isNetToGross = baseForm.direction === 'netten-brute';
+
+  for (let m = 0; m < 12; m++) {
+    const inputAmount = monthlyAmounts[m] ?? 0;
+    if (inputAmount <= 0) {
+      rows.push({
+        month: m + 1,
+        monthName: MONTH_NAMES[m],
+        gross: 0, net: 0, incomeTax: 0, sgkEmployee: 0,
+        unemployment: 0, stampTax: 0, sgkEmployer: 0,
+        unemploymentEmployer: 0, totalEmployerCost: 0,
+        cumulativeMatrah,
+      });
+      continue;
+    }
+
+    // Netten brüte ise önce brütü bul
+    let gross: number;
+    if (isNetToGross) {
+      const netForm: MaasFormData = {
+        ...baseForm,
+        month: m + 1,
+        cumulativeMatrah,
+        minWageCumulativeMatrah: minWageCumulative,
+        amount: inputAmount,
+        direction: 'netten-brute',
+      };
+      const ntbResult = nettenBrute(netForm);
+      gross = ntbResult.gross;
+    } else {
+      gross = inputAmount;
+    }
+
+    const form: MaasFormData = {
+      ...baseForm,
+      month: m + 1,
+      cumulativeMatrah,
+      minWageCumulativeMatrah: minWageCumulative,
+      amount: gross,
+      direction: 'brutten-nete',
+    };
+
+    const result = bruttenNete(form);
+
+    // SGK & işveren detaylarını hesapla
+    const ceiling = round2(td.minWageBrut * td.sgkCeilingMultiplier);
+    const sgkBase = Math.min(gross, ceiling);
+    const sgkEmp = round2(sgkBase * getSgkEmployeeRate(baseForm.employeeType));
+    const unemp = round2(sgkBase * getUnemploymentEmployeeRate(baseForm.employeeType));
+    const stamp = round2(getStampTax(gross, baseForm.employeeType, td));
+    const sgkEmployer = round2(sgkBase * td.sgkEmployer);
+    const unempEmployer = round2(sgkBase * td.unemploymentEmployer);
+    const totalEmployerCost = round2(gross + sgkEmployer + unempEmployer);
+
+    // Gelir vergisi = toplam kesinti - SGK - işsizlik - damga
+    const incomeTax = result.totalDeduction - sgkEmp - unemp - stamp;
+
+    cumulativeMatrah = result.cumulativeMatrah;
+    minWageCumulative = result.minWageCumulativeMatrah;
+
+    rows.push({
+      month: m + 1,
+      monthName: MONTH_NAMES[m],
+      gross,
+      net: result.net,
+      incomeTax: Math.max(0, incomeTax),
+      sgkEmployee: sgkEmp,
+      unemployment: unemp,
+      stampTax: stamp,
+      sgkEmployer,
+      unemploymentEmployer: unempEmployer,
+      totalEmployerCost,
+      cumulativeMatrah,
+    });
+  }
+
+  const activeRows = rows.filter((r) => r.gross > 0);
+  const sum = (fn: (r: MonthlyRow) => number) => round2(rows.reduce((s, r) => s + fn(r), 0));
+
+  const totals = {
+    gross: sum((r) => r.gross),
+    net: sum((r) => r.net),
+    incomeTax: sum((r) => r.incomeTax),
+    sgkEmployee: sum((r) => r.sgkEmployee),
+    unemployment: sum((r) => r.unemployment),
+    stampTax: sum((r) => r.stampTax),
+    sgkEmployer: sum((r) => r.sgkEmployer),
+    unemploymentEmployer: sum((r) => r.unemploymentEmployer),
+    totalEmployerCost: sum((r) => r.totalEmployerCost),
+  };
+
+  const averageNet = activeRows.length > 0 ? totals.net / activeRows.length : 0;
+  const deductionRate = totals.gross > 0 ? (totals.gross - totals.net) / totals.gross : 0;
+
+  return { rows, totals, averageNet, totalTax: totals.incomeTax, deductionRate };
+}
+
+// getSgkEmployeeRate ve getUnemploymentEmployeeRate export (calculateYearlyTable'dan erişim için)
+export { getSgkEmployeeRate, getUnemploymentEmployeeRate, getStampTax };
 
 // ── Formatlama (UI için) ─────────────────────────────────────────
 

@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Param,
   Body,
@@ -38,11 +39,27 @@ export class ToolsController {
   @ApiBearerAuth()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
+  @Post()
+  create(@Body() body: { slug: string; title: string; category?: string; description?: string }) {
+    return this.toolsService.create(body as any);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('sync')
+  sync(@Body() body: { items: { slug: string; title: string; category?: string }[] }) {
+    return this.toolsService.sync(body.items);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { isActive: boolean },
+    @Body() body: { isActive?: boolean; sortOrder?: number },
   ) {
-    return this.toolsService.update(id, { isActive: body.isActive });
+    return this.toolsService.update(id, body);
   }
 }

@@ -38,3 +38,4 @@ coverage/
 *.key
 
 hermes-blog-prompt.md
+.playwright-mcp
