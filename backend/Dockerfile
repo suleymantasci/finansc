@@ -22,6 +22,7 @@ WORKDIR /app/backend
 RUN pnpm build
 
 # Prune devDependencies in-place
+ENV CI=true
 RUN pnpm prune --prod --ignore-scripts
 
 # ── Stage 2: Production ──────────────────────────────────────────────────────
