@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useMarketStore } from '@/stores/market.store';
 import { SectionIntro } from '@/components/shared/SectionIntro';
 import { MarketStatus } from '@/components/shared/MarketStatus';
+import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { PriceChange } from '@/components/shared/PriceChange';
 import { AdBanner } from '@/components/ads/AdBanner';
@@ -93,6 +94,14 @@ const columns: Column<Stock>[] = [
     headerClassName: 'text-right hidden lg:table-cell',
     render: (s) => formatTL(s.turnover),
   },
+  {
+    key: 'time',
+    header: 'Son İşlem',
+    sortable: false,
+    className: 'text-right text-xs text-muted-foreground',
+    headerClassName: 'text-right',
+    render: (s) => s.time ?? '—',
+  },
 ];
 
 const indexFilters: { key: IndexFilter; label: string }[] = [
@@ -117,10 +126,12 @@ export function HisselerClient() {
         <SectionIntro
           as="page"
           title="Hisse Senetleri"
-          description="Tüm BIST hisselerini anlık takip edin. Sembol, fiyat, değişim, hacim ve ciro bilgileri canlı olarak güncellenir."
+          description="Borsa İstanbul'da (BIST) işlem gören tüm hisse senetlerinin güncel fiyat, alış, satış, en düşük, en yüksek, değişim, hacim ve ciro bilgileri. BIST 30, BIST 50 ve BIST 100 endekslerine göre filtreleme yapabilir, hisse detay sayfalarında sektör karşılaştırması ve FAQ'a ulaşabilirsiniz."
         />
         <MarketStatus status={status} />
       </div>
+
+      <DataDisclaimer variant="borsa" />
 
       <AdBanner page="borsa-hisseler" position="top" />
 
