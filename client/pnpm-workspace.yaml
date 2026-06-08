@@ -1,2 +1,5 @@
+minimumReleaseAge: 0
+
 allowBuilds:
+  core-js: false
   sharp: true

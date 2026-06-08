@@ -5,7 +5,7 @@
 // yasal uyarı. Client-side generate — sunucu yükü yok.
 
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { autoTable } from 'jspdf-autotable';
 import type { MaasResult } from './maas-engine';
 import { fmtTL, fmtPct } from './maas-engine';
 import {
