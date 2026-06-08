@@ -28,7 +28,7 @@ export const GOLD_META: Record<string, GoldTypeMeta> = {
       },
       {
         q: '1 gram altın kaç TL?',
-        a: 'Gram altın TL fiyatı anlık olarak değişir. Güncel fiyatı bu sayfada canlı olarak görebilirsiniz. Fiyatlar serbest piyasa, Kapalıçarşı, Harem Altın, Altınkaynak, Garanti BBVA ve Akbank kaynaklarından derlenir.',
+        a: 'Gram altın TL fiyatı anlık olarak değişir. Güncel fiyatı bu sayfada anlık olarak görebilirsiniz. Fiyatlar serbest piyasa, Kapalıçarşı, Harem Altın, Altınkaynak, Garanti BBVA ve Akbank kaynaklarından derlenir.',
       },
       {
         q: 'Gram altın yatırım için uygun mu?',

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useMarketStore } from '@/stores/market.store';
 import { PriceChange } from '@/components/shared/PriceChange';
 import { MarketStatus } from '@/components/shared/MarketStatus';
+import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { AdBanner } from '@/components/ads/AdBanner';
@@ -153,6 +154,7 @@ export function BorsaClient() {
     { key: 'changePercent', label: 'Değişim', align: 'right' as const },
     { key: 'volume', label: 'Hacim (Lot)', align: 'right' as const },
     { key: 'turnover', label: 'Hacim (TL)', align: 'right' as const },
+    { key: 'time', label: 'Son İşlem', align: 'right' as const },
   ];
 
   const indexColumns = [
@@ -169,6 +171,8 @@ export function BorsaClient() {
       <div className="mb-6 flex items-center justify-end">
         <MarketStatus status={status} />
       </div>
+
+      <DataDisclaimer variant="borsa" />
 
       <AdBanner page="borsa" position="top" />
 
@@ -239,7 +243,7 @@ export function BorsaClient() {
           />
 
           {stocksLoading ? (
-            <SkeletonTable rows={15} cols={8} />
+            <SkeletonTable rows={15} cols={9} />
           ) : (
             <div className="overflow-x-auto rounded-xl border border-border">
               <table className="w-full text-sm">
@@ -292,6 +296,7 @@ export function BorsaClient() {
                         <td className="px-4 py-3 text-right"><PriceChange value={s.changePercent} size="sm" /></td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatInteger(s.volume)}</td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatTL(s.turnover)}</td>
+                        <td className="px-4 py-3 text-right text-xs text-muted-foreground">{s.time ?? '—'}</td>
                       </tr>
                     ))
                   )}

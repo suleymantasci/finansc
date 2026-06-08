@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // Title: page-prefix only. Layout template '%s | SITE_NAME' ekliyor (Pit 28 fix)
-  const title = `${meta.name} Fiyatı Bugün | Canlı ${meta.shortName} Altın`;
+  const title = `${meta.name} Fiyatı Bugün | Anlık ${meta.shortName} Altın`;
   // Description: 150-155 char hedefi. meta.description uzun, slice ile sınırla.
   const description = (meta.description.length > 155
     ? meta.description.slice(0, 153).trimEnd() + '…'
@@ -38,10 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     keywords: [
       `${meta.slug} fiyatı`,
       meta.name.toLowerCase(),
-      `canlı ${meta.name.toLowerCase()}`,
+      `güncel ${meta.name.toLowerCase()}`,
       `${meta.name} bugün`,
       'altın fiyatları',
-      'canlı altın',
+      'güncel altın',
     ],
     alternates: { canonical: `${SITE_URL}/altin/${meta.slug}` },
     openGraph: {
@@ -99,7 +99,7 @@ export default async function GoldTypePage({ params }: Props) {
   };
 
   // Citable snippet
-  const summary = `${meta.name} (${meta.purity ?? 'altın'}) canlı alış-satış fiyatı yukarıda anlık olarak güncellenmektedir. ${meta.weight ? `Standart ağırlık: ${meta.weight}.` : ''} Veriler serbest piyasa, Kapalıçarşı, Harem Altın, Altınkaynak, Garanti BBVA ve Akbank kaynaklarından derlenir.`;
+  const summary = `${meta.name} (${meta.purity ?? 'altın'}) güncel alış-satış fiyatı yukarıda anlık olarak güncellenmektedir. ${meta.weight ? `Standart ağırlık: ${meta.weight}.` : ''} Veriler serbest piyasa, Kapalıçarşı, Harem Altın, Altınkaynak, Garanti BBVA ve Akbank kaynaklarından derlenir.`;
 
   const related = meta.relatedSlugs
     .map((s) => GOLD_META[s])

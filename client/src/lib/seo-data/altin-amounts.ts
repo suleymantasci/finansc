@@ -47,8 +47,8 @@ function generateGramAmounts(): GramAmount[] {
       slug,
       grams,
       path: `/altin/miktar/${slug}`,
-      title: `${label} altın kaç TL? (${grams} gr canlı fiyat)`,
-      description: `${label} (${grams} gram) altının güncel TL fiyatı, son 24 saatlik değişim ve aylık performans. ${grams} gr altın yatırımı yapmadan önce canlı verileri inceleyin.`,
+      title: `${label} altın kaç TL? (${grams} gr güncel fiyat)`,
+      description: `${label} (${grams} gram) altının güncel TL fiyatı, son 24 saatlik değişim ve aylık performans. ${grams} gr altın yatırımı yapmadan önce güncel verileri inceleyin.`,
     };
   });
 }

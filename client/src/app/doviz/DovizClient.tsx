@@ -130,7 +130,7 @@ export function DovizClient() {
     { key: 'buyPrice', label: 'Alış', align: 'right' as const },
     { key: 'sellPrice', label: 'Satış', align: 'right' as const },
     { key: 'changePercent', label: 'Değişim', align: 'right' as const },
-    { key: 'time', label: 'Saat', align: 'right' as const, hide: 'sm' as const },
+    { key: 'time', label: 'Saat', align: 'right' as const },
   ];
 
   const tabs: { key: Tab; label: string }[] = [

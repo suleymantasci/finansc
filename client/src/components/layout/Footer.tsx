@@ -103,6 +103,16 @@ function Footer() {
             Veriler bilgi amaçlıdır, yatırım tavsiyesi değildir.
           </p>
         </div>
+
+        {/* BIST Veri Disclaimer — SPK ve BIST Veri Yayın Politikası gereği */}
+        <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+          Bu sitede gösterilen Borsa İstanbul (BIST) hisse ve endeks verileri, BISTECH Veri Dağıtım Sistemi
+          kapsamında 15 dakika gecikmeli olarak iletilmektedir. Altın fiyatları serbest piyasa, Kapalıçarşı,
+          Harem Altın, Altınkaynak, Garanti BBVA ve Akbank kaynaklarından; döviz kurları serbest piyasa ve
+          Türkiye Cumhuriyet Merkez Bankası kaynaklarından derlenir. Tüm veriler bilgi amaçlıdır, yatırım
+          tavsiyesi niteliği taşımaz. Gerçek zamanlı veri için yetkili kurumlara başvurunuz. Kaynak: Borsa
+          İstanbul A.Ş. © {new Date().getFullYear()} {SITE_NAME}.
+        </p>
       </div>
     </footer>
   );

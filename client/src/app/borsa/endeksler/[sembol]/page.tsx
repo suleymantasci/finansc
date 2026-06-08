@@ -5,6 +5,7 @@ import { INDEX_META, INDEX_SYMBOLS, getIndexMeta } from '@/lib/seo-data/indices'
 import { LiveIndexTicker } from './LiveIndexTicker';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { FAQSchema } from '@/components/seo/FAQSchema';
+import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
 import Link from 'next/link';
 
 interface Props {
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `${meta.symbol} endeks`,
       `${meta.name} bugün`,
       `bist ${meta.symbol.toLowerCase()}`,
-      `${meta.symbol} canlı`,
+      `${meta.symbol} güncel`,
       'bist endeks',
       'borsa istanbul',
     ],
@@ -103,7 +104,8 @@ export default async function IndexPage({ params }: Props) {
   };
 
   // Citable snippet (GEO için)
-  const summary = `${meta.name} (${meta.symbol}) endeksi Borsa İstanbul'da ${meta.companies ? `aralarında ${meta.companies.slice(0, 3).join(', ')} gibi büyük şirketlerin yer aldığı` : 'işlem gören'} bir endekstir. Canlı endeks değeri, günlük değişim, en yüksek/düşük seviyeler yukarıda anlık olarak güncellenmektedir.`;
+  // Citable snippet (GEO için) — endeksler BIST verisi (15dk gecikmeli)
+  const summary = `${meta.name} (${meta.symbol}) endeksi Borsa İstanbul'da ${meta.companies ? `aralarında ${meta.companies.slice(0, 3).join(', ')} gibi büyük şirketlerin yer aldığı` : 'işlem gören'} bir endekstir. Güncel endeks değeri, günlük değişim, en yüksek/düşük seviyeler yukarıda anlık olarak güncellenmektedir.`;
 
   const related = meta.relatedSymbols
     .map((s) => INDEX_META[s])
@@ -131,6 +133,8 @@ export default async function IndexPage({ params }: Props) {
             <li className="text-foreground font-medium">{meta.name}</li>
           </ol>
         </nav>
+
+        <DataDisclaimer variant="borsa" />
 
         <header className="mb-6">
           <h1 className="text-2xl lg:text-3xl font-bold">

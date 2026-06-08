@@ -102,7 +102,7 @@ export function AltinClient() {
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Alış</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Satış</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Değişim</th>
-                <th className="hidden px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:table-cell">Son Güncelleme</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Son Güncelleme</th>
               </tr>
             </thead>
             <tbody>
@@ -145,7 +145,7 @@ export function AltinClient() {
                       {isOns(gold.goldType) ? formatUSD(gold.sellPrice) : formatTL(gold.sellPrice)}
                     </td>
                     <td className="px-4 py-3 text-right"><PriceChange value={gold.changePercent} size="sm" /></td>
-                    <td className="hidden px-4 py-3 text-right text-xs text-muted-foreground sm:table-cell">
+                    <td className="px-4 py-3 text-right text-xs text-muted-foreground">
                       {formatDate(gold.timestamp)}
                     </td>
                   </tr>

@@ -9,6 +9,7 @@ import {
 import { LivePriceTicker } from './LivePriceTicker';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { FAQSchema } from '@/components/seo/FAQSchema';
+import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
 import Link from 'next/link';
 
 interface Props {
@@ -34,7 +35,7 @@ function getFallbackMeta(symbol: string): StockMeta {
     symbol,
     name: symbol, // sembol adını aynen göster (örn. "A1CAP" → A1CAP Hissesi)
     sector: 'BIST',
-    description: `${symbol} hisse senedi Borsa İstanbul'da (BIST) işlem görmektedir. ${symbol} için canlı alış, satış, günlük değişim yüzdesi, hacim ve gün içi en yüksek/düşük fiyat verileri bu sayfada anlık olarak güncellenmektedir. Yatırımcılar sembol bazında günlük performans, sektör karşılaştırması ve detaylı fiyat analizini takip edebilir.`,
+    description: `${symbol} hisse senedi Borsa İstanbul'da (BIST) işlem görmektedir. ${symbol} için güncel alış, satış, günlük değişim yüzdesi, hacim ve gün içi en yüksek/düşük fiyat verileri bu sayfada anlık olarak güncellenmektedir. Yatırımcılar sembol bazında günlük performans, sektör karşılaştırması ve detaylı fiyat analizini takip edebilir.`,
     faq: [
       {
         q: `${symbol} hangi endekste işlem görüyor?`,
@@ -46,7 +47,7 @@ function getFallbackMeta(symbol: string): StockMeta {
       },
       {
         q: `${symbol} günlük değişim yüzdesi nasıl hesaplanır?`,
-        a: `Günlük değişim yüzdesi, kapanış fiyatının bir önceki gün kapanışına göre yüzdesel farkıdır. Bu sayfada canlı olarak güncellenmektedir.`,
+        a: `Günlük değişim yüzdesi, kapanış fiyatının bir önceki gün kapanışına göre yüzdesel farkıdır. Bu sayfada anlık olarak güncellenmektedir.`,
       },
     ],
     relatedSlugs: related,
@@ -95,7 +96,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `${meta.name} borsa`,
       `${meta.sector} hisseleri`,
       'hisse senedi',
-      'canlı borsa',
+      'güncel borsa',
     ],
     alternates: { canonical: `${SITE_URL}/borsa/hisseler/${meta.symbol}` },
     openGraph: {
@@ -157,7 +158,9 @@ export default async function StockPage({ params }: Props) {
   };
 
   // Citable snippet (GEO için) — 50 kelimelik özet
-  const summary = `${meta.name} (${meta.symbol}) hisse senedi Borsa İstanbul'da ${meta.sector === 'BIST' ? '' : meta.sector + ' sektöründe '}işlem görmektedir. Canlı alış, satış, günlük değişim, hacim ve gün içi en yüksek/düşük fiyat verileri yukarıda anlık olarak güncellenmektedir.`;
+  // Not: BIST verileri 15dk gecikmelidir (BISTECH Veri Dağıtım Politikası).
+  // "Canlı" yerine "güncel" kullanılır, uyarı DataDisclaimer ile verilir.
+  const summary = `${meta.name} (${meta.symbol}) hisse senedi Borsa İstanbul'da ${meta.sector === 'BIST' ? '' : meta.sector + ' sektöründe '}işlem görmektedir. Güncel alış, satış, günlük değişim, hacim ve gün içi en yüksek/düşük fiyat verileri yukarıda anlık olarak güncellenmektedir.`;
 
   // Aynı sektördeki diğer hisseler (related links). Fallback meta için relatedSlugs zaten set edilmiş;
   // yine de ?? [] ile TS strict mode uyumu (StockMeta.relatedSlugs opsiyonel).
@@ -187,6 +190,8 @@ export default async function StockPage({ params }: Props) {
             <li className="text-foreground font-medium">{meta.name}</li>
           </ol>
         </nav>
+
+        <DataDisclaimer variant="borsa" />
 
         <header className="mb-6">
           <h1 className="text-2xl lg:text-3xl font-bold">

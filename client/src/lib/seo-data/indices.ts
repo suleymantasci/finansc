@@ -211,7 +211,7 @@ export function getIndexMeta(symbol: string): IndexMeta {
       symbol,
       name: symbol,
       fullName: `${symbol} Endeksi`,
-      description: `${symbol} Borsa İstanbul endeksidir. Canlı değer, günlük değişim ve detaylı bilgiler bu sayfada güncellenmektedir.`,
+      description: `${symbol} Borsa İstanbul endeksidir. Güncel değer, günlük değişim ve detaylı bilgiler bu sayfada güncellenmektedir.`,
       faq: [
         {
           q: `${symbol} endeksi nedir?`,

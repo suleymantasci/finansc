@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // Title: page-prefix only. Template '%s | SITE_NAME' ekliyor (Pit 28 fix)
-  const title = `${meta.code}/TRY ${meta.name} Kuru Bugün | Canlı ${meta.code} TL`;
+  const title = `${meta.code}/TRY ${meta.name} Kuru Bugün | Anlık ${meta.code} TL`;
   // Description: 150-155 char hedefi. meta.description uzun, slice ile sınırla.
   const description = (meta.description.length > 155
     ? meta.description.slice(0, 153).trimEnd() + '…'
@@ -38,10 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     keywords: [
       `${meta.code} tl`,
       `${meta.name.toLowerCase()} kuru`,
-      `${meta.code} canlı`,
+      `${meta.code} güncel`,
       `${meta.code} try`,
       'döviz kuru',
-      'canlı döviz',
+      'güncel döviz',
     ],
     alternates: { canonical: `${SITE_URL}/doviz/${meta.slug}` },
     openGraph: {
@@ -100,7 +100,7 @@ export default async function CurrencyPage({ params }: Props) {
     ],
   };
 
-  const summary = `${meta.code}/TRY (${meta.name} / Türk Lirası) canlı alış-satış kuru yukarıda anlık olarak güncellenmektedir. Veriler serbest piyasa ve Merkez Bankası kaynaklarından derlenir.`;
+  const summary = `${meta.code}/TRY (${meta.name} / Türk Lirası) güncel alış-satış kuru yukarıda anlık olarak güncellenmektedir. Veriler serbest piyasa ve Merkez Bankası kaynaklarından derlenir.`;
 
   const related = meta.relatedSlugs
     .map((s) => CURRENCY_SLUGS.includes(s) ? getCurrencyBySlug(s) : null)

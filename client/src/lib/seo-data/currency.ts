@@ -17,7 +17,7 @@ export const CURRENCY_META: Record<string, CurrencyMeta> = {
     slug: 'dolar',
     country: 'Amerika Birleşik Devletleri',
     description:
-      'USD/TRY (Amerikan Doları / Türk Lirası) canlı kuru, serbest piyasa ve Merkez Bankası verileri. ABD Doları, dünyanın en yaygın rezerv para birimidir. Türkiye\'de en çok takip edilen döviz kurudur.',
+      'USD/TRY (Amerikan Doları / Türk Lirası) güncel kuru, serbest piyasa ve Merkez Bankası verileri. ABD Doları, dünyanın en yaygın rezerv para birimidir. Türkiye\'de en çok takip edilen döviz kurudur.',
     faq: [
       {
         q: 'Dolar kuru neden yükselir?',
@@ -29,7 +29,7 @@ export const CURRENCY_META: Record<string, CurrencyMeta> = {
       },
       {
         q: '1 dolar kaç TL?',
-        a: '1 doların TL karşılığı anlık değişir. Güncel fiyatı bu sayfada canlı olarak görebilirsiniz.',
+        a: '1 doların TL karşılığı anlık değişir. Güncel fiyatı bu sayfada anlık olarak görebilirsiniz.',
       },
     ],
     relatedSlugs: ['euro', 'sterlin', 'gram-altin'],
@@ -41,7 +41,7 @@ export const CURRENCY_META: Record<string, CurrencyMeta> = {
     slug: 'euro',
     country: 'Avrupa Birliği',
     description:
-      'EUR/TRY (Euro / Türk Lirası) canlı kuru. Euro, Avrupa Birliği\'nin ortak para birimidir. Dolar ile birlikte dünyanın en önemli iki rezerv parasından biridir.',
+      'EUR/TRY (Euro / Türk Lirası) güncel kuru. Euro, Avrupa Birliği\'nin ortak para birimidir. Dolar ile birlikte dünyanın en önemli iki rezerv parasından biridir.',
     faq: [
       {
         q: 'Euro kuru neden dalgalanır?',
@@ -61,7 +61,7 @@ export const CURRENCY_META: Record<string, CurrencyMeta> = {
     slug: 'sterlin',
     country: 'Birleşik Krallık',
     description:
-      'GBP/TRY (İngiliz Sterlini / Türk Lirası) canlı kuru. Sterlin, dünyanın en eski para birimlerinden biridir ve en yüksek değerli para birimlerinden biridir.',
+      'GBP/TRY (İngiliz Sterlini / Türk Lirası) güncel kuru. Sterlin, dünyanın en eski para birimlerinden biridir ve en yüksek değerli para birimlerinden biridir.',
     faq: [
       {
         q: 'Sterlin neden yüksek değerli?',
@@ -77,7 +77,7 @@ export const CURRENCY_META: Record<string, CurrencyMeta> = {
     slug: 'ons-altin',
     country: 'Uluslararası',
     description:
-      'XAU/TRY (Ons Altın / Türk Lirası) canlı kuru. Ons altın, küresel altın piyasasının temel ölçü birimidir. 1 ons = 31,1035 gram saf altın.',
+      'XAU/TRY (Ons Altın / Türk Lirası) güncel kuru. Ons altın, küresel altın piyasasının temel ölçü birimidir. 1 ons = 31,1035 gram saf altın.',
     faq: [
       {
         q: 'Ons altın fiyatı neden önemli?',
@@ -93,7 +93,7 @@ export const CURRENCY_META: Record<string, CurrencyMeta> = {
     slug: 'frang',
     country: 'İsviçre',
     description:
-      'CHF/TRY (İsviçre Frangı / Türk Lirası) canlı kuru. İsviçre Frangı, güvenli liman para birimi olarak bilinir. Özellikle belirsizlik dönemlerinde değer kazanır.',
+      'CHF/TRY (İsviçre Frangı / Türk Lirası) güncel kuru. İsviçre Frangı, güvenli liman para birimi olarak bilinir. Özellikle belirsizlik dönemlerinde değer kazanır.',
     faq: [
       {
         q: 'Frang neden güvenli liman?',
@@ -109,7 +109,7 @@ export const CURRENCY_META: Record<string, CurrencyMeta> = {
     slug: 'yen',
     country: 'Japonya',
     description:
-      'JPY/TRY (Japon Yeni / Türk Lirası) canlı kuru. Japon Yeni, dünyanın en çok işlem gören para birimlerinden biridir. Asya ticaretinde önemli rol oynar.',
+      'JPY/TRY (Japon Yeni / Türk Lirası) güncel kuru. Japon Yeni, dünyanın en çok işlem gören para birimlerinden biridir. Asya ticaretinde önemli rol oynar.',
     faq: [
       {
         q: 'Yen neden değer kaybediyor?',
@@ -125,7 +125,7 @@ export const CURRENCY_META: Record<string, CurrencyMeta> = {
     slug: 'yuan',
     country: 'Çin',
     description:
-      'CNY/TRY (Çin Yuanı / Türk Lirası) canlı kuru. Çin Yuanı, dünya ticaretinde dolar ve euro\'dan sonra en çok kullanılan para birimlerinden biridir.',
+      'CNY/TRY (Çin Yuanı / Türk Lirası) güncel kuru. Çin Yuanı, dünya ticaretinde dolar ve euro\'dan sonra en çok kullanılan para birimlerinden biridir.',
     faq: [
       {
         q: 'Yuan uluslararası rezerv para mı?',
@@ -141,7 +141,7 @@ export const CURRENCY_META: Record<string, CurrencyMeta> = {
     slug: 'ruble',
     country: 'Rusya',
     description:
-      'RUB/TRY (Rus Rublesi / Türk Lirası) canlı kuru. Rus Rublesi, Türkiye ile Rusya arasındaki artan ticaret hacmi nedeniyle önem kazanmaktadır.',
+      'RUB/TRY (Rus Rublesi / Türk Lirası) güncel kuru. Rus Rublesi, Türkiye ile Rusya arasındaki artan ticaret hacmi nedeniyle önem kazanmaktadır.',
     faq: [
       {
         q: 'Türkiye-Rusya ticaretinde hangi para birimi kullanılıyor?',
