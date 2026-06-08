@@ -10,7 +10,7 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY client/package.json ./client/
 COPY backend/package.json ./backend/
 
-RUN pnpm install --frozen-lockfile --filter @finanscozum/client...
+RUN pnpm install --frozen-lockfile --filter @finanscozum/client
 
 # Copy client source only
 COPY client/ ./client/
