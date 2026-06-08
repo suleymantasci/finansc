@@ -125,12 +125,12 @@ export function DovizClient() {
 
   const isLoading = currencyLoading && currencies.length === 0;
 
-  const columns = [
-    { key: 'name', label: 'Döviz', align: 'left' as const },
-    { key: 'buyPrice', label: 'Alış', align: 'right' as const },
-    { key: 'sellPrice', label: 'Satış', align: 'right' as const },
-    { key: 'changePercent', label: 'Değişim', align: 'right' as const },
-    { key: 'time', label: 'Saat', align: 'right' as const },
+  const columns: { key: string; label: string; align: 'left' | 'right'; hide?: 'sm' | 'md' | 'lg' }[] = [
+    { key: 'name', label: 'Döviz', align: 'left' },
+    { key: 'buyPrice', label: 'Alış', align: 'right' },
+    { key: 'sellPrice', label: 'Satış', align: 'right' },
+    { key: 'changePercent', label: 'Değişim', align: 'right' },
+    { key: 'time', label: 'Saat', align: 'right' },
   ];
 
   const tabs: { key: Tab; label: string }[] = [
@@ -189,7 +189,7 @@ export function DovizClient() {
                     className={cn(
                       'px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap',
                       col.align === 'right' ? 'text-right' : 'text-left',
-                      col.hide && `hidden ${col.hide}:table-cell`,
+                      col.hide ? `hidden ${col.hide}:table-cell` : '',
                     )}
                   >
                     {col.label}
@@ -237,7 +237,7 @@ export function DovizClient() {
                       <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal4(c.buyPrice)}</td>
                       <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal4(c.sellPrice)}</td>
                       <td className="px-4 py-3 text-right"><PriceChange value={c.changePercent} size="sm" /></td>
-                      <td className={cn('px-4 py-3 text-right text-xs text-muted-foreground hidden sm:table-cell')}>
+                      <td className="px-4 py-3 text-right text-xs text-muted-foreground">
                         {c.time}
                       </td>
                     </tr>
