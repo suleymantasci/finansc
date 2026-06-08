@@ -1,0 +1,10 @@
+# ── pnpm Workspace Config (monorepo) ──────────────────────────────────
+#
+# Client + backend monorepo yapısı. pnpm 8+ zorunlu kılıyor; pnpm 7 de
+# bu dosyayı kabul eder. Sadece client/ + backend/ paketlerini workspace
+# üyesi olarak tanımla (her biri kendi package.json'una sahip).
+#
+# Bu dosya Dockerfile'da COPY edildiği için mevcut olmalı.
+packages:
+  - 'client'
+  - 'backend'
