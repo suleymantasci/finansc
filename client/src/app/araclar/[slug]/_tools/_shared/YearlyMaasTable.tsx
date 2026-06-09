@@ -11,6 +11,12 @@ import type { YearlyTableResult, MonthlyRow } from './maas-engine';
 // Her ay için brüt maaş düzenlenebilir (input), hesaplama otomatik.
 // Kümülatif matrah aylar arası taşınır — gelir vergisi dilimleri doğru çalışır.
 // İşveren maliyeti sütunları opsiyonel gösterilir.
+//
+// Süleyman isteği: "her ekranda tablo olsun, kolonlar satırlar olsun,
+// scroll olsun". Bu nedenle Masaüstü/mobil için ayrı render YOK —
+// tek <table>, w-full, overflow-x-auto ile yatay scroll. Body padding
+// ve text boyutu küçültüldü (px-1.5 py-1 / sm:px-3 sm:py-2.5), böylece
+// dar ekranda daha fazla sütun görünür.
 
 interface Props {
   yearlyResult: YearlyTableResult;
@@ -60,28 +66,43 @@ export function YearlyMaasTable({
         )}
       </div>
 
-      {/* Tablo */}
+      {/* Tablo — her ekranda aynı, sadece yatay scroll */}
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
-        {/* Desktop Tablo */}
-        <table className="hidden lg:table w-full text-sm">
+        <table className="w-full text-xs sm:text-sm min-w-[720px]">
           <thead className="bg-muted">
             <tr>
-              <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground">Ay</th>
-              <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground min-w-[140px]">
+              <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-left text-[10px] sm:text-xs font-semibold text-muted-foreground">
+                Ay
+              </th>
+              <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-left text-[10px] sm:text-xs font-semibold text-muted-foreground min-w-[120px] sm:min-w-[140px]">
                 {direction === 'brutten-nete' ? 'Brüt Maaş' : 'Net Maaş'}
               </th>
-              <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">
+              <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold text-muted-foreground">
                 {direction === 'brutten-nete' ? 'Net Maaş' : 'Brüt Maaş'}
               </th>
-              <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">Aylık Gelir<br/>Vergisi</th>
-              <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">İşsizlik<br/>Sigortası</th>
-              <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">Damga<br/>Vergisi</th>
-              <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">Çalışan SGK<br/>Primi</th>
+              <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                Gelir Vergisi
+              </th>
+              <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                İşsizlik
+              </th>
+              <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                Damga
+              </th>
+              <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                SGK Primi
+              </th>
               {showEmployer && (
                 <>
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">SGK İşveren<br/>Primi</th>
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">İşsizlik<br/>İşveren</th>
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">Toplam<br/>Maliyet</th>
+                  <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                    SGK İşv.
+                  </th>
+                  <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                    İşsz. İşv.
+                  </th>
+                  <th className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                    Toplam Maliyet
+                  </th>
                 </>
               )}
             </tr>
@@ -89,14 +110,18 @@ export function YearlyMaasTable({
           <tbody>
             {rows.map((row, idx) => (
               <tr key={row.month} className="border-t border-border hover:bg-muted/30">
-                <td className="px-3 py-2 font-medium text-sm">{row.monthName}</td>
-                <td className="px-1 py-1">
+                <td className="px-1.5 py-1.5 sm:px-3 sm:py-2 font-medium text-xs sm:text-sm whitespace-nowrap">
+                  {row.monthName}
+                </td>
+                <td className="px-1 py-1 sm:px-2 sm:py-1">
                   <div className="relative">
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₺</span>
+                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] sm:text-xs text-muted-foreground">
+                      ₺
+                    </span>
                     <input
                       type="text"
                       inputMode="decimal"
-                      className="w-full rounded-md border border-border bg-background px-2 py-1.5 pl-6 text-right text-sm font-mono tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      className="w-full rounded-md border border-border bg-background pl-5 sm:pl-6 pr-1.5 sm:pr-2 py-1 sm:py-1.5 text-right text-xs sm:text-sm font-mono tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                       value={monthlyAmounts[idx] > 0 ? monthlyAmounts[idx].toLocaleString('tr-TR', { minimumFractionDigits: 2 }) : '0,00'}
                       onChange={(e) => handleAmountChange(idx, e.target.value)}
                     />
@@ -118,59 +143,41 @@ export function YearlyMaasTable({
             ))}
             {/* Toplam satırı */}
             <tr className="border-t-2 border-primary/30 bg-primary/5 font-bold">
-              <td className="px-3 py-2.5 text-sm">Toplam</td>
-              <td className="px-3 py-2.5 text-right font-mono tabular-nums text-sm">
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-xs sm:text-sm whitespace-nowrap">Toplam</td>
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
                 {fmtNum(direction === 'brutten-nete' ? totals.gross : totals.net)}
               </td>
-              <td className="px-3 py-2.5 text-right font-mono tabular-nums text-sm text-emerald-600 dark:text-emerald-400">
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">
                 {fmtNum(direction === 'brutten-nete' ? totals.net : totals.gross)}
               </td>
-              <td className="px-3 py-2.5 text-right font-mono tabular-nums text-sm">{fmtNum(totals.incomeTax)}</td>
-              <td className="px-3 py-2.5 text-right font-mono tabular-nums text-sm">{fmtNum(totals.unemployment)}</td>
-              <td className="px-3 py-2.5 text-right font-mono tabular-nums text-sm">{fmtNum(totals.stampTax)}</td>
-              <td className="px-3 py-2.5 text-right font-mono tabular-nums text-sm">{fmtNum(totals.sgkEmployee)}</td>
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                {fmtNum(totals.incomeTax)}
+              </td>
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                {fmtNum(totals.unemployment)}
+              </td>
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                {fmtNum(totals.stampTax)}
+              </td>
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                {fmtNum(totals.sgkEmployee)}
+              </td>
               {showEmployer && (
                 <>
-                  <td className="px-3 py-2.5 text-right font-mono tabular-nums text-sm">{fmtNum(totals.sgkEmployer)}</td>
-                  <td className="px-3 py-2.5 text-right font-mono tabular-nums text-sm">{fmtNum(totals.unemploymentEmployer)}</td>
-                  <td className="px-3 py-2.5 text-right font-mono tabular-nums text-sm">{fmtNum(totals.totalEmployerCost)}</td>
+                  <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                    {fmtNum(totals.sgkEmployer)}
+                  </td>
+                  <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                    {fmtNum(totals.unemploymentEmployer)}
+                  </td>
+                  <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                    {fmtNum(totals.totalEmployerCost)}
+                  </td>
                 </>
               )}
             </tr>
           </tbody>
         </table>
-
-        {/* Mobil Card Layout */}
-        <div className="lg:hidden divide-y divide-border">
-          {rows.map((row, idx) => (
-            <MobileMonthCard
-              key={row.month}
-              row={row}
-              amount={monthlyAmounts[idx]}
-              onAmountChange={(v) => handleAmountChange(idx, v)}
-              showEmployer={showEmployer}
-              direction={direction}
-            />
-          ))}
-          {/* Mobil Toplam */}
-          <div className="p-4 bg-primary/5">
-            <p className="font-bold text-sm mb-2">Yıllık Toplam</p>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <MobileStat label="Brüt" value={totals.gross} />
-              <MobileStat label="Net" value={totals.net} highlight />
-              <MobileStat label="Gelir Vergisi" value={totals.incomeTax} />
-              <MobileStat label="SGK Primi" value={totals.sgkEmployee} />
-              <MobileStat label="İşsizlik" value={totals.unemployment} />
-              <MobileStat label="Damga" value={totals.stampTax} />
-              {showEmployer && (
-                <>
-                  <MobileStat label="SGK İşveren" value={totals.sgkEmployer} />
-                  <MobileStat label="İşveren Toplam" value={totals.totalEmployerCost} />
-                </>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -181,7 +188,7 @@ export function YearlyMaasTable({
 function NumCell({ value, highlight }: { value: number; highlight?: boolean }) {
   return (
     <td
-      className={`px-3 py-2 text-right font-mono tabular-nums text-sm ${
+      className={`px-1.5 py-1.5 sm:px-3 sm:py-2 text-right font-mono tabular-nums text-xs sm:text-sm whitespace-nowrap ${
         highlight ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-muted-foreground'
       } ${value === 0 ? 'opacity-40' : ''}`}
     >
@@ -192,57 +199,4 @@ function NumCell({ value, highlight }: { value: number; highlight?: boolean }) {
 
 function fmtNum(v: number): string {
   return v.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function MobileMonthCard({
-  row,
-  amount,
-  onAmountChange,
-  showEmployer,
-  direction,
-}: {
-  row: MonthlyRow;
-  amount: number;
-  onAmountChange: (v: string) => void;
-  showEmployer: boolean;
-  direction: 'brutten-nete' | 'netten-brute';
-}) {
-  return (
-    <div className={`p-3 ${row.gross > 0 ? '' : 'opacity-50'}`}>
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-semibold text-sm">{row.monthName}</span>
-        <div className="relative w-32">
-          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₺</span>
-          <input
-            type="text"
-            inputMode="decimal"
-            className="w-full rounded-md border border-border bg-background px-2 py-1 pl-6 text-right text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/30"
-            value={amount > 0 ? amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) : '0,00'}
-            onChange={(e) => onAmountChange(e.target.value)}
-          />
-        </div>
-      </div>
-      {row.gross > 0 && (
-        <div className="grid grid-cols-2 gap-1.5 text-xs">
-          <MobileStat label={direction === 'brutten-nete' ? 'Net' : 'Brüt'} value={direction === 'brutten-nete' ? row.net : row.gross} highlight />
-          <MobileStat label="Gelir Vergisi" value={row.incomeTax} />
-          <MobileStat label="SGK" value={row.sgkEmployee} />
-          <MobileStat label="İşsizlik" value={row.unemployment} />
-          <MobileStat label="Damga" value={row.stampTax} />
-          {showEmployer && <MobileStat label="İşveren" value={row.totalEmployerCost} />}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MobileStat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={`font-mono tabular-nums ${highlight ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : ''}`}>
-        {fmtNum(value)}
-      </span>
-    </div>
-  );
 }
