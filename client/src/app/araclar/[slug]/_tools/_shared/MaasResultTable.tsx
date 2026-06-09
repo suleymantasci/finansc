@@ -3,11 +3,12 @@
 import type { MaasLineItem } from './maas-engine';
 import { fmtTL, fmtPct } from './maas-engine';
 
-// ── Sonuç Tablosu (Mobile-First: Card Grouping + Desktop Tablo) ──
+// ── Sonuç Tablosu (Mobil + Desktop aynı görünüm) ──
 //
-// Süleyman isteği: "ekran küçük durumda tüm container genişliği
-// kullanılsın, tablo net okunsun" → mobilde her satır bir card
-// (2'li grid: label + amount + percent), desktop'ta klasik tablo.
+// Süleyman isteği: "masaüstündeki tablo mobilde de aynı görünsün,
+// ayrı bir card layout olmasın." Tek tablo, w-full, overflow-x-auto
+// ile çok dar ekranlarda yatay scroll. Padding küçültüldü (sm:px-3
+// px-2), text-xs/font-mono sıkı tipografi.
 
 export function MaasResultTable({ lines }: { lines: MaasLineItem[] }) {
   // Brüt (base) satırını bul — yüzde hesabı için
@@ -16,18 +17,17 @@ export function MaasResultTable({ lines }: { lines: MaasLineItem[] }) {
 
   return (
     <div className="w-full rounded-xl border border-border bg-card overflow-hidden">
-      {/* Desktop tablo */}
-      <div className="hidden sm:block overflow-x-auto">
+      <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted">
             <tr>
-              <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-2 py-2 sm:px-4 sm:py-2.5 text-left text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Kalem
               </th>
-              <th className="px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-2 py-2 sm:px-4 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Tutar (₺)
               </th>
-              <th className="px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground w-20">
+              <th className="px-2 py-2 sm:px-4 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground w-16 sm:w-20">
                 Oran
               </th>
             </tr>
@@ -42,65 +42,30 @@ export function MaasResultTable({ lines }: { lines: MaasLineItem[] }) {
                     : 'border-t border-border'
                 }
               >
-                <td className="px-4 py-2.5">
-                  <div className="flex items-center gap-2">
+                <td className="px-2 py-2 sm:px-4 sm:py-2.5">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <span
                       className={`inline-block h-2 w-2 rounded-full shrink-0 ${
                         l.kind === 'income' ? 'bg-emerald-500' : l.kind === 'deduction' ? 'bg-red-500' : l.kind === 'employer' ? 'bg-orange-500' : 'bg-blue-500'
                       }`}
                     />
-                    {l.label}
+                    <span className="text-xs sm:text-sm whitespace-nowrap">{l.label}</span>
                   </div>
                 </td>
-                <td className={`px-4 py-2.5 text-right font-mono tabular-nums ${l.amount < 0 ? 'text-emerald-600' : ''}`}>
+                <td
+                  className={`px-2 py-2 sm:px-4 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm whitespace-nowrap ${
+                    l.amount < 0 ? 'text-emerald-600' : ''
+                  }`}
+                >
                   {fmtTL(l.amount, 2)}
                 </td>
-                <td className="px-4 py-2.5 text-right text-xs text-muted-foreground">
+                <td className="px-2 py-2 sm:px-4 sm:py-2.5 text-right text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                   {l.rate !== undefined ? fmtPct(l.rate, 2) : brutAmount > 0 ? fmtPct(l.amount / brutAmount, 2) : '—'}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* Mobil card layout — w-full, her satır kendi kartı */}
-      <div className="sm:hidden divide-y divide-border">
-        {lines.map((l, i) => (
-          <div
-            key={i}
-            className={`p-3 ${l.highlight ? 'bg-primary/5' : ''}`}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <span
-                  className={`inline-block h-2 w-2 rounded-full shrink-0 mt-1 ${
-                    l.kind === 'income' ? 'bg-emerald-500' : l.kind === 'deduction' ? 'bg-red-500' : l.kind === 'employer' ? 'bg-orange-500' : 'bg-blue-500'
-                  }`}
-                />
-                <span className={`text-xs ${l.highlight ? 'font-bold' : ''} ${l.kind === 'info' ? 'text-muted-foreground' : ''}`}>
-                  {l.label}
-                </span>
-              </div>
-              <span
-                className={`font-mono tabular-nums text-sm shrink-0 ${l.highlight ? 'font-bold text-base' : ''} ${
-                  l.amount < 0 ? 'text-emerald-600' : l.kind === 'info' ? 'text-muted-foreground' : ''
-                }`}
-              >
-                {fmtTL(l.amount, 2)}
-              </span>
-            </div>
-            {(l.rate !== undefined || brutAmount > 0) && (
-              <p className="mt-1 pl-4 text-[10px] text-muted-foreground">
-                {l.rate !== undefined
-                  ? `Oran: ${fmtPct(l.rate, 2)}`
-                  : brutAmount > 0
-                  ? `Brüt üzerinden: ${fmtPct(l.amount / brutAmount, 2)}`
-                  : ''}
-              </p>
-            )}
-          </div>
-        ))}
       </div>
     </div>
   );

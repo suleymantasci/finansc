@@ -42,14 +42,20 @@ export function YearlyMaasTable({
   return (
     <div className="w-full space-y-3">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-base sm:text-lg font-bold">
           {direction === 'brutten-nete' ? 'Brütten Nete' : 'Netten Brüte'} Maaş Hesabı Tablosu
         </h2>
         {onPdfDownload && (
-          <Button type="button" onClick={onPdfDownload} variant="outline" className="gap-2 text-sm">
+          <Button
+            type="button"
+            onClick={onPdfDownload}
+            variant="outline"
+            className="gap-1.5 text-xs sm:text-sm self-start sm:self-auto shrink-0"
+            aria-label="Sonucu PDF olarak indir"
+          >
             <Download className="h-4 w-4" />
-            PDF olarak indir
+            PDF
           </Button>
         )}
       </div>
