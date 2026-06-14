@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
     // Cihaz boyutlarına göre otomatik responsive
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    // Blog thumbnail'ları Unsplash'ten geliyor
+    // Blog thumbnail'ları Unsplash'ten + kendi upload endpoint'imizden geliyor
     remotePatterns: [
       {
         protocol: 'https',
@@ -26,6 +26,12 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'plus.unsplash.com',
         pathname: '/**',
+      },
+      {
+        // Backend upload endpoint (blog thumbnail barındırma)
+        protocol: 'https',
+        hostname: 'api.finanscozum.net',
+        pathname: '/uploads/**',
       },
     ],
     // Minimum cache TTL — yeni build sonrası eski versiyonun stale kullanımı için
