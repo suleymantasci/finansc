@@ -37,7 +37,7 @@ export class UploadController {
     },
   })
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))
-  async uploadThumbnail(@UploadedFile() file: Express.Multer.File) {
+  async uploadThumbnail(@UploadedFile() file: any) {
     try {
       const url = await this.uploadService.saveImage(file, 'thumbnails');
       return { url, size: file.size, mime: file.mimetype };

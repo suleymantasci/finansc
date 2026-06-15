@@ -45,8 +45,9 @@ export class UploadService {
   /**
    * Persist a Multer file to disk and return the public URL.
    * Filename is randomized (uuid) to prevent enumeration and collisions.
+   * `file` is typed as any to avoid @types/multer dependency.
    */
-  async saveImage(file: Express.Multer.File, subdir = 'thumbnails'): Promise<string> {
+  async saveImage(file: any, subdir = 'thumbnails'): Promise<string> {
     if (!file) {
       throw new BadRequestException('Dosya yüklenmedi');
     }
