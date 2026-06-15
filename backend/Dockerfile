@@ -27,14 +27,15 @@ RUN pnpm build
 # ── Stage 1.5: deps (self-contained production node_modules) ─────────────
 FROM builder AS deps
 
-# pnpm deploy --prod --legacy: workspace-aware self-contained
+# pnpm --filter <pkg> deploy --prod: workspace-aware self-contained
 # node_modules üretir. Sembolik link store yerine gerçek kopyalar —
-# runtime'da @nestjs/core, typeorm, pg, bcrypt vb. hepsi
-# /app/node_modules altında düz dizinde bulunur.
-# pnpm prune --prod yerine tercih edildi: prune sembolik link
-# yapısını bozuyor, deploy ise tam bağımsız bir node_modules üretir.
-WORKDIR /app/backend
-RUN pnpm deploy --prod --filter @finanscozum/backend --legacy /app/deployed
+# runtime'da @nestjs/core, typeorm, pg, bcrypt, express vb. hepsi
+# /app/deployed/node_modules altında düz dizinde bulunur.
+# NOT: --legacy kaldırıldı — pnpm v11'de transitif bağımlılıkları
+# (örn. @nestjs/platform-express → express) atlıyor ve
+# "Cannot find module 'express'" hatasına yol açıyor.
+WORKDIR /app
+RUN pnpm --filter @finanscozum/backend deploy --prod /app/deployed
 
 # ── Stage 2: Production (runtime) ────────────────────────────────────────
 FROM node:22-alpine AS runner
