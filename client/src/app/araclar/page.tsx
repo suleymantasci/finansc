@@ -85,11 +85,7 @@ export default async function AraclarPage() {
       '@type': 'ItemList',
       itemListElement: [
         ...KREDI_TOOLS,
-        ...DIGER_TOOLS,
-        ...VERGI_TOOLS,
-        ...MEVDUAT_TOOLS,
-        ...DOVIZ_TOOLS,
-        ...ALTIN_TOOLS,
+        ...FINANS_TOOLS,
         ...MAAS_TOOLS,
       ].map((tool, i) => ({
         '@type': 'ListItem',
