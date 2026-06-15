@@ -6,9 +6,14 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import { mkdirSync } from 'fs';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Use the Express-specific factory so we can attach express.static() for
+  // serving uploaded images. (NestJS 11 removed the implicit
+  // `app.useStaticAssets()` helper — it now lives in the optional
+  // `@nestjs/serve-static` package; we don't want to add another dep.)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService);
 
   // Security
@@ -24,6 +29,7 @@ async function bootstrap() {
 
   // Static assets — /uploads/* serves user-uploaded images
   // (used by /api/upload/thumbnail for blog hero/thumbnail storage)
+  // Implemented via express.static() so we avoid the @nestjs/serve-static dep.
   const uploadDir = config.get<string>('UPLOAD_DIR') || join(process.cwd(), 'uploads');
   // Ensure the directory exists at boot so the first upload doesn't race
   try {
@@ -31,7 +37,13 @@ async function bootstrap() {
   } catch (e) {
     // ignore
   }
-  app.useStaticAssets(uploadDir, { prefix: '/uploads/' });
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const express = require('express');
+  app.use('/uploads', express.static(uploadDir, {
+    // Long cache + immutable for content-hashed filenames
+    maxAge: '7d',
+    fallthrough: false,
+  }));
 
   // Global prefix
   app.setGlobalPrefix('api');
