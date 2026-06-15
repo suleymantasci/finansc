@@ -35,7 +35,7 @@ FROM builder AS deps
 # (örn. @nestjs/platform-express → express) atlıyor ve
 # "Cannot find module 'express'" hatasına yol açıyor.
 WORKDIR /app
-RUN pnpm --filter @finanscozum/backend deploy --prod /app/deployed
+RUN pnpm --filter @finanscozum/backend deploy --prod --legacy /app/deployed
 
 # ── Stage 2: Production (runtime) ────────────────────────────────────────
 FROM node:22-alpine AS runner
