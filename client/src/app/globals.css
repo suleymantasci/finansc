@@ -232,3 +232,19 @@
     animation-play-state: paused;
   }
 }
+
+
+/* ── CLS fix: blog content images ──
+   Blog content dangerouslySetInnerHTML ile render ediliyor.
+   İçerikteki img'ler width/height olmadan gelirse layout kayar.
+   aspect-ratio + max-width ile layout'u sabitle. */
+.prose img,
+.blog-content img,
+article img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--color-muted);
+}

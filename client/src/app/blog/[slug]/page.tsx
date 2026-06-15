@@ -44,7 +44,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const title = post.seoTitle || post.title;
   const description = post.seoDescription || post.excerpt || undefined;
-  const image = post.thumbnailUrl || `${SITE_URL}/og-default.png`;
+  // OG image stratejisi:
+  // 1) Blog API'sinde kendi uploads/ URL varsa → onu kullan (en özgün)
+  // 2) Yoksa → /api/og?type=blog endpoint'i branded HTML-rendered PNG üretir
+  //    (Unsplash 404 riski yok, kalıcı, mobil uyumlu)
+  // 3) Son fallback: og-default.png (root layout'tan)
+  const ogImage = post.thumbnailUrl && post.thumbnailUrl.includes('/uploads/')
+    ? post.thumbnailUrl
+    : `/api/og?type=blog&title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(post.excerpt || post.seoDescription || '')}&category=BLOG&url=${encodeURIComponent(`finanscozum.net/blog/${post.slug}`)}`;
 
   return {
     title,
@@ -60,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `${SITE_URL}/blog/${post.slug}`,
       siteName: SITE_NAME,
       locale: 'tr_TR',
-      images: [{ url: image, width: 1200, height: 630, alt: post.title }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: post.title }],
       publishedTime: post.publishedAt || post.createdAt,
       modifiedTime: post.updatedAt,
       section: post.category || 'Finans',
@@ -69,7 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title,
       description,
-      images: [image],
+      images: [ogImage],
     },
   };
 }

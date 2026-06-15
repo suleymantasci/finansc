@@ -69,6 +69,49 @@ const MAAS_TOOLS = [
 ];
 
 export default async function AraclarPage() {
+  // ── SoftwareApplication schema ──
+  // Google arama sonuçlarında "rich result" olarak görünebilmesi için
+  // her araç için SoftwareApplication tipinde JSON-LD üretiyoruz.
+  // ItemList + CollectionPage ile sayfa bağlamını da belirtiyoruz.
+  const itemListJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Hesaplama Araçları',
+    description: 'Türkiye\'nin kapsamlı finansal hesaplama araçları koleksiyonu: kredi, vergi, mevduat, maaş, döviz, altın.',
+    url: 'https://finanscozum.net/araclar',
+    inLanguage: 'tr-TR',
+    publisher: { '@id': 'https://finanscozum.net/#organization' },
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: [
+        ...KREDI_TOOLS,
+        ...DIGER_TOOLS,
+        ...VERGI_TOOLS,
+        ...MEVDUAT_TOOLS,
+        ...DOVIZ_TOOLS,
+        ...ALTIN_TOOLS,
+        ...MAAS_TOOLS,
+      ].map((tool, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        item: {
+          '@type': 'SoftwareApplication',
+          name: tool.title,
+          description: tool.desc,
+          url: `https://finanscozum.net/araclar/${tool.slug}`,
+          applicationCategory: 'FinanceApplication',
+          operatingSystem: 'Web',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'TRY',
+          },
+          inLanguage: 'tr-TR',
+        },
+      })),
+    },
+  };
+
   let activeSlugs: Set<string> | null = null;
   try {
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -84,7 +127,12 @@ export default async function AraclarPage() {
   const maasFiltered = activeSlugs ? MAAS_TOOLS.filter((t) => activeSlugs!.has(t.slug)) : MAAS_TOOLS;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
+      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
       <h1 className="text-2xl font-bold lg:text-3xl">Hesaplama Araçları</h1>
       <p className="mt-2 text-sm text-muted-foreground lg:text-base">
         Finansal kararlarınızı kolaylaştıran ücretsiz araçlar
@@ -162,5 +210,6 @@ export default async function AraclarPage() {
         </>
       )}
     </div>
+    </>
   );
 }

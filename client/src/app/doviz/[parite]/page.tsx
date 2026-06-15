@@ -51,6 +51,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `${SITE_URL}/doviz/${meta.slug}`,
       siteName: SITE_NAME,
       locale: 'tr_TR',
+      images: [
+        {
+          url: `/api/og?type=doviz&title=${encodeURIComponent(`${meta.code}/TRY ${meta.name}`)}&subtitle=${encodeURIComponent('Döviz Kuru Bugün, Grafik ve Çevirici')}&category=DÖVİZ&url=${encodeURIComponent(`finanscozum.net/doviz/${meta.slug}`)}`,
+          width: 1200,
+          height: 630,
+          alt: `${meta.code}/TRY ${meta.name} Döviz Kuru — Anlık Kur, Grafik ve Çevirici`,
+          type: 'image/png',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`/api/og?type=doviz&title=${encodeURIComponent(`${meta.code}/TRY ${meta.name}`)}&subtitle=${encodeURIComponent('Döviz Kuru Bugün, Grafik ve Çevirici')}&category=DÖVİZ&url=${encodeURIComponent(`finanscozum.net/doviz/${meta.slug}`)}`],
     },
   };
 }

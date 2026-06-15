@@ -45,6 +45,19 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    // Eski/silinmiş URL'leri doğru yere yönlendir.
+    // 308 (Permanent) hem SEO hem tarayıcı önbelleği için doğru seçim.
+    return [
+      {
+        // Silinen blog yazısı: /blog/maas-hesaplama-2026
+        // → /araclar/maas-hesaplama (araç sayfası)
+        source: '/blog/maas-hesaplama-2026',
+        destination: '/araclar/maas-hesaplama',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

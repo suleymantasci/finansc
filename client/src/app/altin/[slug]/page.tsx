@@ -51,6 +51,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `${SITE_URL}/altin/${meta.slug}`,
       siteName: SITE_NAME,
       locale: 'tr_TR',
+      images: [
+        {
+          url: `/api/og?type=altin&title=${encodeURIComponent(meta.name)}&subtitle=${encodeURIComponent('Altın Fiyatı Bugün, Grafik ve Çevirici')}&category=ALTIN&url=${encodeURIComponent(`finanscozum.net/altin/${meta.slug}`)}`,
+          width: 1200,
+          height: 630,
+          alt: `${meta.name} Fiyatı Bugün — Anlık Altın Fiyatı ve Grafik`,
+          type: 'image/png',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`/api/og?type=altin&title=${encodeURIComponent(meta.name)}&subtitle=${encodeURIComponent('Altın Fiyatı Bugün, Grafik ve Çevirici')}&category=ALTIN&url=${encodeURIComponent(`finanscozum.net/altin/${meta.slug}`)}`],
     },
   };
 }

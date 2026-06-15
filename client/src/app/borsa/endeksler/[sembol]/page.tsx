@@ -54,6 +54,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `${SITE_URL}/borsa/endeksler/${meta.symbol}`,
       siteName: SITE_NAME,
       locale: 'tr_TR',
+      images: [
+        {
+          url: `/api/og?type=endeks&title=${encodeURIComponent(`${meta.name} (${meta.symbol})`)}&subtitle=${encodeURIComponent('Borsa Endeksi Bugün, Grafik ve Analiz')}&category=BORSA&url=${encodeURIComponent(`finanscozum.net/borsa/endeksler/${meta.symbol}`)}`,
+          width: 1200,
+          height: 630,
+          alt: `${meta.name} (${meta.symbol}) Borsa Endeksi — Anlık Veri ve Yorum`,
+          type: 'image/png',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`/api/og?type=endeks&title=${encodeURIComponent(`${meta.name} (${meta.symbol})`)}&subtitle=${encodeURIComponent('Borsa Endeksi Bugün, Grafik ve Analiz')}&category=BORSA&url=${encodeURIComponent(`finanscozum.net/borsa/endeksler/${meta.symbol}`)}`],
     },
   };
 }

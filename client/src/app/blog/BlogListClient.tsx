@@ -145,6 +145,13 @@ export function BlogListClient() {
             </motion.div>
           )}
 
+          {/* ── Tüm Yazılar (H2) — Sayfa H1'i "Finans Bilgi Merkezi" + bu H2 içerik başlığı ── */}
+          {rest.length > 0 && (
+            <h2 className="mt-8 mb-4 text-xl font-bold tracking-tight lg:text-2xl">
+              {category ? `${category} Yazıları` : 'Tüm Yazılar'}
+            </h2>
+          )}
+
           {/* Grid */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {rest.map((post, i) => {
