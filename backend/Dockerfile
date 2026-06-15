@@ -14,7 +14,10 @@ COPY client/package.json ./client/
 COPY backend/package.json ./backend/
 
 # Dev dependencies dahil tüm paketleri kur (nest build için gerekli)
-RUN pnpm install --frozen-lockfile --filter @finanscozum/backend
+# --no-frozen-lockfile: lockfile'a yeni eklenen devDependency'leri (@types/*)
+# pnpm install sırasında otomatik ekler; production runtime'da
+# pnpm prune --prod bunları temizler. Lockfile drift'i tolere eder.
+RUN pnpm install --no-frozen-lockfile --filter @finanscozum/backend
 
 # Copy backend source only
 COPY backend/ ./backend/
