@@ -21,7 +21,7 @@ export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: str
   // Bu sayfada TÜM altın kaynaklarına otomatik stream aç.
   // Mantık inline — Turbopack tree-shake'in önüne geçmek için hook yerine
   // doğrudan component içinde useEffect ile yönetiliyor.
-  // (Bkz. PR review notu: useAllGoldSourcesStream() side-effect-only çağrıları
+  // (Bkz. fix commit: useAllGoldSourcesStream() side-effect-only çağrıları
   // production build'de tree-shake ediliyordu.)
   useEffect(() => {
     const sources = new Map<string, EventSource>();
