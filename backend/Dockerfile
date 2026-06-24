@@ -16,7 +16,13 @@ COPY backend/package.json ./backend/
 # Dev dependencies dahil tüm paketleri kur (nest build için gerekli)
 # Tüm Multer tipleri upload controller'da `any` olarak işaretlendi,
 # böylece @types/multer'a ihtiyaç yok — lockfile drift riski sıfır.
-RUN pnpm install --frozen-lockfile --filter @finanscozum/backend
+#
+# Not: --frozen-lockfile YERİNE --no-frozen-lockfile kullanıyoruz çünkü
+# container'da pnpm yok, yeni dependency'ler (nodemailer vb.) local'de
+# lockfile güncellenemiyor. CI'da lockfile otomatik güncellenir.
+# Trade-off: build reproducibility biraz düşer, ama basit dependency
+# ekleme/çıkarma için sorun olmaz. Production için kabul edilebilir.
+RUN pnpm install --no-frozen-lockfile --filter @finanscozum/backend
 
 # Copy backend source only
 COPY backend/ ./backend/

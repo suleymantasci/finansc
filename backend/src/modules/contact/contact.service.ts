@@ -1,44 +1,72 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { firstValueFrom } from 'rxjs';
+import * as nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 import { ContactMessage } from './entities/contact-message.entity';
 import { CreateContactDto } from './dto/create-contact.dto';
-
-interface MailPayload {
-  from: string;
-  to: string;
-  subject: string;
-  text: string;
-  html?: string;
-}
 
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
+  private transporter: Transporter | null = null;
 
-  // Docker mailserver (örn. mailcow/mailu/postfix) REST API endpoint'i.
-  // Süleyman mailserver'ın API türüne göre .env'de ayarlar:
-  //   MAIL_API_URL  — örn. http://mailserver:8080/api/v1
-  //   MAIL_API_KEY  — API authentication token
+  // docker-mailserver SMTP üzerinden info@finanscozum.net'e mail gönderir.
+  // Süleyman .env'de ayarlar (docker-compose.yml zaten env'leri geçiriyor):
+  //   SMTP_HOST     — örn. mailserver (docker network hostname)
+  //   SMTP_PORT     — 587 (STARTTLS) veya 25
+  //   SMTP_USER     — örn. info@finanscozum.net
+  //   SMTP_PASS     — mailserver'da oluşturulmuş app password
+  //   SMTP_FROM     — örn. noreply@finanscozum.net
   //   MAIL_TO       — mesajların gönderileceği adres (varsayılan info@finanscozum.net)
-  //   MAIL_FROM     — gönderici adres (varsayılan noreply@finanscozum.net)
-  // Bu değişkenler boşsa mail GÖNDERILMEZ, sadece DB'ye yazılır (graceful fallback).
+  //
+  // Bu değişkenlerden biri boşsa transporter oluşturulmaz, mail GÖNDERILMEZ,
+  // sadece DB'ye yazılır (graceful fallback — kritik, form gönderimi
+  // mail hatasına bağlı bloklanmaz).
 
   constructor(
     @InjectRepository(ContactMessage)
     private readonly repo: Repository<ContactMessage>,
-    private readonly http: HttpService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    this.transporter = this.createTransporter();
+  }
+
+  private createTransporter(): Transporter | null {
+    const host = this.config.get<string>('SMTP_HOST');
+    const port = parseInt(this.config.get<string>('SMTP_PORT') ?? '587', 10);
+    const user = this.config.get<string>('SMTP_USER');
+    const pass = this.config.get<string>('SMTP_PASS');
+
+    if (!host || !user || !pass) {
+      this.logger.warn(
+        `[contact] SMTP_HOST/USER/PASS tanımlı değil → mail gönderilmez. info@finanscozum.net'e mail gitmesi için .env'e SMTP değerlerini ekleyin.`,
+      );
+      return null;
+    }
+
+    return nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465, // 465 = TLS, 587 = STARTTLS
+      auth: { user, pass },
+      // docker-mailserver self-signed sertifika kullanabilir; prod'da true
+      tls: {
+        rejectUnauthorized: false,
+      },
+      // Timeout'lar — backend'i bloklamamalı
+      connectionTimeout: 10000,
+      greetingTimeout: 5000,
+      socketTimeout: 15000,
+    });
+  }
 
   /**
    * Yeni iletişim mesajı kaydeder.
    * 1) DB'ye yazar (her zaman)
-   * 2) Mailserver REST API üzerinden info@finanscozum.net'e mail gönderir
-   *    (MAIL_API_URL tanımlıysa; hata olursa logla, exception fırlatma).
+   * 2) SMTP ile info@finanscozum.net'e mail gönderir (transporter varsa;
+   *    hata olursa logla, exception fırlatma).
    */
   async create(
     dto: CreateContactDto,
@@ -58,8 +86,7 @@ export class ContactService {
       `[contact] yeni mesaj #${saved.id} from=${saved.email} konu="${saved.subject}"`,
     );
 
-    // Mail gönderimi (DB'ye yazma başarılı olduktan SONRA, non-blocking
-    // hata: mail başarısız olursa contact POST'u yine de 201 döner)
+    // Mail gönderimi (DB'ye yazma başarılı olduktan SONRA, non-blocking)
     void this.sendInboxNotification(saved).catch((err) => {
       this.logger.error(
         `[contact] mail gönderimi başarısız (mesaj #${saved.id} DB'ye yazıldı): ${err?.message ?? err}`,
@@ -70,22 +97,18 @@ export class ContactService {
   }
 
   /**
-   * info@finanscozum.net'e mail gönderir.
-   * Mailserver'ın REST API'si varsa onu kullanır; yoksa SMTP'ye fallback
-   * (ileride nodemailer eklenebilir).
+   * info@finanscozum.net'e SMTP üzerinden mail gönderir.
    */
   private async sendInboxNotification(msg: ContactMessage): Promise<void> {
-    const apiUrl = this.config.get<string>('MAIL_API_URL');
-    const apiKey = this.config.get<string>('MAIL_API_KEY');
-    const to = this.config.get<string>('MAIL_TO') ?? 'info@finanscozum.net';
-    const from = this.config.get<string>('MAIL_FROM') ?? 'noreply@finanscozum.net';
-
-    if (!apiUrl || !apiKey) {
+    if (!this.transporter) {
       this.logger.warn(
-        `[contact] MAIL_API_URL/MAIL_API_KEY tanımlı değil → mail gönderilmedi (mesaj #${msg.id} sadece DB'de). info@finanscozum.net'e mail gitmesi için .env'e SMTP/MAIL değerlerini ekleyin.`,
+        `[contact] SMTP transporter yok → mail gönderilmedi (mesaj #${msg.id} sadece DB'de).`,
       );
       return;
     }
+
+    const to = this.config.get<string>('MAIL_TO') ?? 'info@finanscozum.net';
+    const from = this.config.get<string>('SMTP_FROM') ?? this.config.get<string>('SMTP_USER') ?? 'noreply@finanscozum.net';
 
     const subject = `[İletişim Formu] ${msg.subject}`;
     const text = [
@@ -118,31 +141,18 @@ export class ContactService {
 </body>
 </html>`.trim();
 
-    // Mailcow / Mailu / benzer API'ler farklı şema kullanır. En yaygın
-    // generic payload:
-    const payload: MailPayload = { from, to, subject, text, html };
+    const info = await this.transporter.sendMail({
+      from,
+      to,
+      replyTo: msg.email, // info@ maili Reply yaparsa form gönderenin adresine gitsin
+      subject,
+      text,
+      html,
+    });
 
-    try {
-      await firstValueFrom(
-        this.http.post(apiUrl, payload, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-            'X-API-Key': apiKey, // Bazı API'ler bunu tercih eder
-          },
-          timeout: 10000,
-        }),
-      );
-      this.logger.log(`[contact] mail gönderildi → ${to} (mesaj #${msg.id})`);
-    } catch (err: any) {
-      // 401/404/422: API path'i bu maile uygun değil. Detay logla, exception fırlatma.
-      const status = err?.response?.status;
-      const body = err?.response?.data;
-      this.logger.error(
-        `[contact] mail API hatası (status=${status ?? 'n/a'}): ${typeof body === 'string' ? body : JSON.stringify(body)}`,
-      );
-      throw err;
-    }
+    this.logger.log(
+      `[contact] mail gönderildi → ${to} (mesaj #${msg.id}, messageId=${info.messageId})`,
+    );
   }
 }
 
