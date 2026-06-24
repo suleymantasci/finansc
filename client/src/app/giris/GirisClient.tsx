@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -18,8 +18,32 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
+// Open-redirect koruması: from sadece internal path olabilir.
+// - mutlak URL'ler (http://, https://, //, javascript:, data:) reject
+// - sadece "/" ile başlayan internal path'ler kabul
+// - aksi halde ana sayfaya yönlendir
+function safeRedirectTarget(raw: string | null | undefined): string {
+  const fallback = '/';
+  if (!raw) return fallback;
+  // decode et ama sadece path kısmını al
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    return fallback;
+  }
+  // Sadece internal path
+  if (!decoded.startsWith('/')) return fallback;
+  // "//xxx" protocol-relative URL olamaz
+  if (decoded.startsWith('//')) return fallback;
+  // "/\xxx" backslash'li bypass da olamaz
+  if (decoded.startsWith('/\\')) return fallback;
+  return decoded;
+}
+
 export function GirisClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,8 +57,10 @@ export function GirisClient() {
     setLoading(true);
     try {
       const res = await api.post<{ user: AuthUser; accessToken: string; refreshToken: string }>('/api/auth/login', data);
-          setAuth(res.user, res.accessToken, res.refreshToken);
-      router.push('/hesabim');
+      setAuth(res.user, res.accessToken, res.refreshToken);
+      // ?from=... varsa oraya (güvenli path), yoksa ana sayfaya
+      const target = safeRedirectTarget(searchParams?.get('from'));
+      router.push(target);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Giriş başarısız';
       setError(msg);

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { GirisClient } from './GirisClient';
 
 export const metadata: Metadata = {
@@ -7,5 +8,11 @@ export const metadata: Metadata = {
 };
 
 export default function GirisPage() {
-  return <GirisClient />;
+  // GirisClient useSearchParams kullanıyor → Suspense boundary zorunlu
+  // (Next.js 16: CSR bailout hatası önlemek için)
+  return (
+    <Suspense fallback={null}>
+      <GirisClient />
+    </Suspense>
+  );
 }
