@@ -79,7 +79,7 @@ export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: str
     };
   }, []);
 
-  const { goldPrices, goldLoading } = useMarketStore();
+  const { goldPrices, goldLoading, flashMap } = useMarketStore();
 
   // "Eski Çeyrek Altın" gibi varyantları da yakala
   const matches = goldPrices.filter((g) => {
@@ -120,9 +120,18 @@ export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: str
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {matches.slice(0, 8).map((g) => (
+        {matches.slice(0, 8).map((g) => {
+          const flashKey = `${g.source}-${g.goldType}`;
+          const flash = flashMap[flashKey];
+          const priceColor =
+            flash === 'up'
+              ? 'text-up'
+              : flash === 'down'
+              ? 'text-down'
+              : '';
+          return (
           <div
-            key={`${g.source}-${g.goldType}`}
+            key={flashKey}
             className="rounded-xl border border-border bg-card p-4"
           >
             <div className="flex items-center justify-between mb-2">
@@ -137,13 +146,17 @@ export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: str
             <div className="flex items-end justify-between">
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">Alış</div>
-                <div className="text-lg font-mono font-semibold tabular-nums">
+                <div
+                  className={`text-lg font-mono font-semibold tabular-nums transition-colors duration-700 ${priceColor}`}
+                >
                   {formatDecimal(g.buyPrice)}
                 </div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">Satış</div>
-                <div className="text-lg font-mono font-semibold tabular-nums">
+                <div
+                  className={`text-lg font-mono font-semibold tabular-nums transition-colors duration-700 ${priceColor}`}
+                >
                   {formatDecimal(g.sellPrice)}
                 </div>
               </div>
@@ -153,7 +166,8 @@ export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: str
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
         <Activity className="h-3 w-3" />
