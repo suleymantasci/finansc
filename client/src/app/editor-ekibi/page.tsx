@@ -168,10 +168,10 @@ export default function EditorEkibiPage() {
           </p>
           <ul>
             <li>
-              <a href="mailto:editor@finanscozum.com">editor@finanscozum.com</a> — Editöryal konular
+              <a href="mailto:info@finanscozum.net">info@finanscozum.net</a> — Editöryal konular
             </li>
             <li>
-              <a href="mailto:destek@finanscozum.com">destek@finanscozum.com</a> — Genel destek
+              <a href="mailto:info@finanscozum.net">info@finanscozum.net</a> — Genel destek
             </li>
             <li>
               <Link href="/iletisim">İletişim formu</Link>

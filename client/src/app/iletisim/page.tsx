@@ -1,14 +1,68 @@
-import type { Metadata } from 'next';
-import { Mail, MapPin, Clock } from 'lucide-react';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'İletişim | FinansCozum',
-  description: 'FinansCozum ile iletişime geçin. Soru, öneri, geri bildirim ve editör talepleriniz için e-posta, iletişim formu ve çalışma saatleri.',
-  keywords: ['iletişim', 'editör', 'geri bildirim', 'destek', 'finanscozum iletişim'],
-  alternates: { canonical: 'https://finanscozum.net/iletisim' },
-};
+import { useState } from 'react';
+import { Mail, MapPin, Clock, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { api } from '@/lib/api';
+
+const CONTACT_EMAIL = 'info@finanscozum.net';
+
+interface FormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
 
 export default function IletisimPage() {
+  const [form, setForm] = useState<FormData>({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const update = (k: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm((prev) => ({ ...prev, [k]: e.target.value }));
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('idle');
+    setErrorMessage('');
+
+    // Basit client-side validasyon (sunucu da validate eder)
+    if (!form.name.trim() || !form.email.trim() || !form.subject.trim() || !form.message.trim()) {
+      setStatus('error');
+      setErrorMessage('Tüm alanlar zorunludur.');
+      return;
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) {
+      setStatus('error');
+      setErrorMessage('Geçerli bir e-posta adresi girin.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post('/api/contact', {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        subject: form.subject.trim(),
+        message: form.message.trim(),
+      });
+      setStatus('success');
+      setForm({ name: '', email: '', subject: '', message: '' });
+    } catch (err) {
+      setStatus('error');
+      setErrorMessage(err instanceof Error ? err.message : 'Mesaj gönderilemedi, lütfen tekrar deneyin.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
       <h1 className="mb-6 text-3xl font-bold">İletişim</h1>
@@ -25,10 +79,10 @@ export default function IletisimPage() {
           </div>
           <h2 className="mb-2 font-semibold">E-posta</h2>
           <a
-            href="mailto:info@finanscozum.com"
-            className="text-sm text-primary hover:underline"
+            href={`mailto:${CONTACT_EMAIL}`}
+            className="text-sm text-primary hover:underline break-all"
           >
-            info@finanscozum.com
+            {CONTACT_EMAIL}
           </a>
         </div>
 
@@ -55,7 +109,24 @@ export default function IletisimPage() {
 
       <div className="mt-10 rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 text-xl font-semibold">Bize Yazın</h2>
-        <form className="space-y-4">
+
+        {status === 'success' && (
+          <div className="mb-4 flex items-start gap-2 rounded-lg bg-up/10 px-4 py-3 text-sm text-up">
+            <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <div>
+              <strong>Mesajınız iletildi.</strong> En kısa sürede {CONTACT_EMAIL} üzerinden dönüş yapacağız.
+            </div>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="mb-4 flex items-start gap-2 rounded-lg bg-down/10 px-4 py-3 text-sm text-down">
+            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <div>{errorMessage}</div>
+          </div>
+        )}
+
+        <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label htmlFor="name" className="mb-1 block text-sm font-medium">
@@ -63,8 +134,13 @@ export default function IletisimPage() {
               </label>
               <input
                 id="name"
+                name="name"
                 type="text"
-                className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                required
+                disabled={loading}
+                value={form.name}
+                onChange={update('name')}
+                className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
                 placeholder="Adınız Soyadınız"
               />
             </div>
@@ -74,8 +150,13 @@ export default function IletisimPage() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
-                className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                required
+                disabled={loading}
+                value={form.email}
+                onChange={update('email')}
+                className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
                 placeholder="ornek@mail.com"
               />
             </div>
@@ -86,8 +167,13 @@ export default function IletisimPage() {
             </label>
             <input
               id="subject"
+              name="subject"
               type="text"
-              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              required
+              disabled={loading}
+              value={form.subject}
+              onChange={update('subject')}
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
               placeholder="Konu başlığı"
             />
           </div>
@@ -97,16 +183,23 @@ export default function IletisimPage() {
             </label>
             <textarea
               id="message"
+              name="message"
               rows={5}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              required
+              disabled={loading}
+              value={form.message}
+              onChange={update('message')}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
               placeholder="Mesajınızı yazın..."
             />
           </div>
           <button
             type="submit"
-            className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
           >
-            Gönder
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading ? 'Gönderiliyor...' : 'Gönder'}
           </button>
         </form>
       </div>

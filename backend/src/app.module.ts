@@ -16,6 +16,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { AllExceptionsFilter } from './common/filters';
 import { APP_FILTER } from '@nestjs/core';
 import { UploadModule } from './modules/upload/upload.module';
+import { ContactModule } from './modules/contact/contact.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { UploadModule } from './modules/upload/upload.module';
     AdminModule,
     ReportsModule,
     UploadModule,
+    ContactModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
