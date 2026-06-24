@@ -4,6 +4,7 @@ import { useMarketStore } from '@/stores/market.store';
 import { formatDecimal } from '@/lib/formatters';
 import { PriceChange } from '@/components/shared/PriceChange';
 import { Building2, Activity } from 'lucide-react';
+import { useAllGoldSourcesStream } from '@/hooks/useAllGoldSourcesStream';
 
 const SOURCE_LABELS: Record<string, string> = {
   'serbest-piyasa': 'Serbest Piyasa',
@@ -15,6 +16,10 @@ const SOURCE_LABELS: Record<string, string> = {
 };
 
 export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: string }) {
+  // Bu sayfada TÜM altın kaynaklarına otomatik stream aç
+  // (sourceless ?kaynak ziyareti beklenmeden, kartlar hep render edilsin)
+  useAllGoldSourcesStream();
+
   const { goldPrices, goldLoading } = useMarketStore();
 
   // "Eski Çeyrek Altın" gibi varyantları da yakala

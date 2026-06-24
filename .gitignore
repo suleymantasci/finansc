@@ -41,3 +41,6 @@ hermes-blog-prompt.md
 .playwright-mcp
 # pnpm store (root-owned, no write)
 .pnpm-store/
+
+# Temporary git dirs (corrupted git rename fallback)
+.git.broken-*/
