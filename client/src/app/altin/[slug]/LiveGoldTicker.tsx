@@ -79,7 +79,7 @@ export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: str
     };
   }, []);
 
-  const { goldPrices, goldLoading, flashMap } = useMarketStore();
+  const { goldPrices, goldLoading, flashMap, goldSourceOrder } = useMarketStore();
 
   // "Eski Çeyrek Altın" gibi varyantları da yakala
   const matches = goldPrices.filter((g) => {
@@ -95,6 +95,19 @@ export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: str
     if (slug === 'gumus') return g.goldType === 'Gram Gümüş';
     return false;
   });
+
+  // Stable source order: ilk data gelen source önce, yeniler sona.
+  // Array.sort mutating olduğu için önce shallow copy, sonra sort.
+  const orderIndex = new Map(goldSourceOrder.map((s, i) => [s, i]));
+  const sortedMatches = matches
+    .slice()
+    .sort((a, b) => {
+      const ai = orderIndex.has(a.source) ? orderIndex.get(a.source)! : Number.MAX_SAFE_INTEGER;
+      const bi = orderIndex.has(b.source) ? orderIndex.get(b.source)! : Number.MAX_SAFE_INTEGER;
+      if (ai !== bi) return ai - bi;
+      // Aynı source içinde: goldType'a göre alfabetik (tutarlılık için)
+      return a.goldType.localeCompare(b.goldType, 'tr-TR');
+    });
 
   if (goldLoading && matches.length === 0) {
     return (
@@ -120,7 +133,7 @@ export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: str
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {matches.slice(0, 8).map((g) => {
+        {sortedMatches.slice(0, 8).map((g) => {
           const flashKey = `${g.source}-${g.goldType}`;
           const flash = flashMap[flashKey];
           const priceColor =
@@ -171,7 +184,7 @@ export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: str
       </div>
       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
         <Activity className="h-3 w-3" />
-        Son güncelleme: <time dateTime={matches[0]?.timestamp}>{new Date(matches[0]?.timestamp ?? Date.now()).toLocaleTimeString('tr-TR')}</time>
+        Son güncelleme: <time dateTime={sortedMatches[0]?.timestamp}>{new Date(sortedMatches[0]?.timestamp ?? Date.now()).toLocaleTimeString('tr-TR')}</time>
       </p>
     </div>
   );

@@ -44,6 +44,11 @@ interface MarketState {
   // Flash effects: symbol → direction
   flashMap: Record<string, 'up' | 'down'>;
 
+  // Stable source insertion order: bir source ilk data gönderdiğinde
+  // sıraya alınır, sonra yeniden sıralanmaz. Böylece kartların DOM
+  // sırası ilk render'dan sonra değişmez.
+  goldSourceOrder: string[];
+
   // SSE connection statuses (set by LiveTicker)
   borsaStreamStatus: MarketConnectionStatus;
   goldStreamStatus: MarketConnectionStatus;
@@ -69,6 +74,7 @@ export const useMarketStore = create<MarketState>((set, get) => ({
   merkezCurrencies: [],
   currencyLoading: true,
   flashMap: {},
+  goldSourceOrder: [],
 
   borsaStreamStatus: 'disconnected',
   goldStreamStatus: 'disconnected',
@@ -151,9 +157,21 @@ export const useMarketStore = create<MarketState>((set, get) => ({
       ? [...oldPrices.filter((g) => g.source !== source), ...data.prices]
       : data.prices;
 
+    // Stable source order: ilk kez data gelen source'u sıraya ekle,
+    // sonraki event'lerde sırayı KORU. Böylece kartlar DOM'da yer değiştirmez.
+    const oldOrder = get().goldSourceOrder;
+    const newSources = data.prices
+      .map((g) => g.source)
+      .filter((s): s is string => typeof s === 'string');
+    const updatedOrder = oldOrder.slice();
+    for (const s of newSources) {
+      if (!updatedOrder.includes(s)) updatedOrder.push(s);
+    }
+
     set({
       goldPrices: updatedPrices,
       goldLoading: false,
+      goldSourceOrder: updatedOrder,
       flashMap: { ...get().flashMap, ...newFlashes },
     });
 
