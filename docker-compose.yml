@@ -28,6 +28,11 @@ services:
       - SMTP_USER=${SMTP_USER:-}
       - SMTP_PASS=${SMTP_PASS:-}
       - SMTP_FROM=${SMTP_FROM:-noreply@finanscozum.net}
+      # Contact form mail bildirimi (docker mailserver REST API)
+      - MAIL_API_URL=${MAIL_API_URL:-}
+      - MAIL_API_KEY=${MAIL_API_KEY:-}
+      - MAIL_TO=${MAIL_TO:-info@finanscozum.net}
+      - MAIL_FROM=${MAIL_FROM:-noreply@finanscozum.net}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.finansc-backend.rule=Host(`api.finanscozum.net`)"

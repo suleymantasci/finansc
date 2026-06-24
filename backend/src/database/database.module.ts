@@ -25,9 +25,10 @@ import { join } from 'path';
         // Çalışma zamanı: NestFactory.create() → DB bağlantısı kurulur →
         //   dataSource.runMigrations() otomatik tetiklenir → app.listen().
         migrationsRun: config.get<string>('NODE_ENV') === 'production',
-        // Production build'de migrations/ klasörü dist/ altında JS olarak
-        // bulunur (tsc tarafından derlenmiş), dev'de TS. Pattern her iki
-        // uzantıyı da yakalar.
+        // Production build'de migrations/ klasörü dist/database/migrations
+        // altında JS olarak bulunur (tsc tarafından derlenmiş). Dev'de
+        // src/database/migrations altında TS. Her ikisini de tek pattern
+        // ile yakalıyoruz.
         migrations: [join(__dirname, 'database', 'migrations', '*.{ts,js}')],
         logging: config.get<string>('NODE_ENV') === 'development',
       }),
