@@ -1,9 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useMarketStore } from '@/stores/market.store';
 import { formatDecimal } from '@/lib/formatters';
 import { PriceChange } from '@/components/shared/PriceChange';
 import { Building2, Activity } from 'lucide-react';
+import { API_URL, GOLD_SOURCES, SSE_RECONNECT_DELAY } from '@/lib/constants';
+import type { GoldStreamData } from '@/stores/market.store';
 
 const SOURCE_LABELS: Record<string, string> = {
   'serbest-piyasa': 'Serbest Piyasa',
@@ -15,6 +18,67 @@ const SOURCE_LABELS: Record<string, string> = {
 };
 
 export function LiveGoldTicker({ goldType, slug }: { goldType: string; slug: string }) {
+  // Bu sayfada TÜM altın kaynaklarına otomatik stream aç.
+  // Mantık inline — Turbopack tree-shake'in önüne geçmek için hook yerine
+  // doğrudan component içinde useEffect ile yönetiliyor.
+  // (Bkz. PR review notu: useAllGoldSourcesStream() side-effect-only çağrıları
+  // production build'de tree-shake ediliyordu.)
+  useEffect(() => {
+    const sources = new Map<string, EventSource>();
+    let cancelled = false;
+
+    for (const src of GOLD_SOURCES) {
+      let es: EventSource | null = null;
+      try {
+        es = new EventSource(`${API_URL}/api/market/gold/stream/${src.key}`);
+      } catch {
+        continue;
+      }
+      sources.set(src.key, es);
+
+      es.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data) as GoldStreamData;
+          if (data.type === 'prices') {
+            useMarketStore.getState().updateFromGoldStream(data);
+          }
+        } catch {
+          // yoksay
+        }
+      };
+
+      es.onerror = () => {
+        es?.close();
+        sources.delete(src.key);
+        if (cancelled) return;
+        setTimeout(() => {
+          if (cancelled || sources.has(src.key)) return;
+          let newEs: EventSource | null = null;
+          try {
+            newEs = new EventSource(`${API_URL}/api/market/gold/stream/${src.key}`);
+          } catch {
+            return;
+          }
+          newEs.onmessage = es!.onmessage;
+          newEs.onerror = es!.onerror;
+          sources.set(src.key, newEs);
+        }, SSE_RECONNECT_DELAY);
+      };
+    }
+
+    return () => {
+      cancelled = true;
+      for (const [, es] of sources) {
+        try {
+          es.close();
+        } catch {
+          // yoksay
+        }
+      }
+      sources.clear();
+    };
+  }, []);
+
   const { goldPrices, goldLoading } = useMarketStore();
 
   // "Eski Çeyrek Altın" gibi varyantları da yakala
