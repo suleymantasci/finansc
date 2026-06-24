@@ -5,6 +5,14 @@ services:
     restart: unless-stopped
     networks:
       - traefik-public
+      # mailserver stack'i mail-system_default adlı docker network'ünde
+      # çalışıyor. SMTP bağlantısı için backend'in bu ağa da bağlı olması
+      # gerekir; aksi halde `mailserver` hostname'i DNS'te çözülmez.
+      # Bu network external (harici bir docker-compose stack tarafından
+      # yönetiliyor); server'da `docker network create mail-system_default`
+      # veya mailserver compose'unda `name: mail-system_default` tanımlı
+      # olmalı.
+      - mail-system_default
     environment:
       - NODE_ENV=production
       - PORT=3001
@@ -65,4 +73,10 @@ services:
 
 networks:
   traefik-public:
+    external: true
+  mail-system_default:
+    # mailserver stack'i tarafından oluşturulan external network. Eğer
+    # server'da farklı bir isimle tanımlıysa (örn. docker-mailserver
+    # compose'unda `name: mailserver_default`), burayı da güncelleyin.
+    # Doğrulama: `docker network ls | grep mail` → mevcut adı görün.
     external: true
