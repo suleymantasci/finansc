@@ -168,7 +168,7 @@ export function BorsaClient() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-6 lg:px-8 pb-20 md:pb-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
       <div className="mb-6 flex items-center justify-end">
         <MarketStatus status={status} />
       </div>
