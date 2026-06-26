@@ -32,19 +32,20 @@ export interface CrossRate {
 
 // ── Stock ────────────────────────────────────────
 export interface Stock {
-  [key: string]: unknown;
   symbol: string;
   name: string;
+  lastPrice: number;
   buyPrice: number;
   sellPrice: number;
   low: number;
   high: number;
-  change: number;
-  changePercent: number;
+  change: number | null;
+  changePercent: number | null;
   volume: number;
   turnover: number;
   time: string;
   indices: string[];
+  [key: string]: unknown;
 }
 
 // ── Index ────────────────────────────────────────
