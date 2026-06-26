@@ -3,7 +3,7 @@ import { formatPercent } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
 interface PriceChangeProps {
-  value: number;
+  value: number | null;
   size?: 'sm' | 'md' | 'lg';
   showIcon?: boolean;
   className?: string;
@@ -22,8 +22,9 @@ const iconSizes = {
 };
 
 function PriceChange({ value, size = 'md', showIcon = true, className }: PriceChangeProps) {
-  const isUp = value > 0;
-  const isDown = value < 0;
+  const safe = value ?? 0;
+  const isUp = safe > 0;
+  const isDown = safe < 0;
 
   return (
     <span
@@ -41,7 +42,7 @@ function PriceChange({ value, size = 'md', showIcon = true, className }: PriceCh
         isDown ? <TrendingDown className={iconSizes[size]} /> :
         <Minus className={iconSizes[size]} />
       )}
-      {formatPercent(value)}
+      {formatPercent(safe)}
     </span>
   );
 }
