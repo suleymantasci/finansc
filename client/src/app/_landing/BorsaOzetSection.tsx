@@ -54,7 +54,7 @@ export function BorsaOzetSection() {
                     flashMap[s.symbol] === 'down' && 'flash-down',
                   )}>
                     <td className="px-4 py-2.5 font-medium">{s.symbol}</td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{formatDecimal(s.buyPrice)}</td>
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{formatDecimal(s.lastPrice)}</td>
                     <td className="px-4 py-2.5 text-right"><PriceChange value={s.changePercent} size="sm" /></td>
                   </tr>
                 ))}
@@ -83,7 +83,7 @@ export function BorsaOzetSection() {
                     flashMap[s.symbol] === 'down' && 'flash-down',
                   )}>
                     <td className="px-4 py-2.5 font-medium">{s.symbol}</td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{formatDecimal(s.buyPrice)}</td>
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">{formatDecimal(s.lastPrice)}</td>
                     <td className="px-4 py-2.5 text-right"><PriceChange value={s.changePercent} size="sm" /></td>
                   </tr>
                 ))}

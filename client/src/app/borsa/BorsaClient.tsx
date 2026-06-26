@@ -147,6 +147,7 @@ export function BorsaClient() {
 
   const stockColumns = [
     { key: 'symbol', label: 'Sembol', align: 'left' as const },
+    { key: 'lastPrice', label: 'Son', align: 'right' as const },
     { key: 'buyPrice', label: 'Alış', align: 'right' as const },
     { key: 'sellPrice', label: 'Satış', align: 'right' as const },
     { key: 'low', label: 'En Düşük', align: 'right' as const },
@@ -243,7 +244,7 @@ export function BorsaClient() {
           />
 
           {stocksLoading ? (
-            <SkeletonTable rows={15} cols={9} />
+            <SkeletonTable rows={15} cols={10} />
           ) : (
             <div className="overflow-x-auto rounded-xl border border-border">
               <table className="w-full text-sm">
@@ -289,6 +290,7 @@ export function BorsaClient() {
                             {s.symbol}
                           </Link>
                         </td>
+                        <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.lastPrice)}</td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.buyPrice)}</td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.sellPrice)}</td>
                         <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(s.low)}</td>
