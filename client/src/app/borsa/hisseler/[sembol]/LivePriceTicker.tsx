@@ -31,7 +31,7 @@ export function LivePriceTicker({ symbol }: { symbol: string }) {
     );
   }
 
-  const positive = stock.changePercent >= 0;
+  const positive = (stock.changePercent ?? 0) >= 0;
 
   return (
     <div className="space-y-4">

@@ -55,7 +55,7 @@ function LiveTicker() {
 
   // Derive ticker items from store data
   const tickerItems = useMemo(() => {
-    const items: { symbol: string; value: number; changePercent: number; flashKey: string }[] = [];
+    const items: { symbol: string; value: number; changePercent: number | null; flashKey: string }[] = [];
     if (Array.isArray(indices)) {
       items.push(
         ...indices
@@ -110,12 +110,12 @@ function LiveTicker() {
             <span
               className={cn(
                 'font-mono tabular-nums font-semibold',
-                item.changePercent > 0 && 'text-up',
-                item.changePercent < 0 && 'text-down',
+                (item.changePercent ?? 0) > 0 && 'text-up',
+                (item.changePercent ?? 0) < 0 && 'text-down',
                 item.changePercent === 0 && 'text-neutral',
               )}
             >
-              {formatPercent(item.changePercent)}
+              {formatPercent(item.changePercent ?? 0)}
             </span>
             <span className="mx-2 text-border">•</span>
           </div>

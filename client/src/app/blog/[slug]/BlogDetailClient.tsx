@@ -186,12 +186,12 @@ export function BlogDetailClient({ post, relatedPosts, readingTime }: Props) {
                         )}>{formatDecimal(idx.value)}</span>
                         <span className={cn(
                           'flex items-center gap-0.5 font-mono tabular-nums font-semibold',
-                          idx.changePercent > 0 && 'text-up',
-                          idx.changePercent < 0 && 'text-down',
+                          (idx.changePercent ?? 0) > 0 && 'text-up',
+                          (idx.changePercent ?? 0) < 0 && 'text-down',
                           idx.changePercent === 0 && 'text-neutral',
                         )}>
-                          {idx.changePercent > 0 ? <ArrowUpRight className="h-3 w-3" /> : idx.changePercent < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
-                          {formatPercent(idx.changePercent)}
+                          {(idx.changePercent ?? 0) > 0 ? <ArrowUpRight className="h-3 w-3" /> : (idx.changePercent ?? 0) < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
+                          {formatPercent(idx.changePercent ?? 0)}
                         </span>
                       </div>
                     </div>
@@ -222,12 +222,12 @@ export function BlogDetailClient({ post, relatedPosts, readingTime }: Props) {
                         )}>{formatDecimal(g.buyPrice)}</span>
                         <span className={cn(
                           'flex items-center gap-0.5 font-mono tabular-nums font-semibold',
-                          g.changePercent > 0 && 'text-up',
-                          g.changePercent < 0 && 'text-down',
+                          (g.changePercent ?? 0) > 0 && 'text-up',
+                          (g.changePercent ?? 0) < 0 && 'text-down',
                           g.changePercent === 0 && 'text-neutral',
                         )}>
-                          {g.changePercent > 0 ? <ArrowUpRight className="h-3 w-3" /> : g.changePercent < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
-                          {formatPercent(g.changePercent)}
+                          {(g.changePercent ?? 0) > 0 ? <ArrowUpRight className="h-3 w-3" /> : (g.changePercent ?? 0) < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
+                          {formatPercent(g.changePercent ?? 0)}
                         </span>
                       </div>
                     </div>

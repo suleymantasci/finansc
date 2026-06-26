@@ -4,8 +4,8 @@ export interface GoldPrice {
   goldType: string;
   buyPrice: number;
   sellPrice: number;
-  change: number;
-  changePercent: number;
+  change: number | null;
+  changePercent: number | null;
   timestamp: string;
 }
 
@@ -14,7 +14,7 @@ export interface Currency {
   name: string;
   buyPrice: number;
   sellPrice: number;
-  changePercent: number;
+  changePercent: number | null;
   time: string;
   timestamp: string;
 }
@@ -25,7 +25,7 @@ export interface CrossRate {
   lastPrice: number;
   buyPrice: number;
   sellPrice: number;
-  changePercent: number;
+  changePercent: number | null;
   time: string;
   timestamp: string;
 }
@@ -50,15 +50,15 @@ export interface Stock {
 
 // ── Index ────────────────────────────────────────
 export interface MarketIndex {
-  [key: string]: unknown;
   symbol: string;
   name: string;
   value: number;
-  change: number;
-  changePercent: number;
+  change: number | null;
+  changePercent: number | null;
   low: number;
   high: number;
   time: string;
+  [key: string]: unknown;
 }
 
 // ── Auth ─────────────────────────────────────────

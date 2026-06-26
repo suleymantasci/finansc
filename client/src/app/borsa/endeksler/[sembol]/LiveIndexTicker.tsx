@@ -31,7 +31,7 @@ export function LiveIndexTicker({ symbol }: { symbol: string }) {
     );
   }
 
-  const positive = idx.changePercent >= 0;
+  const positive = (idx.changePercent ?? 0) >= 0;
 
   return (
     <div className="space-y-4">
