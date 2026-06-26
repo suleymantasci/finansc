@@ -168,7 +168,7 @@ export function BorsaClient() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
+    <div className="mx-auto max-w-[1600px] px-4 py-6 lg:px-8 pb-20 md:pb-8">
       <div className="mb-6 flex items-center justify-end">
         <MarketStatus status={status} />
       </div>
@@ -255,7 +255,7 @@ export function BorsaClient() {
                         key={col.key}
                         onClick={() => handleColumnSort(col.key)}
                         className={cn(
-                          'px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap',
+                          'px-2 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap',
                           col.align === 'right' ? 'text-right' : 'text-left',
                         )}
                       >
@@ -268,7 +268,7 @@ export function BorsaClient() {
                 <tbody>
                   {filteredStocks.length === 0 ? (
                     <tr>
-                      <td colSpan={stockColumns.length} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={stockColumns.length} className="px-2 py-8 text-center text-muted-foreground">
                         Veri bulunamadı
                       </td>
                     </tr>
@@ -282,7 +282,7 @@ export function BorsaClient() {
                           flashMap[s.symbol] === 'down' && 'flash-down',
                         )}
                       >
-                        <td className="px-4 py-3 font-medium">
+                        <td className="px-2 py-3 font-medium whitespace-nowrap">
                           <Link
                             href={`/borsa/hisseler/${s.symbol}`}
                             className="text-primary hover:underline"
@@ -290,15 +290,15 @@ export function BorsaClient() {
                             {s.symbol}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.lastPrice)}</td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.buyPrice)}</td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(s.sellPrice)}</td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(s.low)}</td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(s.high)}</td>
-                        <td className="px-4 py-3 text-right"><PriceChange value={s.changePercent} size="sm" /></td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatInteger(s.volume)}</td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatTL(s.turnover)}</td>
-                        <td className="px-4 py-3 text-right text-xs text-muted-foreground">{s.time ?? '—'}</td>
+                        <td className="px-2 py-3 text-right font-mono tabular-nums whitespace-nowrap">{formatDecimal(s.lastPrice)}</td>
+                        <td className="px-2 py-3 text-right font-mono tabular-nums whitespace-nowrap">{formatDecimal(s.buyPrice)}</td>
+                        <td className="px-2 py-3 text-right font-mono tabular-nums whitespace-nowrap">{formatDecimal(s.sellPrice)}</td>
+                        <td className="px-2 py-3 text-right font-mono tabular-nums text-muted-foreground whitespace-nowrap">{formatDecimal(s.low)}</td>
+                        <td className="px-2 py-3 text-right font-mono tabular-nums text-muted-foreground whitespace-nowrap">{formatDecimal(s.high)}</td>
+                        <td className="px-2 py-3 text-right"><PriceChange value={s.changePercent} size="sm" /></td>
+                        <td className="px-2 py-3 text-right font-mono tabular-nums text-muted-foreground whitespace-nowrap">{formatInteger(s.volume)}</td>
+                        <td className="px-2 py-3 text-right font-mono tabular-nums text-muted-foreground whitespace-nowrap">{formatTL(s.turnover)}</td>
+                        <td className="px-2 py-3 text-right text-xs text-muted-foreground whitespace-nowrap">{s.time ?? '—'}</td>
                       </tr>
                     ))
                   )}
