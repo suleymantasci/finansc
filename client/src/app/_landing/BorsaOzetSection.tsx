@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 export function BorsaOzetSection() {
   const { stocks, stocksLoading, flashMap } = useMarketStore();
 
-  const sorted = [...stocks].sort((a, b) => b.changePercent - a.changePercent);
+  const sorted = [...stocks].sort((a, b) => (b.changePercent ?? 0) - (a.changePercent ?? 0));
   const top5 = sorted.slice(0, 5);
   const bottom5 = sorted.slice(-5).reverse();
 
