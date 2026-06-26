@@ -13,6 +13,14 @@ services:
       # veya mailserver compose'unda `name: mail-system_default` tanımlı
       # olmalı.
       - mail-system_default
+    # Persistent uploads: blog thumbnail'ları /api/upload/thumbnail
+    # endpoint'i tarafından buraya yazılır ve NestJS tarafından
+    # /uploads/... URL'i ile serve edilir. **Host dizini volume olarak
+    # mount edilmezse her CI/CD deploy'da container'ın /app/uploads/
+    # dizimi boş başlar ve DB'deki thumbnail URL'leri 404 verir.**
+    # Host'ta /docker/finansc/uploads altında kalıcı olarak durur.
+    volumes:
+      - /docker/finansc/uploads:/app/uploads
     environment:
       - NODE_ENV=production
       - PORT=3001
