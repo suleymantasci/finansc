@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { ToolClient } from './ToolClient';
 
 // Title + description: page-prefix only (Pit 28 — root template ekliyor, çift brand yok).
@@ -96,5 +97,68 @@ export default async function ToolSlugPage({ params }: Props) {
     }
   } catch { /* if API unreachable, allow access */ }
 
-  return <ToolClient slug={slug} title={TOOL_META[slug].title} />;
+  const meta = TOOL_META[slug];
+  const canonical = `${SITE_URL}/araclar/${slug}`;
+
+  // JSON-LD: WebPage + SoftwareApplication + BreadcrumbList + SpeakableSpecification
+  // Bu sayfa Türkçe finansal hesaplama araçları — "calculator" tool semantiği.
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebApplication',
+        name: meta.title,
+        description: meta.desc,
+        url: canonical,
+        applicationCategory: 'FinanceApplication',
+        operatingSystem: 'Web',
+        inLanguage: 'tr-TR',
+        isAccessibleForFree: true,
+        publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+        speakable: {
+          '@type': 'SpeakableSpecification',
+          cssSelector: ['#tool-summary', 'h1'],
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE_URL },
+          { '@type': 'ListItem', position: 2, name: 'Araçlar', item: `${SITE_URL}/araclar` },
+          { '@type': 'ListItem', position: 3, name: meta.title, item: canonical },
+        ],
+      },
+    ],
+  };
+
+  // Citable snippet — AI engine'lerin doğrudan cevap olarak kullanacağı 1-2 cümle.
+  // Tool'un ne yaptığını ve nasıl kullanıldığını düz dille anlatır.
+  const summary = `${meta.title}, FinansÇözüm tarafından sunulan ücretsiz bir online hesaplama aracıdır. ${meta.desc} Sonuçlar anlık hesaplanır, kayıt veya üyelik gerektirmez.`;
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Server-rendered H1 (Pit 11/11b — client island içinde olsaydı H1 boş kalırdı) */}
+      <div className="mx-auto max-w-2xl px-4 pt-6 lg:px-8">
+        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">{meta.title}</h1>
+      </div>
+
+      {/* Citable snippet (server-rendered, GEO için — AI engine'ler buradan cevap üretir) */}
+      <div className="mx-auto max-w-2xl px-4 lg:px-8">
+        <aside
+          id="tool-summary"
+          aria-label="Araç özeti"
+          className="my-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 text-sm leading-relaxed text-foreground"
+        >
+          {summary}
+        </aside>
+      </div>
+
+      <ToolClient slug={slug} title={meta.title} hideTitle />
+    </>
+  );
 }

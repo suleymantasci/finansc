@@ -55,6 +55,8 @@ import { MaasHesaplama } from './_tools/MaasHesaplama';
 interface Props {
   slug: string;
   title: string;
+  /** Server-rendered H1 + citable snippet zaten sayfada — client H1'i gizle */
+  hideTitle?: boolean;
 }
 
 const TOOL_MAP: Record<string, React.FC> = {
@@ -105,7 +107,7 @@ const TOOL_MAP: Record<string, React.FC> = {
   'maas-hesaplama': MaasHesaplama,
 };
 
-export function ToolClient({ slug, title }: Props) {
+export function ToolClient({ slug, title, hideTitle = false }: Props) {
   const ToolComponent = TOOL_MAP[slug];
 
   // Geniş tablo içeren araçlar için container genişliğini artır
@@ -116,7 +118,12 @@ export function ToolClient({ slug, title }: Props) {
       <Link href="/araclar" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Araçlar
       </Link>
-      <h1 className="text-2xl font-bold">{title}</h1>
+      {hideTitle ? (
+        // Server-rendered H1 page.tsx'te (Pit 11b). Burada görsel başlık yok.
+        <h2 className="sr-only">{title}</h2>
+      ) : (
+        <h1 className="text-2xl font-bold">{title}</h1>
+      )}
 
       <AdBanner page={`araclar-${slug}`} position="top" />
 
