@@ -23,6 +23,7 @@ export function AltinSection() {
       transition={{ duration: 0.5 }}
     >
       <SectionIntro
+        as="section"
         title="Altın Fiyatları"
         description="Güncel altın fiyatlarını anlık takip edin"
         ctaLabel="Tüm altın fiyatları"

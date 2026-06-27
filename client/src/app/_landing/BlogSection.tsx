@@ -49,6 +49,7 @@ export function BlogSection() {
       transition={{ duration: 0.5 }}
     >
       <SectionIntro
+        as="section"
         title="Bilgi Merkezi"
         description="Piyasa analizleri ve finansal rehberler"
         ctaLabel="Tüm yazılar"

@@ -23,6 +23,7 @@ export function BorsaOzetSection() {
       transition={{ duration: 0.5 }}
     >
       <SectionIntro
+        as="section"
         title="Borsa İstanbul"
         description="Borsa İstanbul'dan anlık veriler"
         ctaLabel="Tüm hisseleri gör"

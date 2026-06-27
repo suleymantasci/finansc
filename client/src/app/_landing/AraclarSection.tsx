@@ -21,6 +21,7 @@ export function AraclarSection() {
       transition={{ duration: 0.5 }}
     >
       <SectionIntro
+        as="section"
         title="Hesaplama Araçları"
         description="Finansal kararlarınızı kolaylaştıran araçlar"
         ctaLabel="Tüm araçlar"
