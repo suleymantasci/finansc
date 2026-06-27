@@ -39,6 +39,16 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
+      // ── llms.txt (GEO dosyaları — Next.js route'undan serve edilir) ──
+      {
+        source: '/llms.txt',
+        destination: '/api/llms-txt',
+      },
+      {
+        source: '/llms-full.txt',
+        destination: '/api/llms-full-txt',
+      },
+      // ── Backend API proxy (llms hariç tüm /api/* backend'e gider) ──
       {
         source: '/api/:path+',
         destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path+`,
