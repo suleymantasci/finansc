@@ -44,3 +44,7 @@ hermes-blog-prompt.md
 
 # Temporary git dirs (corrupted git rename fallback)
 .git.broken-*/
+
+# Backup files from in-progress refactors (rollback safety)
+*.ts.bak
+*.tsx.bak
