@@ -111,13 +111,16 @@ function writeMaasUrl(form: MaasFormData, amounts: number[]) {
     }
   }
 
-  // Monthly amounts — m1..m12 → m (virgüllü, trailing 0'lar kırpılır)
+  // Monthly amounts — m1..m12 → m (virgüllü, leading ve trailing 0'lar kırpılır)
   for (let i = 1; i <= 12; i++) sp.delete(`m${i}`);
   const nonzero = amounts.some((a) => a > 0);
   if (nonzero) {
+    // Baştaki ve sondaki 0'ları kırp — sadece gerçek değerli ayları yaz
+    let first = 0;
+    while (first < 12 && amounts[first] === 0) first++;
     let last = 11;
-    while (last > 0 && amounts[last] === 0) last--;
-    sp.set('m', amounts.slice(0, last + 1).join(','));
+    while (last > first && amounts[last] === 0) last--;
+    sp.set('m', amounts.slice(first, last + 1).join(','));
   } else {
     sp.delete('m');
   }
@@ -144,7 +147,20 @@ function MaasHesaplamaInner() {
     typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
   );
 
-  const [yearlyResult, setYearlyResult] = useState<YearlyTableResult | null>(null);
+  // Mount'ta otomatik hesapla — URL'den gelen değerlerle dolu form açılınca
+  // kullanıcı "Hesapla"ya basmadan sonuç görünmeli.
+  const hasInitialData = initialMonthly.some((a) => a > 0);
+  const [yearlyResult, setYearlyResult] = useState<YearlyTableResult | null>(
+    hasInitialData
+      ? calculateYearlyTable(
+          (() => {
+            const { month: _m, cumulativeMatrah: _c, ...rest } = initialForm;
+            return rest;
+          })(),
+          initialMonthly,
+        )
+      : null,
+  );
   const [monthlyAmounts, setMonthlyAmounts] = useState<number[]>(initialMonthly);
   const resultRef = useRef<HTMLDivElement>(null);
 
