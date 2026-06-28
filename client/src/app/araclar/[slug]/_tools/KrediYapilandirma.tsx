@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { annuityPayment, amortizationSchedule, remainingPrincipal, fmtTL } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const TYPES = [
   { value: 'ihtiyac', label: 'İhtiyaç Kredisi', bsmv: 0.15, kkdf: 0.15 },
@@ -28,46 +29,81 @@ const schema = z.object({
   newCost: z.coerce.number().min(0),
 });
 type FormData = z.infer<typeof schema>;
+type CalcResult = { oldRemaining: number; oldMonthly: number; oldTotal: number; newMonthly: number; newTotal: number; savings: number };
+const defaults: FormData = { type: 'ihtiyac', amount: 0, term: 0, rate: 0, paidMonths: 0, earlyPenalty: 0, newTerm: 0, newRate: 0, newCost: 0 };
+
+function readFormFromUrl(): FormData {
+  if (typeof window === 'undefined') return defaults;
+  const sp = new URLSearchParams(window.location.search);
+  const num = (k: keyof FormData): number => {
+    const v = sp.get(k as string);
+    if (v === null || v === '') return defaults[k] as number;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : (defaults[k] as number);
+  };
+  return {
+    type: sp.get('type') ?? defaults.type,
+    amount: num('amount'), term: num('term'), rate: num('rate'),
+    paidMonths: num('paidMonths'), earlyPenalty: num('earlyPenalty'),
+    newTerm: num('newTerm'), newRate: num('newRate'), newCost: num('newCost'),
+  };
+}
+
+function writeFormToUrl(form: FormData) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  for (const k of ['type', 'amount', 'term', 'rate', 'paidMonths', 'earlyPenalty', 'newTerm', 'newRate', 'newCost'] as (keyof FormData)[]) {
+    const v = form[k];
+    const def = defaults[k];
+    if (v === def || (typeof v === 'number' && v === 0)) sp.delete(k as string);
+    else sp.set(k as string, String(v));
+  }
+  const qs = sp.toString();
+  window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+}
+
+function compute(data: FormData): CalcResult {
+  const t = TYPES.find(x => x.value === data.type) || TYPES[0];
+  const oldMonthly = annuityPayment(data.amount, data.rate / 100, data.term);
+  const remaining = remainingPrincipal(data.amount, data.rate, data.term, data.paidMonths, t.bsmv, t.kkdf);
+  const penalty = remaining * (data.earlyPenalty / 100);
+  const newPrincipal = remaining + penalty + data.newCost;
+  const newRows = amortizationSchedule(newPrincipal, data.newRate, data.newTerm, t.bsmv, t.kkdf);
+  const oldRows = amortizationSchedule(data.amount, data.rate, data.term, t.bsmv, t.kkdf);
+  const oldTotalRemaining = oldRows.slice(data.paidMonths).reduce((s, r) => s + r.totalPayment, 0);
+  return {
+    oldRemaining: remaining,
+    oldMonthly: oldRows[data.paidMonths]?.totalPayment || oldMonthly,
+    oldTotal: oldTotalRemaining,
+    newMonthly: newRows[0].totalPayment,
+    newTotal: newRows.reduce((s, r) => s + r.totalPayment, 0),
+    savings: oldTotalRemaining - newRows.reduce((s, r) => s + r.totalPayment, 0),
+  };
+}
 
 export function KrediYapilandirma() {
-  const [result, setResult] = useState<{
-    oldRemaining: number; oldMonthly: number; oldTotal: number;
-    newMonthly: number; newTotal: number; savings: number;
-  } | null>(null);
+  const initialForm = readFormFromUrl();
+  const [result, setResult] = useState<CalcResult | null>(compute(initialForm));
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
-    resolver: zodResolver(schema), defaultValues: { type: 'ihtiyac', earlyPenalty: 0, newCost: 0 },
+    resolver: zodResolver(schema), defaultValues: initialForm,
   });
 
   const onSubmit = (data: FormData) => {
-    const t = TYPES.find(t => t.value === data.type) || TYPES[0];
-    const r = data.rate / 100;
-    const oldMonthly = annuityPayment(data.amount, r, data.term);
-    const remaining = remainingPrincipal(data.amount, data.rate, data.term, data.paidMonths, t.bsmv, t.kkdf);
-    const remainingMonths = data.term - data.paidMonths;
-    const oldRemainingTotal = oldMonthly * remainingMonths;
-
-    // Early closure penalty
-    const penalty = remaining * (data.earlyPenalty / 100);
-    const newPrincipal = remaining + penalty + data.newCost;
-
-    const newR = data.newRate / 100;
-    const newRows = amortizationSchedule(newPrincipal, data.newRate, data.newTerm, t.bsmv, t.kkdf);
-    const newMonthly = newRows[0].totalPayment;
-    const newTotal = newRows.reduce((s, r) => s + r.totalPayment, 0);
-
-    // Add BSMV/KKDF to old remaining
-    const oldRows = amortizationSchedule(data.amount, data.rate, data.term, t.bsmv, t.kkdf);
-    const oldTotalRemaining = oldRows.slice(data.paidMonths).reduce((s, r) => s + r.totalPayment, 0);
-
-    setResult({
-      oldRemaining: remaining,
-      oldMonthly: oldRows[data.paidMonths]?.totalPayment || oldMonthly,
-      oldTotal: oldTotalRemaining,
-      newMonthly,
-      newTotal,
-      savings: oldTotalRemaining - newTotal,
-    });
+    setResult(compute(data));
+    writeFormToUrl(data);
   };
+
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -86,23 +122,29 @@ export function KrediYapilandirma() {
         <Input label="Toplam Masraf (₺)" type="number" step="0.01" defaultValue="0" {...register('newCost')} error={errors.newCost?.message} />
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Hesapla</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
-        <ResultCard>
-          <ResultRow label="Kalan Anapara" value={fmtTL(result.oldRemaining)} />
-          <h3 className="font-semibold text-sm pt-2">Mevcut Kredi</h3>
-          <ResultRow label="Aylık Taksit" value={fmtTL(result.oldMonthly)} />
-          <ResultRow label="Kalan Toplam Ödeme" value={fmtTL(result.oldTotal)} />
-          <h3 className="font-semibold text-sm pt-2">Yeni Kredi</h3>
-          <ResultRow label="Aylık Taksit" value={fmtTL(result.newMonthly)} />
-          <ResultRow label="Toplam Ödeme" value={fmtTL(result.newTotal)} />
-          <div className="border-t border-border pt-2 mt-2">
-            <ResultRow label={result.savings >= 0 ? 'Tasarruf' : 'Ek Maliyet'} value={fmtTL(Math.abs(result.savings))} highlight />
+        <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
           </div>
-        </ResultCard>
+          <ResultCard>
+            <ResultRow label="Kalan Anapara" value={fmtTL(result.oldRemaining)} />
+            <h3 className="font-semibold text-sm pt-2">Mevcut Kredi</h3>
+            <ResultRow label="Aylık Taksit" value={fmtTL(result.oldMonthly)} />
+            <ResultRow label="Kalan Toplam Ödeme" value={fmtTL(result.oldTotal)} />
+            <h3 className="font-semibold text-sm pt-2">Yeni Kredi</h3>
+            <ResultRow label="Aylık Taksit" value={fmtTL(result.newMonthly)} />
+            <ResultRow label="Toplam Ödeme" value={fmtTL(result.newTotal)} />
+            <div className="border-t border-border pt-2 mt-2">
+              <ResultRow label={result.savings >= 0 ? 'Tasarruf' : 'Ek Maliyet'} value={fmtTL(Math.abs(result.savings))} highlight />
+            </div>
+          </ResultCard>
+        </>
       )}
 
       <ToolInfo

@@ -9,20 +9,61 @@ import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { fmtTL, fmtPct } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const schema = z.object({
   remainingTerm: z.string(),
   earlyPayment: z.coerce.number().min(1, 'Tutar giriniz'),
 });
+type FormData = z.infer<typeof schema>;
+type CalcResult = { penalty: number; rate: number };
+const defaults: FormData = { remainingTerm: 'short', earlyPayment: 0 };
+
+function readFormFromUrl(): FormData {
+  if (typeof window === 'undefined') return defaults;
+  const sp = new URLSearchParams(window.location.search);
+  const v = sp.get('earlyPayment');
+  const n = v === null || v === '' ? 0 : Number(v);
+  return { remainingTerm: sp.get('remainingTerm') ?? defaults.remainingTerm, earlyPayment: Number.isFinite(n) ? n : 0 };
+}
+
+function writeFormToUrl(form: FormData) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  if (form.remainingTerm === defaults.remainingTerm) sp.delete('remainingTerm');
+  else sp.set('remainingTerm', form.remainingTerm);
+  if (form.earlyPayment === 0) sp.delete('earlyPayment');
+  else sp.set('earlyPayment', String(form.earlyPayment));
+  const qs = sp.toString();
+  window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+}
+
+function compute(data: FormData): CalcResult {
+  const rate = data.remainingTerm === 'short' ? 0.01 : 0.02;
+  return { penalty: data.earlyPayment * rate, rate: rate * 100 };
+}
 
 export function KrediErkenKapatma() {
-  const [result, setResult] = useState<{ penalty: number; rate: number } | null>(null);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm({ resolver: zodResolver(schema), defaultValues: { remainingTerm: 'short' } });
+  const initialForm = readFormFromUrl();
+  const [result, setResult] = useState<CalcResult | null>(initialForm.earlyPayment > 0 ? compute(initialForm) : null);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: initialForm });
 
-  const onSubmit = (data: { remainingTerm: string; earlyPayment: number }) => {
-    const rate = data.remainingTerm === 'short' ? 0.01 : 0.02;
-    setResult({ penalty: data.earlyPayment * rate, rate: rate * 100 });
+  const onSubmit = (data: FormData) => {
+    setResult(compute(data));
+    writeFormToUrl(data);
   };
+
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -39,15 +80,21 @@ export function KrediErkenKapatma() {
         <Input label="Erken Ödeme Tutarı (₺)" type="number" step="0.01" placeholder="Örn. 50000" {...register('earlyPayment')} error={errors.earlyPayment?.message} />
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Hesapla</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
-        <ResultCard>
-          <ResultRow label="Ceza Oranı" value={fmtPct(result.rate)} />
-          <ResultRow label="Erken Kapatma Cezası" value={fmtTL(result.penalty)} highlight />
-        </ResultCard>
+        <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
+          </div>
+          <ResultCard>
+            <ResultRow label="Ceza Oranı" value={fmtPct(result.rate)} />
+            <ResultRow label="Erken Kapatma Cezası" value={fmtTL(result.penalty)} highlight />
+          </ResultCard>
+        </>
       )}
 
       <ToolInfo
