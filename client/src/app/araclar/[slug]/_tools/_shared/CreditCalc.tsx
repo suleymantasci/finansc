@@ -51,8 +51,10 @@ function writeFormToUrl(form: FormData) {
   window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
 }
 
-function compute(data: FormData, bsmv: number, kkdf: number): CalcResult {
+function compute(data: FormData, bsmv: number, kkdf: number): CalcResult | null {
+  if (data.amount <= 0 || data.rate <= 0 || data.term <= 0) return null;
   const rows = amortizationSchedule(data.amount, data.rate, data.term, bsmv, kkdf);
+  if (rows.length === 0) return null;
   const totalPayment = rows.reduce((s, r) => s + r.totalPayment, 0);
   const totalBsmvSum = rows.reduce((s, r) => s + r.bsmv, 0);
   const totalKkdfSum = rows.reduce((s, r) => s + r.kkdf, 0);

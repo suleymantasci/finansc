@@ -58,7 +58,8 @@ function writeFormToUrl(form: FormData) {
   window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
 }
 
-function compute(data: FormData): CalcResult {
+function compute(data: FormData): CalcResult | null {
+  if (data.amount <= 0 || data.rate <= 0 || data.term <= 0 || data.delayDays <= 0) return null;
   const t = TYPES.find(x => x.value === data.type) || TYPES[0];
   const r = data.rate / 100;
   const monthly = annuityPayment(data.amount, r, data.term);

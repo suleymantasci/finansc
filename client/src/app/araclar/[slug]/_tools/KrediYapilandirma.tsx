@@ -62,15 +62,30 @@ function writeFormToUrl(form: FormData) {
   window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
 }
 
-function compute(data: FormData): CalcResult {
+function compute(data: FormData): CalcResult | null {
+  if (data.amount <= 0 || data.rate <= 0 || data.term <= 0) return null;
   const t = TYPES.find(x => x.value === data.type) || TYPES[0];
   const oldMonthly = annuityPayment(data.amount, data.rate / 100, data.term);
   const remaining = remainingPrincipal(data.amount, data.rate, data.term, data.paidMonths, t.bsmv, t.kkdf);
+  if (data.term - data.paidMonths <= 0) return null;
+  const oldRows = amortizationSchedule(data.amount, data.rate, data.term, t.bsmv, t.kkdf);
+  if (oldRows.length === 0) return null;
+  const oldTotalRemaining = oldRows.slice(data.paidMonths).reduce((s, r) => s + r.totalPayment, 0);
   const penalty = remaining * (data.earlyPenalty / 100);
   const newPrincipal = remaining + penalty + data.newCost;
+  if (data.newTerm <= 0 || data.newRate <= 0) {
+    // Eski bilgiler yeterli, yeni hesaplanamıyor
+    return {
+      oldRemaining: remaining,
+      oldMonthly: oldRows[data.paidMonths]?.totalPayment || oldMonthly,
+      oldTotal: oldTotalRemaining,
+      newMonthly: 0,
+      newTotal: 0,
+      savings: 0,
+    };
+  }
   const newRows = amortizationSchedule(newPrincipal, data.newRate, data.newTerm, t.bsmv, t.kkdf);
-  const oldRows = amortizationSchedule(data.amount, data.rate, data.term, t.bsmv, t.kkdf);
-  const oldTotalRemaining = oldRows.slice(data.paidMonths).reduce((s, r) => s + r.totalPayment, 0);
+  if (newRows.length === 0) return null;
   return {
     oldRemaining: remaining,
     oldMonthly: oldRows[data.paidMonths]?.totalPayment || oldMonthly,

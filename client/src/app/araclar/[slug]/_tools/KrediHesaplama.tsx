@@ -61,6 +61,7 @@ function compute(data: FormData): CalcResult | null {
   if (data.amount <= 0 || data.rate <= 0 || data.term <= 0) return null;
   const t = TYPES.find(x => x.value === data.type) || TYPES[0];
   const rows = amortizationSchedule(data.amount, data.rate, data.term, t.bsmv, t.kkdf);
+  if (rows.length === 0) return null;
   const total = rows.reduce((s, r) => s + r.totalPayment, 0);
   const totalBsmv = rows.reduce((s, r) => s + r.bsmv, 0);
   const totalKkdf = rows.reduce((s, r) => s + r.kkdf, 0);

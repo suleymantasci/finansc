@@ -55,6 +55,7 @@ function compute(data: FormData): { result: CalcResult; schedule: ReturnType<typ
   if (data.amount <= 0 || data.rate <= 0 || data.term <= 0) return null;
   const bsmvRate = data.hasOtherProperty ? 0.15 : 0;
   const rows = amortizationSchedule(data.amount, data.rate, data.term, bsmvRate, 0);
+  if (rows.length === 0) return null;
   const total = rows.reduce((s, r) => s + r.totalPayment, 0);
   const totalBsmvSum = rows.reduce((s, r) => s + r.bsmv, 0);
   const totalInterest = rows.reduce((s, r) => s + r.interest, 0);
