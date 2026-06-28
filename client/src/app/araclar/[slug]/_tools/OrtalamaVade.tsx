@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,18 +8,72 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { fmtTL, fmtNum } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const schema = z.object({
   count: z.coerce.number().min(2, 'En az 2 ödeme giriniz').max(50),
 });
+type FormData = z.infer<typeof schema>;
+const defaults: FormData = { count: 2 };
+
+function readFormFromUrl(): { count: number; payments: { days: number; amount: number }[] } {
+  if (typeof window === 'undefined') return { count: 2, payments: [{ days: 0, amount: 0 }, { days: 0, amount: 0 }] };
+  const sp = new URLSearchParams(window.location.search);
+  const countStr = sp.get('count');
+  const count = countStr === null ? 2 : Math.min(Math.max(2, Number(countStr) || 2), 50);
+  const dStr = sp.get('d') ?? '';
+  const aStr = sp.get('a') ?? '';
+  const dArr = dStr ? dStr.split(',').map(v => Number(v) || 0) : [0, 0];
+  const aArr = aStr ? aStr.split(',').map(v => Number(v) || 0) : [0, 0];
+  const payments: { days: number; amount: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    payments.push({ days: dArr[i] ?? 0, amount: aArr[i] ?? 0 });
+  }
+  return { count, payments };
+}
+
+function writeFormToUrl(count: number, payments: { days: number; amount: number }[]) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  if (count === 2) sp.delete('count');
+  else sp.set('count', String(count));
+  sp.delete('d'); sp.delete('a');
+  const hasAny = payments.some(p => p.days !== 0 || p.amount !== 0);
+  if (hasAny) {
+    const dTrim = trimTrailing(payments.map(p => p.days));
+    const aTrim = trimTrailing(payments.map(p => p.amount));
+    sp.set('d', dTrim.join(','));
+    sp.set('a', aTrim.join(','));
+  }
+  const qs = sp.toString();
+  window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+}
+
+function trimTrailing(arr: number[]): number[] {
+  let last = arr.length - 1;
+  while (last > 0 && arr[last] === 0) last--;
+  return arr.slice(0, last + 1);
+}
 
 export function OrtalamaVade() {
-  const [result, setResult] = useState<{ avgDays: number; totalAmount: number } | null>(null);
-  const [payments, setPayments] = useState<{ days: number; amount: number }[]>([
-    { days: 0, amount: 0 }, { days: 0, amount: 0 },
-  ]);
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<{ count: number }>({
-    resolver: zodResolver(schema), defaultValues: { count: 2 },
+  return (
+    <Suspense fallback={null}>
+      <OrtalamaVadeInner />
+    </Suspense>
+  );
+}
+
+function OrtalamaVadeInner() {
+  const initial = readFormFromUrl();
+  const [payments, setPayments] = useState<{ days: number; amount: number }[]>(initial.payments);
+  const [result, setResult] = useState<{ avgDays: number; totalAmount: number } | null>(() => {
+    const totalAmount = initial.payments.reduce((s, p) => s + p.amount, 0);
+    if (totalAmount === 0) return null;
+    const weightedSum = initial.payments.reduce((s, p) => s + p.days * p.amount, 0);
+    return { avgDays: weightedSum / totalAmount, totalAmount };
+  });
+  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<FormData>({
+    resolver: zodResolver(schema), defaultValues: { count: initial.count },
   });
 
   const count = watch('count');
@@ -40,7 +94,21 @@ export function OrtalamaVade() {
     if (totalAmount === 0) return;
     const weightedSum = items.reduce((s, p) => s + p.days * p.amount, 0);
     setResult({ avgDays: weightedSum / totalAmount, totalAmount });
+    writeFormToUrl(count || 2, items);
   };
+
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    setPayments([{ days: 0, amount: 0 }, { days: 0, amount: 0 }]);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -81,15 +149,21 @@ export function OrtalamaVade() {
 
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Hesapla</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); setPayments([{ days: 0, amount: 0 }, { days: 0, amount: 0 }]); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
-        <ResultCard>
-          <ResultRow label="Ortalama Vade" value={`${fmtNum(result.avgDays, 1)} gün`} highlight />
-          <ResultRow label="Toplam Tutar" value={fmtTL(result.totalAmount)} />
-        </ResultCard>
+        <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
+          </div>
+          <ResultCard>
+            <ResultRow label="Ortalama Vade" value={`${fmtNum(result.avgDays, 1)} gün`} highlight />
+            <ResultRow label="Toplam Tutar" value={fmtTL(result.totalAmount)} />
+          </ResultCard>
+        </>
       )}
 
       <ToolInfo

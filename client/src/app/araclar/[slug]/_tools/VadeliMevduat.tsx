@@ -6,14 +6,42 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { fmtTL, fmtPct } from './_shared/calc';
+import { fmtTL } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const schema = z.object({
   amount: z.coerce.number().min(1, 'Anapara giriniz'),
   rate: z.coerce.number().min(0.01, 'Faiz oranı giriniz'),
   days: z.coerce.number().min(1, 'Vade giriniz'),
 });
+type FormData = z.infer<typeof schema>;
+type CalcResult = { grossReturn: number; tax: number; netReturn: number; total: number; stopajRate: number };
+const defaults: FormData = { amount: 0, rate: 0, days: 0 };
+
+function readFormFromUrl(): FormData {
+  if (typeof window === 'undefined') return defaults;
+  const sp = new URLSearchParams(window.location.search);
+  const num = (k: keyof FormData): number => {
+    const v = sp.get(k as string);
+    if (v === null || v === '') return defaults[k];
+    const n = Number(v);
+    return Number.isFinite(n) ? n : defaults[k];
+  };
+  return { amount: num('amount'), rate: num('rate'), days: num('days') };
+}
+
+function writeFormToUrl(form: FormData) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  for (const k of ['amount', 'rate', 'days'] as (keyof FormData)[]) {
+    const v = form[k];
+    if (v === 0) sp.delete(k as string);
+    else sp.set(k as string, String(v));
+  }
+  const qs = sp.toString();
+  window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+}
 
 function getStopajRate(days: number): number {
   if (days <= 180) return 0.175;
@@ -21,19 +49,37 @@ function getStopajRate(days: number): number {
   return 0.10;
 }
 
-export function VadeliMevduat() {
-  const [result, setResult] = useState<{ grossReturn: number; tax: number; netReturn: number; total: number; stopajRate: number } | null>(null);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<{ amount: number; rate: number; days: number }>({
-    resolver: zodResolver(schema),
-  });
+function compute(data: FormData): CalcResult {
+  const grossReturn = (data.amount * (data.rate / 100) * data.days) / 365;
+  const stopajRate = getStopajRate(data.days);
+  const tax = grossReturn * stopajRate;
+  const netReturn = grossReturn - tax;
+  return { grossReturn, tax, netReturn, total: data.amount + netReturn, stopajRate: stopajRate * 100 };
+}
 
-  const onSubmit = (data: { amount: number; rate: number; days: number }) => {
-    const grossReturn = (data.amount * (data.rate / 100) * data.days) / 365;
-    const stopajRate = getStopajRate(data.days);
-    const tax = grossReturn * stopajRate;
-    const netReturn = grossReturn - tax;
-    setResult({ grossReturn, tax, netReturn, total: data.amount + netReturn, stopajRate: stopajRate * 100 });
+export function VadeliMevduat() {
+  const initialForm = readFormFromUrl();
+  const [result, setResult] = useState<CalcResult | null>(
+    initialForm.amount > 0 && initialForm.rate > 0 && initialForm.days > 0 ? compute(initialForm) : null,
+  );
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: initialForm });
+
+  const onSubmit = (data: FormData) => {
+    setResult(compute(data));
+    writeFormToUrl(data);
   };
+
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -45,17 +91,23 @@ export function VadeliMevduat() {
         <p className="text-xs text-muted-foreground">Stopaj: ≤6 ay → %17,5 | 6-12 ay → %15 | &gt;12 ay → %10</p>
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Hesapla</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
-        <ResultCard>
-          <ResultRow label="Brüt Getiri" value={fmtTL(result.grossReturn)} />
-          <ResultRow label={`Stopaj (%${result.stopajRate})`} value={fmtTL(result.tax)} />
-          <ResultRow label="Net Getiri" value={fmtTL(result.netReturn)} highlight />
-          <ResultRow label="Vade Sonu Toplam" value={fmtTL(result.total)} />
-        </ResultCard>
+        <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
+          </div>
+          <ResultCard>
+            <ResultRow label="Brüt Getiri" value={fmtTL(result.grossReturn)} />
+            <ResultRow label={`Stopaj (%${result.stopajRate})`} value={fmtTL(result.tax)} />
+            <ResultRow label="Net Getiri" value={fmtTL(result.netReturn)} highlight />
+            <ResultRow label="Vade Sonu Toplam" value={fmtTL(result.total)} />
+          </ResultCard>
+        </>
       )}
 
       <ToolInfo

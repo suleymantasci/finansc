@@ -8,30 +8,77 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { fmtTL, fmtPct } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const schema = z.object({
   investment: z.coerce.number().min(0.01, 'Yatırım tutarı giriniz'),
   endValue: z.coerce.number().min(0.01, 'Vade sonu tutarı giriniz'),
   inflationRate: z.coerce.number().min(0, 'Enflasyon oranı giriniz'),
 });
+type FormData = z.infer<typeof schema>;
+type CalcResult = { nominal: number; real: number; nominalReturn: number; realReturn: number };
+const defaults: FormData = { investment: 0, endValue: 0, inflationRate: 0 };
+
+function readFormFromUrl(): FormData {
+  if (typeof window === 'undefined') return defaults;
+  const sp = new URLSearchParams(window.location.search);
+  const num = (k: keyof FormData): number => {
+    const v = sp.get(k as string);
+    if (v === null || v === '') return defaults[k];
+    const n = Number(v);
+    return Number.isFinite(n) ? n : defaults[k];
+  };
+  return { investment: num('investment'), endValue: num('endValue'), inflationRate: num('inflationRate') };
+}
+
+function writeFormToUrl(form: FormData) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  for (const k of ['investment', 'endValue', 'inflationRate'] as (keyof FormData)[]) {
+    const v = form[k];
+    if (v === 0) sp.delete(k as string);
+    else sp.set(k as string, String(v));
+  }
+  const qs = sp.toString();
+  window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+}
+
+function compute(data: FormData): CalcResult {
+  const nominal = (data.endValue - data.investment) / data.investment;
+  const inflation = data.inflationRate / 100;
+  const real = (1 + nominal) / (1 + inflation) - 1;
+  return {
+    nominal: nominal * 100,
+    real: real * 100,
+    nominalReturn: data.endValue - data.investment,
+    realReturn: data.investment * real,
+  };
+}
 
 export function ReelGetiri() {
-  const [result, setResult] = useState<{ nominal: number; real: number; nominalReturn: number; realReturn: number } | null>(null);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<{ investment: number; endValue: number; inflationRate: number }>({
-    resolver: zodResolver(schema),
-  });
+  const initialForm = readFormFromUrl();
+  const [result, setResult] = useState<CalcResult | null>(
+    initialForm.investment > 0 && initialForm.endValue > 0 && initialForm.inflationRate > 0
+      ? compute(initialForm) : null,
+  );
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: initialForm });
 
-  const onSubmit = (data: { investment: number; endValue: number; inflationRate: number }) => {
-    const nominal = (data.endValue - data.investment) / data.investment;
-    const inflation = data.inflationRate / 100;
-    const real = (1 + nominal) / (1 + inflation) - 1;
-    setResult({
-      nominal: nominal * 100,
-      real: real * 100,
-      nominalReturn: data.endValue - data.investment,
-      realReturn: data.investment * real,
-    });
+  const onSubmit = (data: FormData) => {
+    setResult(compute(data));
+    writeFormToUrl(data);
   };
+
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -42,17 +89,23 @@ export function ReelGetiri() {
         <Input label="Dönem Enflasyon Oranı (%)" type="number" step="0.01" placeholder="Örn. 45.80" {...register('inflationRate')} error={errors.inflationRate?.message} />
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Hesapla</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
-        <ResultCard>
-          <ResultRow label="Nominal Getiri Oranı" value={fmtPct(result.nominal)} />
-          <ResultRow label="Nominal Getiri Tutarı" value={fmtTL(result.nominalReturn)} />
-          <ResultRow label="Reel Getiri Oranı" value={fmtPct(result.real)} highlight />
-          <ResultRow label="Reel Getiri Tutarı" value={fmtTL(result.realReturn)} />
-        </ResultCard>
+        <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
+          </div>
+          <ResultCard>
+            <ResultRow label="Nominal Getiri Oranı" value={fmtPct(result.nominal)} />
+            <ResultRow label="Nominal Getiri Tutarı" value={fmtTL(result.nominalReturn)} />
+            <ResultRow label="Reel Getiri Oranı" value={fmtPct(result.real)} highlight />
+            <ResultRow label="Reel Getiri Tutarı" value={fmtTL(result.realReturn)} />
+          </ResultCard>
+        </>
       )}
 
       <ToolInfo
