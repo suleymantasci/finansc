@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { amortizationSchedule, fmtTL, fmtPct } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const schema = z.object({
   amount: z.coerce.number().min(1, 'Tutar giriniz'),
@@ -16,30 +17,84 @@ const schema = z.object({
   hasOtherProperty: z.boolean().optional(),
 });
 type FormData = z.infer<typeof schema>;
+type CalcResult = { monthly: number; total: number; interest: number; totalBsmv: number; totalKkdf: number; monthlyCostRate: number; bsmvRate: number };
+const defaults: FormData = { amount: 0, rate: 0, term: 0, hasOtherProperty: false };
+
+function readFormFromUrl(): FormData {
+  if (typeof window === 'undefined') return defaults;
+  const sp = new URLSearchParams(window.location.search);
+  const num = (k: keyof FormData): number => {
+    const v = sp.get(k as string);
+    if (v === null || v === '') return defaults[k] as number;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : (defaults[k] as number);
+  };
+  const bool = (k: keyof FormData): boolean => {
+    const v = sp.get(k as string);
+    if (v === 'true' || v === '1') return true;
+    if (v === 'false' || v === '0') return false;
+    return defaults[k] as boolean;
+  };
+  return { amount: num('amount'), rate: num('rate'), term: num('term'), hasOtherProperty: bool('hasOtherProperty') };
+}
+
+function writeFormToUrl(form: FormData) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  for (const k of ['amount', 'rate', 'term', 'hasOtherProperty'] as (keyof FormData)[]) {
+    const v = form[k];
+    const def = defaults[k];
+    if (v === def || (typeof v === 'number' && v === 0)) sp.delete(k as string);
+    else sp.set(k as string, String(v));
+  }
+  const qs = sp.toString();
+  window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+}
+
+function compute(data: FormData): { result: CalcResult; schedule: ReturnType<typeof amortizationSchedule> } | null {
+  if (data.amount <= 0 || data.rate <= 0 || data.term <= 0) return null;
+  const bsmvRate = data.hasOtherProperty ? 0.15 : 0;
+  const rows = amortizationSchedule(data.amount, data.rate, data.term, bsmvRate, 0);
+  const total = rows.reduce((s, r) => s + r.totalPayment, 0);
+  const totalBsmvSum = rows.reduce((s, r) => s + r.bsmv, 0);
+  const totalInterest = rows.reduce((s, r) => s + r.interest, 0);
+  const monthlyCostRate = (data.rate / 100) * (1 + bsmvRate) * 100;
+  return {
+    result: { monthly: rows[0].totalPayment, total, interest: totalInterest, totalBsmv: totalBsmvSum, totalKkdf: 0, monthlyCostRate, bsmvRate },
+    schedule: rows,
+  };
+}
 
 export function KonutKredisi() {
-  const [result, setResult] = useState<{ monthly: number; total: number; interest: number; totalBsmv: number; totalKkdf: number; monthlyCostRate: number; bsmvRate: number } | null>(null);
+  const initialForm = readFormFromUrl();
+  const initial = compute(initialForm);
+  const [result, setResult] = useState<CalcResult | null>(initial?.result ?? null);
+  const [schedule, setSchedule] = useState<ReturnType<typeof amortizationSchedule>>(initial?.schedule ?? []);
   const [showSchedule, setShowSchedule] = useState(false);
-  const [schedule, setSchedule] = useState<ReturnType<typeof amortizationSchedule>>([]);
-
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: { hasOtherProperty: false },
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
+    resolver: zodResolver(schema), defaultValues: initialForm,
   });
 
-  const hasOther = watch('hasOtherProperty');
-
   const onSubmit = (data: FormData) => {
-    const bsmvRate = data.hasOtherProperty ? 0.15 : 0;
-    const rows = amortizationSchedule(data.amount, data.rate, data.term, bsmvRate, 0);
-    const totalPayment = rows.reduce((s, r) => s + r.totalPayment, 0);
-    const totalBsmvSum = rows.reduce((s, r) => s + r.bsmv, 0);
-    const totalInterest = rows.reduce((s, r) => s + r.interest, 0);
-    const monthlyCostRate = (data.rate / 100) * (1 + bsmvRate) * 100;
-    setResult({ monthly: rows[0].totalPayment, total: totalPayment, interest: totalInterest, totalBsmv: totalBsmvSum, totalKkdf: 0, monthlyCostRate, bsmvRate });
-    setSchedule(rows);
+    const r = compute(data);
+    setResult(r?.result ?? null);
+    setSchedule(r?.schedule ?? []);
     setShowSchedule(false);
+    writeFormToUrl(data);
   };
+
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    setSchedule([]);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -56,12 +111,16 @@ export function KonutKredisi() {
         </label>
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Hesapla</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
         <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
+          </div>
           <ResultCard>
             <ResultRow label="Aylık Taksit" value={fmtTL(result.monthly)} />
             <ResultRow label="Toplam Geri Ödeme" value={fmtTL(result.total)} />
