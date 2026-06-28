@@ -111,16 +111,15 @@ function writeMaasUrl(form: MaasFormData, amounts: number[]) {
     }
   }
 
-  // Monthly amounts — m1..m12 → m (virgüllü, leading ve trailing 0'lar kırpılır)
+  // Monthly amounts — m1..m12 → m (virgüllü, sadece trailing 0'lar kırpılır).
+  // Leading 0'lar KORUNUR çünkü ay sırasını gösterir (1. ay = Ocak = 0,
+  // Ağustos'tan başlıyorsa ilk 7 eleman 0 kalmalı).
   for (let i = 1; i <= 12; i++) sp.delete(`m${i}`);
   const nonzero = amounts.some((a) => a > 0);
   if (nonzero) {
-    // Baştaki ve sondaki 0'ları kırp — sadece gerçek değerli ayları yaz
-    let first = 0;
-    while (first < 12 && amounts[first] === 0) first++;
     let last = 11;
-    while (last > first && amounts[last] === 0) last--;
-    sp.set('m', amounts.slice(first, last + 1).join(','));
+    while (last > 0 && amounts[last] === 0) last--;
+    sp.set('m', amounts.slice(0, last + 1).join(','));
   } else {
     sp.delete('m');
   }
