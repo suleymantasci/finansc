@@ -7,8 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { fmtTL, fmtPct } from './_shared/calc';
+import { fmtTL } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const schema = z.object({
   type: z.string(),
@@ -18,22 +19,70 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
+const defaults: FormData = { type: 'simple', principal: 0, rate: 0, periods: 0 };
+
+function readFormFromUrl(): FormData {
+  if (typeof window === 'undefined') return defaults;
+  const sp = new URLSearchParams(window.location.search);
+  const num = (k: keyof FormData): number => {
+    const v = sp.get(k as string);
+    if (v === null || v === '') return defaults[k] as number;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : (defaults[k] as number);
+  };
+  return {
+    type: sp.get('type') ?? defaults.type,
+    principal: num('principal'),
+    rate: num('rate'),
+    periods: num('periods'),
+  };
+}
+
+function writeFormToUrl(form: FormData) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  for (const k of ['type', 'principal', 'rate', 'periods'] as (keyof FormData)[]) {
+    const v = form[k];
+    const def = defaults[k];
+    if (v === def || (typeof v === 'number' && v === 0)) {
+      sp.delete(k as string);
+    } else {
+      sp.set(k as string, String(v));
+    }
+  }
+  const qs = sp.toString();
+  window.history.replaceState(
+    null, '',
+    qs ? `${window.location.pathname}?${qs}` : window.location.pathname,
+  );
+}
+
 export function FaizHesaplama() {
-  const [result, setResult] = useState<{ interest: number; total: number } | null>(null);
+  const initialForm = readFormFromUrl();
+  const hasInitialData = initialForm.principal > 0 && initialForm.periods > 0;
+  const [result, setResult] = useState<{ interest: number; total: number } | null>(
+    hasInitialData ? computeFaiz(initialForm) : null,
+  );
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
-    resolver: zodResolver(schema), defaultValues: { type: 'simple' },
+    resolver: zodResolver(schema), defaultValues: initialForm,
   });
 
   const onSubmit = (data: FormData) => {
-    const r = data.rate / 100;
-    if (data.type === 'simple') {
-      const interest = data.principal * r * data.periods;
-      setResult({ interest, total: data.principal + interest });
-    } else {
-      const total = data.principal * Math.pow(1 + r, data.periods);
-      setResult({ interest: total - data.principal, total });
+    setResult(computeFaiz(data));
+    writeFormToUrl(data);
+  };
+
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
     }
   };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -48,15 +97,21 @@ export function FaizHesaplama() {
         <Input label="Dönem Sayısı" type="number" placeholder="Örn. 12" {...register('periods')} error={errors.periods?.message} />
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Hesapla</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
-        <ResultCard>
-          <ResultRow label="Faiz Getirisi" value={fmtTL(result.interest)} />
-          <ResultRow label="Toplam Tutar" value={fmtTL(result.total)} highlight />
-        </ResultCard>
+        <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
+          </div>
+          <ResultCard>
+            <ResultRow label="Faiz Getirisi" value={fmtTL(result.interest)} />
+            <ResultRow label="Toplam Tutar" value={fmtTL(result.total)} highlight />
+          </ResultCard>
+        </>
       )}
 
       <ToolInfo
@@ -69,4 +124,15 @@ export function FaizHesaplama() {
       />
     </>
   );
+}
+
+function computeFaiz(data: FormData) {
+  const r = data.rate / 100;
+  if (data.type === 'simple') {
+    const interest = data.principal * r * data.periods;
+    return { interest, total: data.principal + interest };
+  } else {
+    const total = data.principal * Math.pow(1 + r, data.periods);
+    return { interest: total - data.principal, total };
+  }
 }
