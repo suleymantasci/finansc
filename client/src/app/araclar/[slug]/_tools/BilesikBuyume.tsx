@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { fmtPct, fmtNum } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const schema = z.object({
   periodType: z.string(),
@@ -18,17 +19,78 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
+const defaults: FormData = { periodType: 'year', startValue: 0, endValue: 0, periods: 0 };
+
+function readFormFromUrl(params: URLSearchParams): FormData {
+  const num = (k: keyof FormData): number => {
+    const v = params.get(k as string);
+    if (v === null || v === '') return defaults[k] as number;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : (defaults[k] as number);
+  };
+  return {
+    periodType: params.get('periodType') ?? defaults.periodType,
+    startValue: num('startValue'),
+    endValue: num('endValue'),
+    periods: num('periods'),
+  };
+}
+
+function writeFormToUrl(form: FormData) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  for (const k of ['periodType', 'startValue', 'endValue', 'periods'] as (keyof FormData)[]) {
+    const v = form[k];
+    const def = defaults[k];
+    if (v === def || (typeof v === 'number' && v === 0) || v === '') {
+      sp.delete(k as string);
+    } else {
+      sp.set(k as string, String(v));
+    }
+  }
+  const qs = sp.toString();
+  window.history.replaceState(
+    null, '',
+    qs ? `${window.location.pathname}?${qs}` : window.location.pathname,
+  );
+}
+
 export function BilesikBuyume() {
-  const [result, setResult] = useState<{ cagr: number; totalGrowth: number } | null>(null);
+  return (
+    <Suspense fallback={null}>
+      <BilesikBuyumeInner />
+    </Suspense>
+  );
+}
+
+function BilesikBuyumeInner() {
+  const initialForm = readFormFromUrl(
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
+  );
+  const hasInitialData = initialForm.startValue > 0 && initialForm.endValue > 0 && initialForm.periods > 0;
+  const [result, setResult] = useState<{ cagr: number; totalGrowth: number } | null>(
+    hasInitialData ? computeCagr(initialForm) : null,
+  );
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
-    resolver: zodResolver(schema), defaultValues: { periodType: 'year' },
+    resolver: zodResolver(schema), defaultValues: initialForm,
   });
 
   const onSubmit = (data: FormData) => {
-    const cagr = (Math.pow(data.endValue / data.startValue, 1 / data.periods) - 1) * 100;
-    const totalGrowth = ((data.endValue - data.startValue) / data.startValue) * 100;
-    setResult({ cagr, totalGrowth });
+    setResult(computeCagr(data));
+    writeFormToUrl(data);
   };
+
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -43,15 +105,21 @@ export function BilesikBuyume() {
         <Input label="Dönem Sayısı" type="number" placeholder="Örn. 5" {...register('periods')} error={errors.periods?.message} />
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Hesapla</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
-        <ResultCard>
-          <ResultRow label="Bileşik Büyüme Oranı (CAGR)" value={fmtPct(result.cagr)} highlight />
-          <ResultRow label="Toplam Büyüme" value={fmtPct(result.totalGrowth)} />
-        </ResultCard>
+        <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
+          </div>
+          <ResultCard>
+            <ResultRow label="Bileşik Büyüme Oranı (CAGR)" value={fmtPct(result.cagr)} highlight />
+            <ResultRow label="Toplam Büyüme" value={fmtPct(result.totalGrowth)} />
+          </ResultCard>
+        </>
       )}
 
       <ToolInfo
@@ -64,4 +132,10 @@ export function BilesikBuyume() {
       />
     </>
   );
+}
+
+function computeCagr(data: FormData) {
+  const cagr = (Math.pow(data.endValue / data.startValue, 1 / data.periods) - 1) * 100;
+  const totalGrowth = ((data.endValue - data.startValue) / data.startValue) * 100;
+  return { cagr, totalGrowth };
 }

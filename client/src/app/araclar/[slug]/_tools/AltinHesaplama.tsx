@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { fmtTL, fmtNum } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const GOLD_TYPES = [
   { value: 'gram24', label: 'Gram Altın (24 Ayar)', gram: 1, ayar: 24 },
@@ -30,28 +31,80 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
+const defaults: FormData = { direction: 'toMoney', goldType: 'gram24', amount: 0, gramPrice: 0 };
+
+function readFormFromUrl(params: URLSearchParams): FormData {
+  const num = (k: keyof FormData): number => {
+    const v = params.get(k as string);
+    if (v === null || v === '') return defaults[k] as number;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : (defaults[k] as number);
+  };
+  return {
+    direction: params.get('direction') ?? defaults.direction,
+    goldType: params.get('goldType') ?? defaults.goldType,
+    amount: num('amount'),
+    gramPrice: num('gramPrice'),
+  };
+}
+
+function writeFormToUrl(form: FormData) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  for (const k of ['direction', 'goldType', 'amount', 'gramPrice'] as (keyof FormData)[]) {
+    const v = form[k];
+    const def = defaults[k];
+    if (v === def || (typeof v === 'number' && v === 0) || v === '') {
+      sp.delete(k as string);
+    } else {
+      sp.set(k as string, String(v));
+    }
+  }
+  const qs = sp.toString();
+  window.history.replaceState(
+    null, '',
+    qs ? `${window.location.pathname}?${qs}` : window.location.pathname,
+  );
+}
+
 export function AltinHesaplama() {
-  const [result, setResult] = useState<{ value: number; label: string } | null>(null);
+  return (
+    <Suspense fallback={null}>
+      <AltinHesaplamaInner />
+    </Suspense>
+  );
+}
+
+function AltinHesaplamaInner() {
+  const initialForm = readFormFromUrl(
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
+  );
+  const hasInitialData = initialForm.amount > 0 && initialForm.gramPrice > 0;
+  const [result, setResult] = useState<{ value: number; label: string } | null>(
+    hasInitialData ? computeAltin(initialForm) : null,
+  );
   const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<FormData>({
-    resolver: zodResolver(schema), defaultValues: { direction: 'toMoney', goldType: 'gram24' },
+    resolver: zodResolver(schema), defaultValues: initialForm,
   });
 
   const direction = watch('direction');
 
   const onSubmit = (data: FormData) => {
-    const type = GOLD_TYPES.find(t => t.value === data.goldType) || GOLD_TYPES[0];
-    const pureGram = type.gram * (type.ayar / 24);
+    setResult(computeAltin(data));
+    writeFormToUrl(data);
+  };
 
-    if (data.direction === 'toMoney') {
-      // Gold to money: amount * gram * price
-      const value = data.amount * pureGram * data.gramPrice;
-      setResult({ value, label: 'Parasal Değeri' });
-    } else {
-      // Money to gold: amount / (gram * price)
-      const value = data.amount / (pureGram * data.gramPrice);
-      setResult({ value, label: `${type.label} Miktarı` });
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
     }
   };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -70,14 +123,20 @@ export function AltinHesaplama() {
         />
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Hesapla</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
-        <ResultCard>
-          <ResultRow label={result.label} value={result.label.includes('Miktarı') ? fmtNum(result.value, 4) : fmtTL(result.value)} />
-        </ResultCard>
+        <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
+          </div>
+          <ResultCard>
+            <ResultRow label={result.label} value={result.label.includes('Miktarı') ? fmtNum(result.value, 4) : fmtTL(result.value)} />
+          </ResultCard>
+        </>
       )}
 
       <ToolInfo
@@ -90,4 +149,16 @@ export function AltinHesaplama() {
       />
     </>
   );
+}
+
+function computeAltin(data: FormData) {
+  const type = GOLD_TYPES.find(t => t.value === data.goldType) || GOLD_TYPES[0];
+  const pureGram = type.gram * (type.ayar / 24);
+  if (data.direction === 'toMoney') {
+    const value = data.amount * pureGram * data.gramPrice;
+    return { value, label: 'Parasal Değeri' };
+  } else {
+    const value = data.amount / (pureGram * data.gramPrice);
+    return { value, label: `${type.label} Miktarı` };
+  }
 }
