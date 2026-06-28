@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { validateIBAN } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 const TR_BANKS: Record<string, string> = {
   '0001': 'T.C. Merkez Bankası', '0004': 'İller Bankası', '0010': 'Ziraat Bankası',
@@ -27,18 +28,51 @@ const TR_BANKS: Record<string, string> = {
 const schema = z.object({
   iban: z.string().min(1, 'IBAN giriniz'),
 });
+type FormData = z.infer<typeof schema>;
+const defaults: FormData = { iban: '' };
+
+function readFormFromUrl(): FormData {
+  if (typeof window === 'undefined') return defaults;
+  const sp = new URLSearchParams(window.location.search);
+  return { iban: sp.get('iban') ?? defaults.iban };
+}
+
+function writeFormToUrl(form: FormData) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+  for (const k of ['iban'] as (keyof FormData)[]) {
+    const v = form[k];
+    if (v === defaults[k] || v === '') sp.delete(k as string);
+    else sp.set(k as string, String(v));
+  }
+  const qs = sp.toString();
+  window.history.replaceState(null, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+}
 
 export function IbanDogrulama() {
-  const [result, setResult] = useState<{ valid: boolean; country: string; bank: string; formatted: string } | null>(null);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<{ iban: string }>({ resolver: zodResolver(schema) });
+  const initialForm = readFormFromUrl();
+  const hasInitialData = initialForm.iban.length > 0;
+  const [result, setResult] = useState<{ valid: boolean; country: string; bank: string; formatted: string } | null>(
+    hasInitialData ? validateIban(initialForm.iban) : null,
+  );
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: initialForm });
 
-  const onSubmit = (data: { iban: string }) => {
-    const cleaned = data.iban.replace(/\s+/g, '').toUpperCase();
-    const { valid, country, bankCode } = validateIBAN(cleaned);
-    const bank = country === 'TR' ? (TR_BANKS[bankCode] || 'Bilinmeyen Banka') : '';
-    const formatted = cleaned.replace(/(.{4})/g, '$1 ').trim();
-    setResult({ valid, country, bank, formatted });
+  const onSubmit = (data: FormData) => {
+    setResult(validateIban(data.iban));
+    writeFormToUrl(data);
   };
+
+  const handleReset = () => {
+    reset();
+    setResult(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+    : '';
 
   return (
     <>
@@ -47,17 +81,23 @@ export function IbanDogrulama() {
         <Input label="IBAN" placeholder="TR80 0006 2000 0670 0006 6844 77" {...register('iban')} error={errors.iban?.message} />
         <div className="flex gap-2">
           <Button type="submit" className="flex-1">Doğrula</Button>
-          <Button type="button" variant="outline" onClick={() => { reset(); setResult(null); }}>Sıfırla</Button>
+          <Button type="button" variant="outline" onClick={handleReset}>Sıfırla</Button>
         </div>
       </form>
 
       {result && (
-        <ResultCard>
-          <ResultRow label="Durum" value={result.valid ? '✅ Geçerli' : '❌ Geçersiz'} />
-          <ResultRow label="Ülke" value={result.country} />
-          {result.bank && <ResultRow label="Banka" value={result.bank} />}
-          <ResultRow label="Formatlanmış" value={result.formatted} />
-        </ResultCard>
+        <>
+          <div className="flex items-center justify-between gap-2 mt-6 flex-wrap">
+            <p className="text-sm text-muted-foreground">Sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.</p>
+            <ShareButton shareUrl={shareUrl} />
+          </div>
+          <ResultCard>
+            <ResultRow label="Durum" value={result.valid ? '✅ Geçerli' : '❌ Geçersiz'} />
+            <ResultRow label="Ülke" value={result.country} />
+            {result.bank && <ResultRow label="Banka" value={result.bank} />}
+            <ResultRow label="Formatlanmış" value={result.formatted} />
+          </ResultCard>
+        </>
       )}
 
       <ToolInfo
@@ -70,4 +110,12 @@ export function IbanDogrulama() {
       />
     </>
   );
+}
+
+function validateIban(raw: string) {
+  const cleaned = raw.replace(/\s+/g, '').toUpperCase();
+  const { valid, country, bankCode } = validateIBAN(cleaned);
+  const bank = country === 'TR' ? (TR_BANKS[bankCode] || 'Bilinmeyen Banka') : '';
+  const formatted = cleaned.replace(/(.{4})/g, '$1 ').trim();
+  return { valid, country, bank, formatted };
 }
