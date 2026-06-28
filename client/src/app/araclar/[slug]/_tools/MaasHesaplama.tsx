@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Calculator, Clock, Utensils, Percent, Receipt } from 'lucide-react';
@@ -19,6 +19,7 @@ import { calculateYearlyTable, fmtTL, type YearlyTableResult } from './_shared/m
 import { generateMaasPdf } from './_shared/pdfExport';
 import { MaasChart } from './_shared/MaasChart';
 import { YearlyMaasTable } from './_shared/YearlyMaasTable';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 // ── Default değerler ─────────────────────────────────────────────
 
@@ -36,9 +37,115 @@ const defaults: MaasFormData = {
   showEmployerCost: false,
 };
 
+// ── URL state helpers (her tool kendi read/write'unu yazar — generic YASAK) ──
+
+// URL'den MaasFormData oku (her alan kendi default'una düşer)
+function readMaasFormFromUrl(params: URLSearchParams): MaasFormData {
+  const num = (k: string, d: number) => {
+    const v = params.get(k);
+    if (v === null || v === '') return d;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : d;
+  };
+  const str = (k: string, d: string) => params.get(k) ?? d;
+  const bool = (k: string, d: boolean) => {
+    const v = params.get(k);
+    if (v === 'true' || v === '1') return true;
+    if (v === 'false' || v === '0') return false;
+    return d;
+  };
+  return {
+    year: num('year', defaults.year),
+    month: num('month', defaults.month),
+    direction: str('direction', defaults.direction) as MaasFormData['direction'],
+    employeeType: str('employeeType', defaults.employeeType) as MaasFormData['employeeType'],
+    amount: num('amount', defaults.amount),
+    disability: str('disability', defaults.disability) as MaasFormData['disability'],
+    cumulativeMatrah: num('cumulativeMatrah', defaults.cumulativeMatrah),
+    minWageCumulativeMatrah: num('minWageCumulativeMatrah', defaults.minWageCumulativeMatrah),
+    showEmployerCost: bool('showEmployerCost', defaults.showEmployerCost),
+  };
+}
+
+// 12 aylık tutarları URL'den oku (m=50000,50000,50000 veya m1=...,m2=...)
+function readMonthlyFromUrl(params: URLSearchParams): number[] {
+  const single = params.get('m');
+  if (single) {
+    return Array.from({ length: 12 }, (_, i) => {
+      const v = single.split(',')[i];
+      const n = v === undefined ? 0 : Number(v);
+      return Number.isFinite(n) ? n : 0;
+    });
+  }
+  return Array.from({ length: 12 }, (_, i) => {
+    const v = params.get(`m${i + 1}`);
+    if (v === null) return 0;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  });
+}
+
+// Form + monthly amounts → URL'e senkron (default'a eşitse yazma, m trailing 0'ları kırp)
+function writeMaasUrl(form: MaasFormData, amounts: number[]) {
+  if (typeof window === 'undefined') return;
+  const sp = new URLSearchParams(window.location.search);
+
+  // Form alanları
+  const fields: Array<[string, string | number | boolean]> = [
+    ['year', form.year],
+    ['month', form.month],
+    ['direction', form.direction],
+    ['employeeType', form.employeeType],
+    ['amount', form.amount],
+    ['disability', form.disability],
+    ['cumulativeMatrah', form.cumulativeMatrah],
+    ['minWageCumulativeMatrah', form.minWageCumulativeMatrah],
+    ['showEmployerCost', form.showEmployerCost],
+  ];
+  for (const [k, v] of fields) {
+    const def = (defaults as Record<string, unknown>)[k];
+    if (v === def || v === '' || v === undefined || v === null) {
+      sp.delete(k);
+    } else {
+      sp.set(k, String(v));
+    }
+  }
+
+  // Monthly amounts — m1..m12 → m (virgüllü, trailing 0'lar kırpılır)
+  for (let i = 1; i <= 12; i++) sp.delete(`m${i}`);
+  const nonzero = amounts.some((a) => a > 0);
+  if (nonzero) {
+    let last = 11;
+    while (last > 0 && amounts[last] === 0) last--;
+    sp.set('m', amounts.slice(0, last + 1).join(','));
+  } else {
+    sp.delete('m');
+  }
+
+  const qs = sp.toString();
+  const newPath = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+  window.history.replaceState(null, '', newPath);
+}
+
 export function MaasHesaplama() {
+  return (
+    <Suspense fallback={null}>
+      <MaasHesaplamaInner />
+    </Suspense>
+  );
+}
+
+function MaasHesaplamaInner() {
+  // Mount'ta URL'den initial değerleri oku
+  const initialForm = readMaasFormFromUrl(
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
+  );
+  const initialMonthly = readMonthlyFromUrl(
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
+  );
+
   const [yearlyResult, setYearlyResult] = useState<YearlyTableResult | null>(null);
-  const [monthlyAmounts, setMonthlyAmounts] = useState<number[]>(Array(12).fill(0));
+  const [monthlyAmounts, setMonthlyAmounts] = useState<number[]>(initialMonthly);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -49,7 +156,7 @@ export function MaasHesaplama() {
     reset,
   } = useForm<MaasFormData>({
     resolver: zodResolver(maasFormSchema),
-    defaultValues: defaults,
+    defaultValues: initialForm,
   });
 
   const watchedYear = watch('year');
@@ -84,6 +191,7 @@ export function MaasHesaplama() {
     }
     setMonthlyAmounts(amounts);
     runCalculation(data, amounts);
+    writeMaasUrl(data, amounts);
 
     setTimeout(() => {
       resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -104,6 +212,7 @@ export function MaasHesaplama() {
         setMonthlyAmounts((current) => {
           const result = calculateYearlyTable(baseForm, current);
           setYearlyResult(result);
+          writeMaasUrl(formValues, current);
           return current;
         });
       }, 0);
@@ -196,6 +305,10 @@ export function MaasHesaplama() {
               reset();
               setYearlyResult(null);
               setMonthlyAmounts(Array(12).fill(0));
+              // URL'i temizle
+              if (typeof window !== 'undefined') {
+                window.history.replaceState(null, '', window.location.pathname);
+              }
             }}
           >
             Sıfırla
@@ -206,6 +319,20 @@ export function MaasHesaplama() {
       {/* ── Sonuç Bölümü ── */}
       {yearlyResult && (
         <div ref={resultRef} className="space-y-8 pt-4 border-t border-border">
+          {/* Paylaş — sonuç URL'i kopyala */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-sm text-muted-foreground">
+              Bu sonucu paylaş — link'i kopyalayıp gönderebilirsiniz.
+            </p>
+            <ShareButton
+              shareUrl={
+                typeof window !== 'undefined'
+                  ? `${window.location.origin}${window.location.pathname}${window.location.search}`
+                  : ''
+              }
+            />
+          </div>
+
           {/* 12 Aylık Tablo */}
           <YearlyMaasTable
             yearlyResult={yearlyResult}
