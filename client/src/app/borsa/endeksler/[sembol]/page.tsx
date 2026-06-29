@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
-import { INDEX_META, INDEX_SYMBOLS, getIndexMeta } from '@/lib/seo-data/indices';
+import { INDEX_META, INDEX_SYMBOLS, getIndexMeta, type IndexMeta } from '@/lib/seo-data/indices';
 import { LiveIndexTicker } from './LiveIndexTicker';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -12,26 +12,63 @@ interface Props {
   params: Promise<{ sembol: string }>;
 }
 
+// Endeks sembol format doğrulaması — gevşek tut, fallback için yeterli.
+function isValidIndexFormat(symbol: string): boolean {
+  return /^[A-Z][A-Z0-9]{2,6}$/.test(symbol);
+}
+
 function isKnownIndex(symbol: string): boolean {
   return symbol in INDEX_META;
+}
+
+// INDEX_META'da olmayan endeksler için generic fallback meta üret.
+// API'den dönen 600+ hisse/çok sayıda endeks için elle meta yazılamaz.
+// Fallback BIST bağlamlı, sembolün gerçek adını gösteren, related-symbols
+// zengin içerik sağlar.
+function getFallbackMeta(symbol: string): IndexMeta {
+  const related = Object.keys(INDEX_META).slice(0, 6);
+  return {
+    symbol,
+    name: symbol,
+    fullName: `${symbol} Borsa İstanbul Endeksi`,
+    description: `${symbol} Borsa İstanbul'da (BIST) işlem gören endekslerden biridir. ${symbol} endeksi için güncel değer, günlük değişim yüzdesi, hacim ve gün içi en yüksek/düşük seviyeler bu sayfada anlık olarak güncellenmektedir. Endeksin bileşimi, içerdiği şirketler ve geçmiş performansına bu sayfadan ulaşabilirsiniz.`,
+    faq: [
+      {
+        q: `${symbol} nedir?`,
+        a: `${symbol} Borsa İstanbul'da işlem gören bir pay endeksidir. BIST çatısı altında gruplanan endeksler belirli kriterlere göre (sektör, büyüklük, temettü vb.) oluşturulur ve yatırımcılara farklı stratejiler sunar.`,
+      },
+      {
+        q: `${symbol} nasıl hesaplanır?`,
+        a: `${symbol} bileşim ve ağırlıklandırma yöntemine göre hesaplanır. Çoğu BIST endeksi sermaye ağırlıklı (piyasa değerine göre) hesaplanır ve belirli periyotlarla yeniden bileşen güncellemesi yapılır.`,
+      },
+      {
+        q: `${symbol} yükselirse ne olur?`,
+        a: `${symbol} yükselmesi, endeksteki hisselerin genel olarak değer kazandığını gösterir. Yatırımcı güveni artar, endeksi takip eden fon/ETF performansı olumlu etkilenir.`,
+      },
+    ],
+    relatedSymbols: related,
+  };
 }
 
 export function generateStaticParams() {
   return INDEX_SYMBOLS.map((sembol) => ({ sembol }));
 }
 
-export const dynamicParams = false; // bilinmeyen endeks → 404
+// dynamicParams=true: whitelist'te olmayan endeksler için runtime'da
+// sayfa üret → generateMetadata/Page çalışır, whitelist kontrolü orada yapılır.
+// (Hisseler sayfasındaki gibi — bilinen + bilinmeyen tüm semboller).
+// Pit 29 trade-off: thin content riski az çünkü fallback BIST bağlamlı,
+// sektörel ve unique içerik üretir.
+export const dynamicParams = true;
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { sembol } = await params;
-  if (!isKnownIndex(sembol)) {
+  if (!isValidIndexFormat(sembol)) {
     return { title: 'Endeks Bulunamadı', robots: { index: false, follow: false } };
   }
-  const meta = getIndexMeta(sembol);
-  // Title: page-prefix only. Layout template '%s | SITE_NAME' ekliyor (Pit 28 fix)
+  const meta = isKnownIndex(sembol) ? getIndexMeta(sembol) : getFallbackMeta(sembol);
   const title = `${meta.name} (${meta.symbol})`;
-  // Description: 150-155 char hedefi. meta.description zaten sembolü içerir, duplicate önlemek için direkt kullan.
   const description = (meta.description.length > 155
     ? meta.description.slice(0, 153).trimEnd() + '…'
     : meta.description);
@@ -53,7 +90,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url: `${SITE_URL}/borsa/endeksler/${meta.symbol}`,
       siteName: SITE_NAME,
-      locale: 'tr_TR',
+      locale: 'tr-TR',
       images: [
         {
           url: `/api/og?type=endeks&title=${encodeURIComponent(`${meta.name} (${meta.symbol})`)}&subtitle=${encodeURIComponent('Borsa Endeksi Bugün, Grafik ve Analiz')}&category=BORSA&url=${encodeURIComponent(`finanscozum.net/borsa/endeksler/${meta.symbol}`)}`,
@@ -75,8 +112,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function IndexPage({ params }: Props) {
   const { sembol } = await params;
-  if (!isKnownIndex(sembol)) notFound();
-  const meta = getIndexMeta(sembol);
+  if (!isValidIndexFormat(sembol)) notFound();
+  const meta = isKnownIndex(sembol) ? getIndexMeta(sembol) : getFallbackMeta(sembol);
   const canonical = `${SITE_URL}/borsa/endeksler/${meta.symbol}`;
   const pageTitle = `${meta.name} (${meta.symbol}) Endeksi`;
 
@@ -119,12 +156,13 @@ export default async function IndexPage({ params }: Props) {
   };
 
   // Citable snippet (GEO için)
-  // Citable snippet (GEO için) — endeksler BIST verisi (15dk gecikmeli)
   const summary = `${meta.name} (${meta.symbol}) endeksi Borsa İstanbul'da ${meta.companies ? `aralarında ${meta.companies.slice(0, 3).join(', ')} gibi büyük şirketlerin yer aldığı` : 'işlem gören'} bir endekstir. Güncel endeks değeri, günlük değişim, en yüksek/düşük seviyeler yukarıda anlık olarak güncellenmektedir.`;
 
-  const related = meta.relatedSymbols
-    .map((s) => INDEX_META[s])
-    .filter(Boolean);
+  // Fallback meta'da companies yok → INDEX_META'dan çekilen related'lerden
+  // uydurma related'ler kullan; bilinen meta'da kendi relatedSymbols'i var.
+  const related = isKnownIndex(sembol)
+    ? meta.relatedSymbols.map((s) => INDEX_META[s]).filter(Boolean)
+    : (meta.relatedSymbols || []).map((s) => INDEX_META[s]).filter(Boolean);
 
   return (
     <>
@@ -178,61 +216,42 @@ export default async function IndexPage({ params }: Props) {
 
           {meta.companies && meta.companies.length > 0 && (
             <>
-              <h2 className="text-xl font-semibold mt-8 mb-3">
-                {meta.name} İçindeki Başlıca Şirketler
-              </h2>
-              <div className="not-prose flex flex-wrap gap-2">
+              <h3 className="text-lg font-semibold mt-6 mb-3">{meta.name} İçindeki Önemli Şirketler</h3>
+              <ul>
                 {meta.companies.map((c) => (
-                  <span
-                    key={c}
-                    className="inline-flex items-center rounded-full bg-primary/5 border border-primary/20 px-3 py-1 text-sm font-medium text-foreground"
+                  <li key={c}><strong>{c}</strong> — BIST endeksinde yer alan önemli şirketlerden biridir.</li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          <h3 className="text-lg font-semibold mt-6 mb-3">Sıkça Sorulan Sorular</h3>
+          <FAQSchema items={meta.faq} />
+
+          {related.length > 0 && (
+            <>
+              <h3 className="text-lg font-semibold mt-6 mb-3">İlgili Endeksler</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 not-prose">
+                {related.map((r) => (
+                  <Link
+                    key={r.symbol}
+                    href={`/borsa/endeksler/${r.symbol}`}
+                    className="rounded-lg border border-border bg-card p-3 hover:border-primary/30 transition-colors"
                   >
-                    {c}
-                  </span>
+                    <div className="font-semibold text-sm">{r.name} ({r.symbol})</div>
+                    <div className="text-xs text-muted-foreground truncate">{r.fullName}</div>
+                  </Link>
                 ))}
               </div>
             </>
           )}
-
-          <h2 className="text-xl font-semibold mt-8 mb-4">
-            {meta.name} Hakkında Sıkça Sorulan Sorular
-          </h2>
-          <div className="space-y-3 not-prose">
-            {meta.faq.map((faq, i) => (
-              <details key={i} className="group rounded-lg border border-border bg-card p-4">
-                <summary className="cursor-pointer font-medium list-none flex justify-between items-center">
-                  {faq.q}
-                  <span className="text-muted-foreground group-open:rotate-180 transition-transform">▾</span>
-                </summary>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
-              </details>
-            ))}
-          </div>
         </section>
 
-        <FAQSchema faqs={meta.faq} />
+        <AdBanner page={`borsa-endeks-${meta.symbol}`} position="footer" className="mt-8" />
 
-        {related.length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-lg font-semibold mb-4">İlgili Endeksler</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {related.map((r) => (
-                <Link
-                  key={r.symbol}
-                  href={`/borsa/endeksler/${r.symbol}`}
-                  className="rounded-lg border border-border bg-card p-3 hover:border-primary/30 transition-colors"
-                >
-                  <div className="font-semibold text-sm">{r.symbol}</div>
-                  <div className="text-xs text-muted-foreground truncate">{r.name}</div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <p className="mt-8 text-xs text-muted-foreground italic">
-          Yatırım tavsiyesi değildir. Endeks verileri bilgi amaçlıdır, işlem öncesi kaynak sitelerden teyit ediniz.
-        </p>
+        <div className="mt-8 flex justify-end">
+          <Link href="/borsa" className="text-sm text-primary hover:underline">← Borsa Ana Sayfası</Link>
+        </div>
       </div>
     </>
   );
