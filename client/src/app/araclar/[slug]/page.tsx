@@ -100,6 +100,10 @@ export default async function ToolSlugPage({ params }: Props) {
   const meta = TOOL_META[slug];
   const canonical = `${SITE_URL}/araclar/${slug}`;
 
+  // Paylaşımlı sayfa düzeni: MaasHesaplama gibi geniş tablolu/analizli
+  // araçlar tam genişlik (max-w-7xl), diğerleri kompakt (max-w-2xl).
+  const isWide = slug === 'maas-hesaplama';
+
   // JSON-LD: WebPage + SoftwareApplication + BreadcrumbList + SpeakableSpecification
   // Bu sayfa Türkçe finansal hesaplama araçları — "calculator" tool semantiği.
   const jsonLd = {
@@ -143,12 +147,12 @@ export default async function ToolSlugPage({ params }: Props) {
       />
 
       {/* Server-rendered H1 (Pit 11/11b — client island içinde olsaydı H1 boş kalırdı) */}
-      <div className="mx-auto max-w-2xl px-4 pt-6 lg:px-8">
+      <div className={`mx-auto ${isWide ? 'max-w-7xl' : 'max-w-2xl'} px-4 pt-6 lg:px-8`}>
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">{meta.title}</h1>
       </div>
 
       {/* Citable snippet (server-rendered, GEO için — AI engine'ler buradan cevap üretir) */}
-      <div className="mx-auto max-w-2xl px-4 lg:px-8">
+      <div className={`mx-auto ${isWide ? 'max-w-7xl' : 'max-w-2xl'} px-4 lg:px-8`}>
         <aside
           id="tool-summary"
           aria-label="Araç özeti"
