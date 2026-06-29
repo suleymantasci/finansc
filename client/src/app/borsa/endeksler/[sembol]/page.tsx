@@ -226,7 +226,7 @@ export default async function IndexPage({ params }: Props) {
           )}
 
           <h3 className="text-lg font-semibold mt-6 mb-3">Sıkça Sorulan Sorular</h3>
-          <FAQSchema items={meta.faq} />
+          <FAQSchema faqs={meta.faq} />
 
           {related.length > 0 && (
             <>
