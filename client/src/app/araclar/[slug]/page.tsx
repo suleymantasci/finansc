@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { ToolClient } from './ToolClient';
 
 // Title + description: page-prefix only (Pit 28 — root template ekliyor, çift brand yok).
@@ -146,8 +147,15 @@ export default async function ToolSlugPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Server-rendered H1 (Pit 11/11b — client island içinde olsaydı H1 boş kalırdı) */}
+      {/* Breadcrumb (sayfanın en üstünde) */}
       <div className={`mx-auto ${isWide ? 'max-w-7xl' : 'max-w-2xl'} px-4 pt-6 lg:px-8`}>
+        <Breadcrumb
+          items={[
+            { label: 'Ana sayfa', href: '/' },
+            { label: 'Araçlar', href: '/araclar' },
+            { label: 'Araç Detayı' },
+          ]}
+        />
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">{meta.title}</h1>
       </div>
 

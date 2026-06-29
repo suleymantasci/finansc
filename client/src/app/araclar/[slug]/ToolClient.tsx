@@ -1,6 +1,5 @@
 'use client';
 
-import { Breadcrumb, shortToolName } from '@/components/shared/Breadcrumb';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { ReportErrorButton } from '@/components/shared/ReportErrorButton';
 
@@ -114,13 +113,7 @@ export function ToolClient({ slug, title, hideTitle = false }: Props) {
 
   return (
     <div className={`mx-auto ${isWide ? 'max-w-7xl' : 'max-w-2xl'} px-4 py-6 lg:px-8 pb-20 md:pb-8`}>
-      <Breadcrumb
-        items={[
-          { label: 'FinansÇözüm', href: '/' },
-          { label: 'Araçlar', href: '/araclar' },
-          { label: shortToolName(title) },
-        ]}
-      />
+      {/* page.tsx'te H1 üstünde breadcrumb var. Bu render'de tekrar etmiyoruz. */}
       {hideTitle ? (
         // Server-rendered H1 page.tsx'te (Pit 11b). Burada görsel başlık yok.
         <h2 className="sr-only">{title}</h2>
