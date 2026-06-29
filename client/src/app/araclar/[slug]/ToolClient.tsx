@@ -1,7 +1,6 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Breadcrumb, shortToolName } from '@/components/shared/Breadcrumb';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { ReportErrorButton } from '@/components/shared/ReportErrorButton';
 
@@ -115,9 +114,13 @@ export function ToolClient({ slug, title, hideTitle = false }: Props) {
 
   return (
     <div className={`mx-auto ${isWide ? 'max-w-7xl' : 'max-w-2xl'} px-4 py-6 lg:px-8 pb-20 md:pb-8`}>
-      <Link href="/araclar" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Araçlar
-      </Link>
+      <Breadcrumb
+        items={[
+          { label: 'FinansÇözüm', href: '/' },
+          { label: 'Araçlar', href: '/araclar' },
+          { label: shortToolName(title) },
+        ]}
+      />
       {hideTitle ? (
         // Server-rendered H1 page.tsx'te (Pit 11b). Burada görsel başlık yok.
         <h2 className="sr-only">{title}</h2>

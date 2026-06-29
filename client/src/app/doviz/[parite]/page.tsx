@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import Link from 'next/link';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { getCurrencyBySlug, CURRENCY_SLUGS } from '@/lib/seo-data/currency';
@@ -129,16 +130,13 @@ export default async function CurrencyPage({ params }: Props) {
       />
 
       <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground mb-4">
-          <ol className="flex flex-wrap items-center gap-1.5">
-            <li><Link href="/" className="hover:text-primary">Ana Sayfa</Link></li>
-            <li aria-hidden>/</li>
-            <li><Link href="/doviz" className="hover:text-primary">Döviz</Link></li>
-            <li aria-hidden>/</li>
-            <li className="text-foreground font-medium">{meta.code}/TRY</li>
-          </ol>
-        </nav>
-
+        <Breadcrumb
+          items={[
+            { label: 'Ana Sayfa', href: '/' },
+            { label: 'Döviz', href: '/doviz' },
+            { label: `${meta.code}/TRY` },
+          ]}
+        />
         <header className="mb-6">
           <h1 className="text-2xl lg:text-3xl font-bold">
             {meta.code}/TRY {meta.name} Kuru
