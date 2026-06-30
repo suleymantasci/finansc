@@ -244,3 +244,9 @@ export function goldTypeToSlug(goldType: string): string | null {
   };
   return map[goldType] ?? null;
 }
+
+export function getGoldMeta(slug: string): GoldTypeMeta | null {
+  return GOLD_META[slug] ?? null;
+}
+
+export const GOLD_SLUGS: string[] = Object.keys(GOLD_META);
