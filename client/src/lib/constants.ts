@@ -4,10 +4,24 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:30
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // ── Navigation ──
-export const NAV_ITEMS = [
+// Literal-union: ya direkt link ya da dropdown. `href` yoksa `children` zorunlu.
+export type NavItem =
+  | { label: string; href: string; icon: string }
+  | { label: string; icon: string; children: { label: string; href: string; description?: string }[] };
+
+export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'Altın', href: '/altin', icon: 'Coins' },
   { label: 'Döviz', href: '/doviz', icon: 'Banknote' },
   { label: 'Borsa', href: '/borsa', icon: 'TrendingUp' },
+  {
+    label: 'Veriler',
+    icon: 'BarChart3',
+    children: [
+      { label: 'Enflasyon', href: '/enflasyon', description: 'TÜFE ve ÜFE verileri' },
+      { label: 'TÜFE — Tüketici Fiyatları', href: '/enflasyon/tuketici-fiyatlari' },
+      { label: 'ÜFE / Yİ-ÜFE — Üretici Fiyatları', href: '/enflasyon/uretici-fiyatlari' },
+    ],
+  },
   { label: 'Bilgi Merkezi', href: '/blog', icon: 'FileText' },
   { label: 'Araçlar', href: '/araclar', icon: 'Calculator' },
 ] as const;
@@ -18,6 +32,7 @@ export const FOOTER_LINKS = {
     { label: 'Döviz Kurları', href: '/doviz' },
     { label: 'Borsa', href: '/borsa' },
     { label: 'Hisse Senetleri', href: '/borsa?tab=hisseler' },
+    { label: 'Enflasyon (TÜFE / ÜFE)', href: '/enflasyon' },
   ],
   araclar: [
     { label: 'Kredi Hesaplama', href: '/araclar/ihtiyac-kredisi' },

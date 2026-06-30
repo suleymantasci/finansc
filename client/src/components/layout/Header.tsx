@@ -10,6 +10,7 @@ import { NAV_ITEMS, SITE_NAME } from '@/lib/constants';
 import { SearchPanel } from '@/components/shared/SearchPanel';
 import { useAuthStore } from '@/stores/auth.store';
 import { LiveTicker } from './LiveTicker';
+import { DataMenu } from './DataMenu';
 
 function Header() {
   const pathname = usePathname();
@@ -42,20 +43,7 @@ function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden items-center gap-1 md:flex">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  pathname === item.href || pathname.startsWith(item.href + '/')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground',
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
+            <DataMenu items={NAV_ITEMS} pathname={pathname || ''} />
           </nav>
 
           {/* Right Actions */}
@@ -108,21 +96,7 @@ function Header() {
         {/* Mobile Nav Dropdown */}
         {mobileOpen && (
           <nav className="border-t border-border bg-background px-4 py-3 md:hidden">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  'block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                  pathname === item.href || pathname.startsWith(item.href + '/')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-surface-hover',
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
+            <DataMenu items={NAV_ITEMS} pathname={pathname || ''} />
             {!user && (
               <Link
                 href="/giris"

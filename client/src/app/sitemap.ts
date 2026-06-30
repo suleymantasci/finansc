@@ -105,6 +105,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // listing URL'leri 308 redirect olduğu için sitemap'te YER ALMAZ
     // (redirect'lenen URL'leri Google çıkarsın diye sitemap dışı tutarız).
     { url: `${BASE_URL}/doviz`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
+    { url: `${BASE_URL}/enflasyon`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/enflasyon/tuketici-fiyatlari`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE_URL}/enflasyon/uretici-fiyatlari`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${BASE_URL}/araclar`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/hakkimizda`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
