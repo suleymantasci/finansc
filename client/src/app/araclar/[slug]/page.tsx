@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { TOOL_META } from '@/lib/seo-data/tools';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { ToolClient } from './ToolClient';
 
 interface Props {
