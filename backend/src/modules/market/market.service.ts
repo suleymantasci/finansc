@@ -5,6 +5,22 @@ import { firstValueFrom } from 'rxjs';
 import { ReplaySubject, Observable } from 'rxjs';
 import { EventSource } from 'eventsource';
 
+// tasci-api'den dönen shape (search-sadece kullandigi alanlar).
+interface BorsaStock {
+  symbol: string;
+  name: string;
+}
+
+interface BorsaIndex {
+  symbol: string;
+  name: string;
+}
+
+interface CacheEntry<T> {
+  data: T;
+  ts: number;
+}
+
 @Injectable()
 export class MarketService implements OnModuleInit {
   private readonly logger = new Logger(MarketService.name);
@@ -15,6 +31,12 @@ export class MarketService implements OnModuleInit {
   private readonly borsaSubject = new ReplaySubject<MessageEvent>(1);
   private borsaSSEActive = false;
   private readonly currencyStreams = new Map<string, { subject: ReplaySubject<MessageEvent>; active: boolean }>();
+
+  // Stocks + indices cache (search ve statik listeler için).
+  // 5dk TTL — tasci-api verisi 15dk gecikmeli, daha sik gerekmez.
+  private stocksCache: CacheEntry<BorsaStock[]> | null = null;
+  private indicesCache: CacheEntry<BorsaIndex[]> | null = null;
+  private static readonly CACHE_TTL_MS = 5 * 60 * 1000;
 
   constructor(
     private readonly http: HttpService,
@@ -45,25 +67,86 @@ export class MarketService implements OnModuleInit {
   }
 
   async getStocks() {
-    const { data } = await firstValueFrom(
-      this.http.get(`${this.baseUrl}/api/borsa/stocks`),
-    );
-    // API returns { success, data: [...] }
-    if (data?.data && Array.isArray(data.data)) return data.data;
-    if (Array.isArray(data)) return data;
-    return [];
+    return this.fetchStocksWithCache();
   }
 
   async getIndices() {
-    const { data } = await firstValueFrom(
-      this.http.get(`${this.baseUrl}/api/borsa/indices`),
-    );
-    // API returns { success, data: { xu100: {...}, xu030: {...}, ... } }
-    if (data?.data && typeof data.data === 'object' && !Array.isArray(data.data)) {
-      return Object.values(data.data);
+    return this.fetchIndicesWithCache();
+  }
+
+  async searchStocks(query?: string): Promise<BorsaStock[]> {
+    const all = await this.fetchStocksWithCache();
+    if (!query || query.trim().length < 1) return all.slice(0, 50);
+    const q = query.toLocaleLowerCase('tr-TR').trim();
+    return all
+      .filter(
+        (s) =>
+          s.symbol.toLocaleLowerCase('tr-TR').includes(q) ||
+          s.name.toLocaleLowerCase('tr-TR').includes(q),
+      )
+      .slice(0, 20);
+  }
+
+  async searchIndices(query?: string): Promise<BorsaIndex[]> {
+    const all = await this.fetchIndicesWithCache();
+    if (!query || query.trim().length < 1) return all.slice(0, 50);
+    const q = query.toLocaleLowerCase('tr-TR').trim();
+    return all
+      .filter(
+        (i) =>
+          i.symbol.toLocaleLowerCase('tr-TR').includes(q) ||
+          i.name.toLocaleLowerCase('tr-TR').includes(q),
+      )
+      .slice(0, 20);
+  }
+
+  private async fetchStocksWithCache(): Promise<BorsaStock[]> {
+    const now = Date.now();
+    if (this.stocksCache && now - this.stocksCache.ts < MarketService.CACHE_TTL_MS) {
+      return this.stocksCache.data;
     }
-    if (Array.isArray(data)) return data;
-    return [];
+    try {
+      const { data } = await firstValueFrom(
+        this.http.get(`${this.baseUrl}/api/borsa/stocks`),
+      );
+      // API returns { success, data: [...] } veya direkt [...]
+      const arr: BorsaStock[] = Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data)
+        ? data
+        : [];
+      this.stocksCache = { data: arr, ts: now };
+      this.logger.log(`Cached ${arr.length} stocks`);
+      return arr;
+    } catch (err) {
+      this.logger.warn('Stocks fetch failed, returning stale cache');
+      return this.stocksCache?.data ?? [];
+    }
+  }
+
+  private async fetchIndicesWithCache(): Promise<BorsaIndex[]> {
+    const now = Date.now();
+    if (this.indicesCache && now - this.indicesCache.ts < MarketService.CACHE_TTL_MS) {
+      return this.indicesCache.data;
+    }
+    try {
+      const { data } = await firstValueFrom(
+        this.http.get(`${this.baseUrl}/api/borsa/indices`),
+      );
+      const obj = data?.data;
+      const arr: BorsaIndex[] =
+        obj && typeof obj === 'object' && !Array.isArray(obj)
+          ? Object.values(obj)
+          : Array.isArray(obj)
+          ? obj
+          : [];
+      this.indicesCache = { data: arr, ts: now };
+      this.logger.log(`Cached ${arr.length} indices`);
+      return arr;
+    } catch (err) {
+      this.logger.warn('Indices fetch failed, returning stale cache');
+      return this.indicesCache?.data ?? [];
+    }
   }
 
   getGoldStream(): Observable<MessageEvent> {

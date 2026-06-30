@@ -23,6 +23,7 @@ interface BlogResult {
 }
 
 interface StockResult extends BlogResult {}
+interface IndexResult extends BlogResult {}
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { q } = await searchParams;
@@ -35,9 +36,9 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     };
   }
   return {
-    title: query + ' \u2014 Arama Sonuçları',
+    title: query + ' — Arama Sonuçları',
     description:
-      'Finans\u00c7özum\u0027de \u0022' + query + '\u0022 aramasının sonuçları \u2014 araçlar, endeksler, döviz, altın, hisse ve blog yazıları.',
+      'FinansÇözüm\'de "' + query + '" aramasının sonuçları — araçlar, endeksler, döviz, altın, hisse ve blog yazıları.',
     robots: { index: false, follow: true },
     alternates: { canonical: SITE_URL + '/arama?q=' + encodeURIComponent(query) },
   };
@@ -50,37 +51,45 @@ interface BlogApiItem {
   excerpt?: string;
 }
 
-interface StocksApiItem {
+interface MarketApiItem {
   symbol: string;
   name: string;
   sector?: string;
 }
 
-async function fetchDynamic(q: string): Promise<{ blog: BlogResult[]; stocks: StockResult[] }> {
-  const limit: number = 10;
+async function fetchDynamic(q: string): Promise<{
+  blog: BlogResult[];
+  stocks: StockResult[];
+  indices: IndexResult[];
+}> {
+  const limit: number = 15;
   const base: string = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-
-  const headers: HeadersInit = {};
 
   const results = await Promise.allSettled([
     fetch(
       base + '/api/blogs?limit=' + limit + '&search=' + encodeURIComponent(q),
-      { next: { revalidate: 60 }, headers },
+      { next: { revalidate: 60 } },
     ),
     fetch(
-      base + '/api/tools/stocks?search=' + encodeURIComponent(q),
-      { next: { revalidate: 300 }, headers },
+      base + '/api/market/stocks/search?q=' + encodeURIComponent(q),
+      { next: { revalidate: 300 } },
+    ),
+    fetch(
+      base + '/api/market/indices/search?q=' + encodeURIComponent(q),
+      { next: { revalidate: 300 } },
     ),
   ]);
 
   const blog: BlogResult[] = [];
   const stocks: StockResult[] = [];
+  const indices: IndexResult[] = [];
 
+  // Blog
   const blogRes = results[0];
   if (blogRes.status === 'fulfilled' && blogRes.value.ok) {
     try {
       const data: unknown = await blogRes.value.json();
-      const arr: unknown[] = Array.isArray(data) ? data : (data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data: unknown[] }).data) ? (data as { data: unknown[] }).data : []);
+      const arr: unknown[] = Array.isArray(data) ? data : data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data: unknown[] }).data) ? (data as { data: unknown[] }).data : [];
       for (const p of arr) {
         if (!p || typeof p !== 'object') continue;
         const item = p as BlogApiItem;
@@ -95,26 +104,47 @@ async function fetchDynamic(q: string): Promise<{ blog: BlogResult[]; stocks: St
     if (blog.length > limit) blog.length = limit;
   }
 
+  // Stocks (tasci-api proxy)
   const stocksRes = results[1];
   if (stocksRes.status === 'fulfilled' && stocksRes.value.ok) {
     try {
       const data: unknown = await stocksRes.value.json();
-      const arr: unknown[] = Array.isArray(data) ? data : (data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data: unknown[] }).data) ? (data as { data: unknown[] }).data : []);
+      const arr: unknown[] = data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data: unknown[] }).data) ? (data as { data: unknown[] }).data : [];
       for (const s of arr) {
         if (!s || typeof s !== 'object') continue;
-        const item = s as StocksApiItem;
+        const item = s as MarketApiItem;
         stocks.push({
-          href: '/borsa/hisseler/' + item.symbol,
-          type: 'Hisse (API)',
-          title: item.name + ' (' + item.symbol + ')',
-          desc: item.sector ?? 'Borsa \u0130stanbul hissesi',
+          href: '/borsa/hisseler/' + item.symbol.toLowerCase(),
+          type: 'Hisse',
+          title: item.name + ' (' + item.symbol.toUpperCase() + ')',
+          desc: 'Borsa İstanbul hissesi',
         });
       }
     } catch { /* noop */ }
     if (stocks.length > limit) stocks.length = limit;
   }
 
-  return { blog, stocks };
+  // Indices (tasci-api proxy)
+  const indicesRes = results[2];
+  if (indicesRes.status === 'fulfilled' && indicesRes.value.ok) {
+    try {
+      const data: unknown = await indicesRes.value.json();
+      const arr: unknown[] = data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data: unknown[] }).data) ? (data as { data: unknown[] }).data : [];
+      for (const i of arr) {
+        if (!i || typeof i !== 'object') continue;
+        const item = i as MarketApiItem;
+        indices.push({
+          href: '/borsa/endeksler/' + item.symbol.toUpperCase(),
+          type: 'Endeks',
+          title: item.symbol.toUpperCase(),
+          desc: item.name + ' endeksi',
+        });
+      }
+    } catch { /* noop */ }
+    if (indices.length > limit) indices.length = limit;
+  }
+
+  return { blog, stocks, indices };
 }
 
 const TYPE_LABEL: Record<SearchItem['type'], string> = {
@@ -132,12 +162,12 @@ export default async function AramaPage({ searchParams }: Props) {
   const staticResults: SearchItem[] = query
     ? searchStatic(query, 30)
     : STATIC_SEARCH_INDEX.slice(0, 30);
-  const dynamic: { blog: BlogResult[]; stocks: StockResult[] } = query
+  const dynamic: { blog: BlogResult[]; stocks: StockResult[]; indices: IndexResult[] } = query
     ? await fetchDynamic(query)
-    : { blog: [], stocks: [] };
+    : { blog: [], stocks: [], indices: [] };
 
   const totalResults: number =
-    staticResults.length + dynamic.blog.length + dynamic.stocks.length;
+    staticResults.length + dynamic.blog.length + dynamic.stocks.length + dynamic.indices.length;
 
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
@@ -168,13 +198,13 @@ export default async function AramaPage({ searchParams }: Props) {
         <header className="mb-6">
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
             {query
-              ? '\u0022' + query + '\u0022 için arama sonuçları'
+              ? '"' + query + '" için arama sonuçları'
               : 'Site içi arama'}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {query
-              ? 'Toplam ' + totalResults + ' sonuç \u2014 araçlar, endeksler, döviz, altın, hisseler ve blog yazıları arasında aranır.'
-              : 'Finans\u00c7özum içinde en az 2 harf girerek arama yapabilirsiniz.'}
+              ? 'Toplam ' + totalResults + ' sonuç — araçlar, endeksler, döviz, altın, hisseler ve blog yazıları arasında aranır.'
+              : 'FinansÇözüm içinde en az 2 harf girerek arama yapabilirsiniz.'}
           </p>
         </header>
 
@@ -183,7 +213,7 @@ export default async function AramaPage({ searchParams }: Props) {
             type="search"
             name="q"
             defaultValue={query}
-            placeholder="Araç, döviz, altın, hisse, blog\u2026"
+            placeholder="Araç, döviz, altın, hisse, blog…"
             className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
           />
           <button
@@ -198,7 +228,7 @@ export default async function AramaPage({ searchParams }: Props) {
           <p className="text-sm text-muted-foreground">En az 2 karakter girin.</p>
         ) : totalResults === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {'\u0022' + query + '\u0022 için sonuç bulunamadı. Farklı anahtar kelime deneyin.'}
+            {'"' + query + '" için sonuç bulunamadı. Farklı anahtar kelime deneyin.'}
           </p>
         ) : (
           <Suspense>
@@ -222,10 +252,29 @@ export default async function AramaPage({ searchParams }: Props) {
                 </section>
               )}
 
+              {dynamic.indices.length > 0 && (
+                <section>
+                  <h2 className="mb-3 text-base font-semibold text-foreground">
+                    Endeks Sonuçları <span className="text-sm text-muted-foreground">({dynamic.indices.length})</span>
+                  </h2>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {dynamic.indices.map((i: IndexResult) => (
+                      <SearchResultItem
+                        key={i.href}
+                        href={i.href}
+                        type={i.type}
+                        title={i.title}
+                        desc={i.desc}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {staticResults.length > 0 && (
                 <section>
                   <h2 className="mb-3 text-base font-semibold text-foreground">
-                    Site \u0130çi Sonuçlar <span className="text-sm text-muted-foreground">({staticResults.length})</span>
+                    Site İçi Sonuçlar <span className="text-sm text-muted-foreground">({staticResults.length})</span>
                   </h2>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {staticResults.map((item: SearchItem) => (

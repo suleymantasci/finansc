@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Sse, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Param, Query, Sse, BadRequestException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Observable, map } from 'rxjs';
 import { MarketService } from './market.service';
@@ -21,10 +21,26 @@ export class MarketController {
     return this.marketService.getStocks();
   }
 
+  // Search endpoint — frontend search overlay ve /arama sayfasi icin.
+  // /api/market/stocks/search?q=A1CAP → { success, data: [{symbol, name}, ...] }
+  @Public()
+  @Get('stocks/search')
+  async searchStocks(@Query('q') q?: string) {
+    const results = await this.marketService.searchStocks(q);
+    return { success: true, data: results, count: results.length };
+  }
+
   @Public()
   @Get('indices')
   getIndices() {
     return this.marketService.getIndices();
+  }
+
+  @Public()
+  @Get('indices/search')
+  async searchIndices(@Query('q') q?: string) {
+    const results = await this.marketService.searchIndices(q);
+    return { success: true, data: results, count: results.length };
   }
 
   @Public()
