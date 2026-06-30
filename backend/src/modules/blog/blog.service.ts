@@ -17,6 +17,7 @@ export class BlogService {
     limit?: number;
     status?: string;
     category?: string;
+    search?: string;
   }) {
     const page = Math.max(options.page || 1, 1);
     const limit = Math.min(Math.max(options.limit || 8, 1), 50);
@@ -29,6 +30,19 @@ export class BlogService {
 
     if (options.category) {
       qb.andWhere('blog.category = :category', { category: options.category });
+    }
+
+    // Search (title OR slug OR description icinde q geçen blogs).
+    // Postgres ILIKE: case-insensitive LIKE. icerikte %q% match.
+    // Escape % ve _ (LIKE wildcard) — kullanıcı raw input'undan.
+    if (options.search && options.search.trim().length >= 2) {
+      const q = options.search.trim();
+      const escaped = q.replace(/[\\%_]/g, (m) => '\\' + m);
+      const param = '%' + escaped + '%';
+      qb.andWhere(
+        '(blog.title ILIKE :q OR blog.slug ILIKE :q OR blog.excerpt ILIKE :q OR blog.description::text ILIKE :q)',
+        { q: param },
+      );
     }
 
     qb.orderBy('blog.publishedAt', 'DESC', 'NULLS LAST')

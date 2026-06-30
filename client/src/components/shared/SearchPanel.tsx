@@ -85,11 +85,13 @@ function SearchPanelInner({ className }: SearchPanelProps) {
           aria-label="Site içi arama"
           className="fixed inset-0 z-50"
         >
-          {/* Backdrop — sayfa bulaniklasir */}
+          {/* Backdrop — sayfa bulaniklasir. Dark mode'da daha
+              koyu, light mode'da daha az (semantic: z-index 50 +
+              fullscreen). */}
           <button
             type="button"
             aria-label="Aramayı kapat"
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-black/60 opacity-100 backdrop-blur-md dark:bg-black/80"
             onClick={() => setOpen(false)}
           />
 

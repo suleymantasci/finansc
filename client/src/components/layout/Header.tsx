@@ -58,11 +58,11 @@ function Header() {
             ))}
           </nav>
 
-          {/* Search — magnifier icon + overlay (modern Algolia/Linear style) */}
-          <SearchPanel />
-
           {/* Right Actions */}
           <div className="flex items-center gap-2">
+            {/* Search — magnifier icon + overlay (modern Algolia/Linear style) */}
+            <SearchPanel />
+
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

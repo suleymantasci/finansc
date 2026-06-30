@@ -30,8 +30,9 @@ export class BlogController {
     @Query('limit') limit?: number,
     @Query('status') status?: string,
     @Query('category') category?: string,
+    @Query('search') search?: string,
   ) {
-    return this.blogService.findAll({ page, limit, status, category });
+    return this.blogService.findAll({ page, limit, status, category, search });
   }
 
   @Public()
