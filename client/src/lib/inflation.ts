@@ -46,7 +46,12 @@ interface UfeListResponse {
 }
 
 function getApiUrl(): string {
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  // Build-time'da NEXT_PUBLIC_API_URL bake olur (client/Dockerfile).
+  // Runtime'da relative URL '/' kullanmak Next.js rewrite'ı tetikler
+  // (next.config.ts: /api/:path+ → backend). Server-side fetch'te
+  // absolute URL kullanmak container network izolasyonundan etkilenebilir,
+  // relative URL Next.js kendi rewrite'ı üzerinden backend'e gider.
+  return process.env.NEXT_PUBLIC_API_URL || '';
 }
 
 async function safeJson<T>(res: Response): Promise<T | null> {
@@ -57,52 +62,34 @@ async function safeJson<T>(res: Response): Promise<T | null> {
   }
 }
 
-export async function fetchTufeLatest(): Promise<TufeLatestResponse | null> {
+async function apiFetch<T>(path: string): Promise<T | null> {
+  const base = getApiUrl();
+  const url = base ? `${base}${path}` : path; // base yoksa relative → Next rewrite
   try {
-    const res = await fetch(`${getApiUrl()}/api/inflation/tufe/latest`, {
+    const res = await fetch(url, {
       next: { revalidate: INFLATION_REVALIDATE_SECONDS },
     });
     if (!res.ok) return null;
-    return await safeJson<TufeLatestResponse>(res);
+    return await safeJson<T>(res);
   } catch {
     return null;
   }
+}
+
+export async function fetchTufeLatest(): Promise<TufeLatestResponse | null> {
+  return apiFetch<TufeLatestResponse>('/api/inflation/tufe/latest');
 }
 
 export async function fetchUfeLatest(): Promise<UfeLatestResponse | null> {
-  try {
-    const res = await fetch(`${getApiUrl()}/api/inflation/ufe/latest`, {
-      next: { revalidate: INFLATION_REVALIDATE_SECONDS },
-    });
-    if (!res.ok) return null;
-    return await safeJson<UfeLatestResponse>(res);
-  } catch {
-    return null;
-  }
+  return apiFetch<UfeLatestResponse>('/api/inflation/ufe/latest');
 }
 
 export async function fetchTufeAll(): Promise<TufeListResponse | null> {
-  try {
-    const res = await fetch(`${getApiUrl()}/api/inflation/tufe`, {
-      next: { revalidate: INFLATION_REVALIDATE_SECONDS },
-    });
-    if (!res.ok) return null;
-    return await safeJson<TufeListResponse>(res);
-  } catch {
-    return null;
-  }
+  return apiFetch<TufeListResponse>('/api/inflation/tufe');
 }
 
 export async function fetchUfeAll(): Promise<UfeListResponse | null> {
-  try {
-    const res = await fetch(`${getApiUrl()}/api/inflation/ufe`, {
-      next: { revalidate: INFLATION_REVALIDATE_SECONDS },
-    });
-    if (!res.ok) return null;
-    return await safeJson<UfeListResponse>(res);
-  } catch {
-    return null;
-  }
+  return apiFetch<UfeListResponse>('/api/inflation/ufe');
 }
 
 // ── Formatting helpers (Turkish locale, used in many places) ─────────────
