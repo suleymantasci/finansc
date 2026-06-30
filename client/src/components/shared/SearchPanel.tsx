@@ -80,7 +80,7 @@ function SearchPanelInner({ className }: SearchPanelProps) {
       <button
         type="button"
         aria-label="Aramayı kapat"
-        className="absolute inset-0 cursor-default bg-black/60 opacity-100 backdrop-blur-md dark:bg-black/80"
+        className="absolute inset-0 cursor-default bg-black/30 opacity-100 backdrop-blur-md dark:bg-black/10"
         onClick={() => setOpen(false)}
       />
 
