@@ -15,7 +15,7 @@ export class InflationService {
 
   // Cache: tasci-api zaten 6 saat cache'liyor, biz sadece 5dk koruma yapıyoruz
   // (burst koruması — aynı anda birden fazla sayfa istek atmasın diye).
-  // Her endpoint ayrı cache key kullanmalı — latest ve all farklı payload döner.
+  // Her endpoint ayrı cache field kullanır — latest ve all farklı payload döner.
   private tufeAllCache: CacheEntry<unknown> | null = null;
   private tufeLatestCache: CacheEntry<unknown> | null = null;
   private ufeAllCache: CacheEntry<unknown> | null = null;
@@ -29,39 +29,50 @@ export class InflationService {
     this.baseUrl = this.config.get<string>('EXTERNAL_API_BASE_URL')!;
   }
 
-  async getTufeAll() {
-    return this.fetchWithCache('tufe', () =>
-      firstValueFrom(this.http.get(`${this.baseUrl}/api/tufe`)),
+  async getTufeAll(): Promise<unknown> {
+    const result = await this.fetchWithCache(
+      this.tufeAllCache,
+      () => firstValueFrom(this.http.get(`${this.baseUrl}/api/tufe`)),
     );
+    this.tufeAllCache = { data: result, ts: Date.now() };
+    return result;
   }
 
-  async getTufeLatest() {
-    return this.fetchWithCache('tufe-latest', () =>
-      firstValueFrom(this.http.get(`${this.baseUrl}/api/tufe/latest`)),
+  async getTufeLatest(): Promise<unknown> {
+    const result = await this.fetchWithCache(
+      this.tufeLatestCache,
+      () => firstValueFrom(this.http.get(`${this.baseUrl}/api/tufe/latest`)),
     );
+    this.tufeLatestCache = { data: result, ts: Date.now() };
+    return result;
   }
 
-  async getUfeAll() {
-    return this.fetchWithCache('ufe', () =>
-      firstValueFrom(this.http.get(`${this.baseUrl}/api/ufe`)),
+  async getUfeAll(): Promise<unknown> {
+    const result = await this.fetchWithCache(
+      this.ufeAllCache,
+      () => firstValueFrom(this.http.get(`${this.baseUrl}/api/ufe`)),
     );
+    this.ufeAllCache = { data: result, ts: Date.now() };
+    return result;
   }
 
-  async getUfeLatest() {
-    return this.fetchWithCache('ufe-latest', () =>
-      firstValueFrom(this.http.get(`${this.baseUrl}/api/ufe/latest`)),
+  async getUfeLatest(): Promise<unknown> {
+    const result = await this.fetchWithCache(
+      this.ufeLatestCache,
+      () => firstValueFrom(this.http.get(`${this.baseUrl}/api/ufe/latest`)),
     );
+    this.ufeLatestCache = { data: result, ts: Date.now() };
+    return result;
   }
 
   private async fetchWithCache(
     cache: CacheEntry<unknown> | null,
     fetcher: () => Promise<{ data: any }>,
-  ) {
+  ): Promise<unknown> {
     const now = Date.now();
     if (cache && now - cache.ts < InflationService.CACHE_TTL_MS) {
       return cache.data;
     }
-
     try {
       const { data } = await fetcher();
       return data;
@@ -71,37 +82,5 @@ export class InflationService {
       if (cache) return cache.data;
       throw err;
     }
-  }
-
-  async getTufeAll() {
-    this.tufeAllCache = await this.fetchWithCache(
-      this.tufeAllCache,
-      () => firstValueFrom(this.http.get(`${this.baseUrl}/api/tufe`)),
-    );
-    return this.tufeAllCache!.data;
-  }
-
-  async getTufeLatest() {
-    this.tufeLatestCache = await this.fetchWithCache(
-      this.tufeLatestCache,
-      () => firstValueFrom(this.http.get(`${this.baseUrl}/api/tufe/latest`)),
-    );
-    return this.tufeLatestCache!.data;
-  }
-
-  async getUfeAll() {
-    this.ufeAllCache = await this.fetchWithCache(
-      this.ufeAllCache,
-      () => firstValueFrom(this.http.get(`${this.baseUrl}/api/ufe`)),
-    );
-    return this.ufeAllCache!.data;
-  }
-
-  async getUfeLatest() {
-    this.ufeLatestCache = await this.fetchWithCache(
-      this.ufeLatestCache,
-      () => firstValueFrom(this.http.get(`${this.baseUrl}/api/ufe/latest`)),
-    );
-    return this.ufeLatestCache!.data;
   }
 }
