@@ -46,12 +46,10 @@ interface UfeListResponse {
 }
 
 function getApiUrl(): string {
-  // Build-time'da NEXT_PUBLIC_API_URL bake olur (client/Dockerfile).
-  // Runtime'da relative URL '/' kullanmak Next.js rewrite'ı tetikler
-  // (next.config.ts: /api/:path+ → backend). Server-side fetch'te
-  // absolute URL kullanmak container network izolasyonundan etkilenebilir,
-  // relative URL Next.js kendi rewrite'ı üzerinden backend'e gider.
-  return process.env.NEXT_PUBLIC_API_URL || '';
+  // Build-time'da NEXT_PUBLIC_API_URL bake olur (client/Dockerfile ARG).
+  // Server-side fetch'te absolute URL gerekli (rewrite sadece client isteklerinde çalışır).
+  // Eğer env set değilse API_URL fallback'i kullan (lib/constants.ts).
+  return process.env.NEXT_PUBLIC_API_URL || 'https://api.finanscozum.net';
 }
 
 async function safeJson<T>(res: Response): Promise<T | null> {
@@ -63,8 +61,7 @@ async function safeJson<T>(res: Response): Promise<T | null> {
 }
 
 async function apiFetch<T>(path: string): Promise<T | null> {
-  const base = getApiUrl();
-  const url = base ? `${base}${path}` : path; // base yoksa relative → Next rewrite
+  const url = `${getApiUrl()}${path}`;
   try {
     const res = await fetch(url, {
       next: { revalidate: INFLATION_REVALIDATE_SECONDS },
