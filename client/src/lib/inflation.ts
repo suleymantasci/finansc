@@ -1,7 +1,7 @@
 // Server-side fetch helpers for TCMB inflation data (tasci-api).
 // ISR: 1 hour revalidate — data updates monthly, this is more than enough.
 
-export const INFLATION_REVALIDATE_SECONDS = 3600;
+export const INFLATION_REVALIDATE_SECONDS = 600;
 
 export interface TufeEntry {
   period: string; // "05-2026"
