@@ -1,56 +1,27 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 import { formatPeriodTr, formatPercentTr, type TufeEntry } from '@/lib/inflation';
 
 interface Props {
   rows: TufeEntry[];
 }
 
-type SortKey = 'period' | 'yearlyChange' | 'monthlyChange';
-type SortDir = 'asc' | 'desc';
-
 const PAGE_SIZE = 24;
 
+// Period "MM-YYYY" → YYYY-MM-01 Date (sortable)
+function periodToDate(period: string): Date {
+  const [mm, yyyy] = period.split('-');
+  return new Date(parseInt(yyyy, 10), parseInt(mm, 10) - 1, 1);
+}
+
 export function TufeClient({ rows }: Props) {
-  const [sortKey, setSortKey] = useState<SortKey>('period');
-  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [showAll, setShowAll] = useState(false);
 
-  const sorted = useMemo(() => {
-    const copy = [...rows];
-    copy.sort((a, b) => {
-      const av = a[sortKey];
-      const bv = b[sortKey];
-      if (av === null && bv === null) return 0;
-      if (av === null) return 1;
-      if (bv === null) return -1;
-      if (typeof av === 'number' && typeof bv === 'number') {
-        return sortDir === 'asc' ? av - bv : bv - av;
-      }
-      // string compare for period (MM-YYYY string sort)
-      return sortDir === 'asc' ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
-    });
-    return copy;
-  }, [rows, sortKey, sortDir]);
-
-  const visible = showAll ? sorted : sorted.slice(0, PAGE_SIZE);
-  const hidden = sorted.length - visible.length;
-
-  function toggleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortKey(key);
-      setSortDir('desc');
-    }
-  }
-
-  function SortIcon({ k }: { k: SortKey }) {
-    if (sortKey !== k) return <ChevronDown className="ml-1 inline h-3 w-3 opacity-30" />;
-    return sortDir === 'asc' ? <ChevronUp className="ml-1 inline h-3 w-3" /> : <ChevronDown className="ml-1 inline h-3 w-3" />;
-  }
+  // Sıralama yok — API zaten descending dönüyor (en yeni üstte).
+  // Kullanıcı isteği üzerine sort butonları kaldırıldı.
+  const visible = showAll ? rows : rows.slice(0, PAGE_SIZE);
+  const hidden = rows.length - visible.length;
 
   return (
     <div>
@@ -58,36 +29,9 @@ export function TufeClient({ rows }: Props) {
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr>
-              <th className="px-3 py-2.5 text-left">
-                <button
-                  type="button"
-                  onClick={() => toggleSort('period')}
-                  className="inline-flex items-center font-semibold text-foreground hover:text-primary"
-                >
-                  Dönem
-                  <SortIcon k="period" />
-                </button>
-              </th>
-              <th className="px-3 py-2.5 text-right">
-                <button
-                  type="button"
-                  onClick={() => toggleSort('yearlyChange')}
-                  className="inline-flex items-center font-semibold text-foreground hover:text-primary"
-                >
-                  Yıllık % Değişim
-                  <SortIcon k="yearlyChange" />
-                </button>
-              </th>
-              <th className="px-3 py-2.5 text-right">
-                <button
-                  type="button"
-                  onClick={() => toggleSort('monthlyChange')}
-                  className="inline-flex items-center font-semibold text-foreground hover:text-primary"
-                >
-                  Aylık % Değişim
-                  <SortIcon k="monthlyChange" />
-                </button>
-              </th>
+              <th className="px-3 py-2.5 text-left font-semibold text-foreground">Dönem</th>
+              <th className="px-3 py-2.5 text-right font-semibold text-foreground">Yıllık % Değişim</th>
+              <th className="px-3 py-2.5 text-right font-semibold text-foreground">Aylık % Değişim</th>
             </tr>
           </thead>
           <tbody>

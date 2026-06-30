@@ -105,7 +105,9 @@ function DesktopDropdown({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-1 min-w-[280px] rounded-lg border border-border bg-popover p-1 shadow-lg"
+          // z-50 yeterli değildi — Tailwind v4'te bg-popover token yok.
+          // bg-card + backdrop-blur + ring ile net arka plan sağla.
+          className="absolute right-0 top-full z-[100] mt-1 min-w-[280px] rounded-lg border border-border bg-card p-1 shadow-xl ring-1 ring-black/5 backdrop-blur-md"
         >
           {item.children.map((child: { label: string; href: string; description?: string }) => {
             const active = pathname === child.href || pathname.startsWith(child.href + '/');

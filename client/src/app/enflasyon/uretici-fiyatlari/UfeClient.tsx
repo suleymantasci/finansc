@@ -1,55 +1,21 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 import { formatPeriodTr, formatPercentTr, type UfeEntry } from '@/lib/inflation';
 
 interface Props {
   rows: UfeEntry[];
 }
 
-type SortKey = 'period' | 'ufeYearlyChange' | 'yiUfeYearlyChange' | 'ufeMonthlyChange' | 'yiUfeMonthlyChange';
-type SortDir = 'asc' | 'desc';
-
 const PAGE_SIZE = 24;
 
 export function UfeClient({ rows }: Props) {
-  const [sortKey, setSortKey] = useState<SortKey>('period');
-  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [showAll, setShowAll] = useState(false);
 
-  const sorted = useMemo(() => {
-    const copy = [...rows];
-    copy.sort((a, b) => {
-      const av = a[sortKey];
-      const bv = b[sortKey];
-      if (av === null && bv === null) return 0;
-      if (av === null) return 1;
-      if (bv === null) return -1;
-      if (typeof av === 'number' && typeof bv === 'number') {
-        return sortDir === 'asc' ? av - bv : bv - av;
-      }
-      return sortDir === 'asc' ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
-    });
-    return copy;
-  }, [rows, sortKey, sortDir]);
-
-  const visible = showAll ? sorted : sorted.slice(0, PAGE_SIZE);
-  const hidden = sorted.length - visible.length;
-
-  function toggleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortKey(key);
-      setSortDir('desc');
-    }
-  }
-
-  function SortIcon({ k }: { k: SortKey }) {
-    if (sortKey !== k) return <ChevronDown className="ml-1 inline h-3 w-3 opacity-30" />;
-    return sortDir === 'asc' ? <ChevronUp className="ml-1 inline h-3 w-3" /> : <ChevronDown className="ml-1 inline h-3 w-3" />;
-  }
+  // Sıralama yok — API zaten descending dönüyor (en yeni üstte).
+  // Kullanıcı isteği üzerine sort butonları kaldırıldı.
+  const visible = showAll ? rows : rows.slice(0, PAGE_SIZE);
+  const hidden = rows.length - visible.length;
 
   return (
     <div>
@@ -58,14 +24,7 @@ export function UfeClient({ rows }: Props) {
           <thead className="border-b border-border bg-muted/50">
             <tr>
               <th rowSpan={2} className="px-3 py-2.5 text-left font-semibold text-foreground align-bottom">
-                <button
-                  type="button"
-                  onClick={() => toggleSort('period')}
-                  className="inline-flex items-center font-semibold text-foreground hover:text-primary"
-                >
-                  Dönem
-                  <SortIcon k="period" />
-                </button>
+                Dönem
               </th>
               <th colSpan={2} className="px-3 py-1.5 text-center font-semibold text-foreground border-l border-border">
                 Yıllık Değişim
@@ -75,26 +34,10 @@ export function UfeClient({ rows }: Props) {
               </th>
             </tr>
             <tr className="border-b border-border bg-muted/30 text-xs text-muted-foreground">
-              <th className="px-3 py-1.5 text-right font-medium border-l border-border">
-                <button type="button" onClick={() => toggleSort('ufeYearlyChange')} className="hover:text-primary">
-                  ÜFE <SortIcon k="ufeYearlyChange" />
-                </button>
-              </th>
-              <th className="px-3 py-1.5 text-right font-medium">
-                <button type="button" onClick={() => toggleSort('yiUfeYearlyChange')} className="hover:text-primary">
-                  Yİ-ÜFE <SortIcon k="yiUfeYearlyChange" />
-                </button>
-              </th>
-              <th className="px-3 py-1.5 text-right font-medium border-l border-border">
-                <button type="button" onClick={() => toggleSort('ufeMonthlyChange')} className="hover:text-primary">
-                  ÜFE <SortIcon k="ufeMonthlyChange" />
-                </button>
-              </th>
-              <th className="px-3 py-1.5 text-right font-medium">
-                <button type="button" onClick={() => toggleSort('yiUfeMonthlyChange')} className="hover:text-primary">
-                  Yİ-ÜFE <SortIcon k="yiUfeMonthlyChange" />
-                </button>
-              </th>
+              <th className="px-3 py-1.5 text-right font-medium border-l border-border">ÜFE</th>
+              <th className="px-3 py-1.5 text-right font-medium">Yİ-ÜFE</th>
+              <th className="px-3 py-1.5 text-right font-medium border-l border-border">ÜFE</th>
+              <th className="px-3 py-1.5 text-right font-medium">Yİ-ÜFE</th>
             </tr>
           </thead>
           <tbody>
