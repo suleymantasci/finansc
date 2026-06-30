@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 
 export function EnflasyonExplainer() {
   return (
-    <section className="prose prose-sm dark:prose-invert max-w-none border-t border-border pt-6">
+    <section className="prose prose-sm dark:prose-invert max-w-none border-t border-border pt-6 pb-6">
       <h2 className="text-xl font-bold tracking-tight">TÜFE ve ÜFE Nedir?</h2>
       <p>
         <strong>TÜFE (Tüketici Fiyat Endeksi)</strong>, hanehalkının tükettiği mal ve hizmetlerin
