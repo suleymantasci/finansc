@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query, Sse, BadRequestException } from '@nestjs
 import { ApiTags } from '@nestjs/swagger';
 import { Observable, map } from 'rxjs';
 import { MarketService } from './market.service';
+import { type BorsaStock, type BorsaIndex } from './market.types';
 import { Public } from '../../common/decorators';
 
 @ApiTags('Market')
@@ -17,7 +18,7 @@ export class MarketController {
 
   @Public()
   @Get('stocks')
-  getStocks() {
+  getStocks(): Promise<BorsaStock[]> {
     return this.marketService.getStocks();
   }
 
@@ -25,20 +26,20 @@ export class MarketController {
   // /api/market/stocks/search?q=A1CAP → { success, data: [{symbol, name}, ...] }
   @Public()
   @Get('stocks/search')
-  async searchStocks(@Query('q') q?: string) {
+  async searchStocks(@Query('q') q?: string): Promise<{ success: boolean; data: BorsaStock[]; count: number }> {
     const results = await this.marketService.searchStocks(q);
     return { success: true, data: results, count: results.length };
   }
 
   @Public()
   @Get('indices')
-  getIndices() {
+  getIndices(): Promise<BorsaIndex[]> {
     return this.marketService.getIndices();
   }
 
   @Public()
   @Get('indices/search')
-  async searchIndices(@Query('q') q?: string) {
+  async searchIndices(@Query('q') q?: string): Promise<{ success: boolean; data: BorsaIndex[]; count: number }> {
     const results = await this.marketService.searchIndices(q);
     return { success: true, data: results, count: results.length };
   }

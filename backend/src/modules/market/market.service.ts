@@ -4,17 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { ReplaySubject, Observable } from 'rxjs';
 import { EventSource } from 'eventsource';
-
-// tasci-api'den dönen shape (search-sadece kullandigi alanlar).
-interface BorsaStock {
-  symbol: string;
-  name: string;
-}
-
-interface BorsaIndex {
-  symbol: string;
-  name: string;
-}
+import type { BorsaStock, BorsaIndex } from './market.types';
 
 interface CacheEntry<T> {
   data: T;
