@@ -7,6 +7,7 @@ import { DatabaseModule } from './database';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { MarketModule } from './modules/market/market.module';
+import { InflationModule } from './modules/inflation/inflation.module';
 import { HealthModule } from './modules/health/health.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { ToolsModule } from './modules/tools/tools.module';
@@ -41,6 +42,7 @@ import { ContactModule } from './modules/contact/contact.module';
     // Feature modules
     AuthModule,
     MarketModule,
+    InflationModule,
     HealthModule,
     BlogModule,
     ToolsModule,

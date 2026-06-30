@@ -59,7 +59,7 @@ async function safeJson<T>(res: Response): Promise<T | null> {
 
 export async function fetchTufeLatest(): Promise<TufeLatestResponse | null> {
   try {
-    const res = await fetch(`${getApiUrl()}/api/tufe/latest`, {
+    const res = await fetch(`${getApiUrl()}/api/inflation/tufe/latest`, {
       next: { revalidate: INFLATION_REVALIDATE_SECONDS },
     });
     if (!res.ok) return null;
@@ -71,7 +71,7 @@ export async function fetchTufeLatest(): Promise<TufeLatestResponse | null> {
 
 export async function fetchUfeLatest(): Promise<UfeLatestResponse | null> {
   try {
-    const res = await fetch(`${getApiUrl()}/api/ufe/latest`, {
+    const res = await fetch(`${getApiUrl()}/api/inflation/ufe/latest`, {
       next: { revalidate: INFLATION_REVALIDATE_SECONDS },
     });
     if (!res.ok) return null;
@@ -83,7 +83,7 @@ export async function fetchUfeLatest(): Promise<UfeLatestResponse | null> {
 
 export async function fetchTufeAll(): Promise<TufeListResponse | null> {
   try {
-    const res = await fetch(`${getApiUrl()}/api/tufe`, {
+    const res = await fetch(`${getApiUrl()}/api/inflation/tufe`, {
       next: { revalidate: INFLATION_REVALIDATE_SECONDS },
     });
     if (!res.ok) return null;
@@ -95,7 +95,7 @@ export async function fetchTufeAll(): Promise<TufeListResponse | null> {
 
 export async function fetchUfeAll(): Promise<UfeListResponse | null> {
   try {
-    const res = await fetch(`${getApiUrl()}/api/ufe`, {
+    const res = await fetch(`${getApiUrl()}/api/inflation/ufe`, {
       next: { revalidate: INFLATION_REVALIDATE_SECONDS },
     });
     if (!res.ok) return null;
