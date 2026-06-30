@@ -33,11 +33,18 @@ export function EnflasyonCompareTable({ tufe, ufe, months = 12 }: Props) {
   for (const t of tufe || []) tufeByPeriod.set(t.period, t);
   for (const u of ufe || []) ufeByPeriod.set(u.period, u);
 
+  // "MM-YYYY" string sort alfabetik (12-2025 > 01-2026 → YANLIŞ).
+  // Period'u YYYY-MM-01 Date'e çevirip doğru kronolojik descending yap.
   const periods = Array.from(
     new Set<string>([...tufeByPeriod.keys(), ...ufeByPeriod.keys()]),
   )
-    .sort((a, b) => (a > b ? -1 : 1)) // descending: MM-YYYY string sort works
-    .slice(0, months);
+    .map((p) => {
+      const [mm, yyyy] = p.split('-');
+      return { key: p, date: new Date(parseInt(yyyy, 10), parseInt(mm, 10) - 1, 1) };
+    })
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, months)
+    .map((p) => p.key);
 
   const rows: Row[] = periods.map((period) => ({
     period,
