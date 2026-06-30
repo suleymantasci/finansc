@@ -40,7 +40,7 @@ export class BlogService {
       const escaped = q.replace(/[\\%_]/g, (m) => '\\' + m);
       const param = '%' + escaped + '%';
       qb.andWhere(
-        '(blog.title ILIKE :q OR blog.slug ILIKE :q OR blog.excerpt ILIKE :q OR blog.description::text ILIKE :q)',
+        '(blog.title ILIKE :q OR blog.slug ILIKE :q OR blog.excerpt ILIKE :q OR blog.seoDescription ILIKE :q)',
         { q: param },
       );
     }
