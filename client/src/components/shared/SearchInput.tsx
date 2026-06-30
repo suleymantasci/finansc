@@ -1,9 +1,6 @@
 'use client';
 
-// Header search input + sonuc karti (SearchResultItem).
-// Generic YASAK kurali — basit, spesifik UI.
-
-import { useState, useEffect, FormEvent } from 'react';
+import { Suspense, useState, useEffect, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -12,7 +9,30 @@ interface SearchInputProps {
   className?: string;
 }
 
-export function SearchInput({ className }: SearchInputProps) {
+// Outer — Suspense wrapper. Inner useSearchParams kullandigi icin
+// zorunlu (Next 14+ static export / prerender).
+export function SearchInput(props: SearchInputProps) {
+  return (
+    <Suspense fallback={<SearchInputFallback {...props} />}>
+      <SearchInputInner {...props} />
+    </Suspense>
+  );
+}
+
+function SearchInputFallback({ className }: SearchInputProps) {
+  return (
+    <div className={cn('flex items-center gap-2', className)}>
+      <input
+        type="search"
+        disabled
+        placeholder="Ara\u00e7, d\u00f6viz, alt\u0131n, hisse, blog\u2026"
+        className="w-40 rounded-md border border-border bg-background px-3 py-1.5 text-sm sm:w-56"
+      />
+    </div>
+  );
+}
+
+function SearchInputInner({ className }: SearchInputProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [q, setQ] = useState<string>(searchParams.get('q') ?? '');
