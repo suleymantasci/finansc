@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, X } from 'lucide-react';
 import { SearchForm } from './SearchInput';
@@ -69,7 +69,7 @@ function SearchPanelInner({ className }: SearchPanelProps) {
   // stacking context overlay'i viewport'a genişletmesini
   // engelliyordu, portal bu sorunu çözer (DOM ağacında body's
   // sonunda yer alır, viewport'a tam yayılır).
-  const overlay: JSX.Element | null = open ? (
+  const overlay: ReactNode = open ? (
     <div
       role="dialog"
       aria-modal="true"
