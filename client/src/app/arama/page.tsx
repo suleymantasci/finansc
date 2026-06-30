@@ -35,9 +35,9 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     };
   }
   return {
-    title: query + ' \u2014 Arama Sonu\u00e7lar\u0131',
+    title: query + ' \u2014 Arama Sonuçları',
     description:
-      'Finans\u00c7\u00f6zum\u0027de \u0022' + query + '\u0022 aramas\u0131n\u0131n sonu\u00e7lar\u0131 \u2014 ara\u00e7lar, endeksler, d\u00f6viz, alt\u0131n, hisse ve blog yaz\u0131lar\u0131.',
+      'Finans\u00c7özum\u0027de \u0022' + query + '\u0022 aramasının sonuçları \u2014 araçlar, endeksler, döviz, altın, hisse ve blog yazıları.',
     robots: { index: false, follow: true },
     alternates: { canonical: SITE_URL + '/arama?q=' + encodeURIComponent(query) },
   };
@@ -118,10 +118,10 @@ async function fetchDynamic(q: string): Promise<{ blog: BlogResult[]; stocks: St
 }
 
 const TYPE_LABEL: Record<SearchItem['type'], string> = {
-  arac: 'Ara\u00e7',
+  arac: 'Araç',
   endeks: 'Endeks',
-  doviz: 'D\u00f6viz',
-  altin: 'Alt\u0131n',
+  doviz: 'Döviz',
+  altin: 'Altın',
   hisse: 'Hisse',
 };
 
@@ -168,13 +168,13 @@ export default async function AramaPage({ searchParams }: Props) {
         <header className="mb-6">
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
             {query
-              ? '\u0022' + query + '\u0022 i\u00e7in arama sonu\u00e7lar\u0131'
-              : 'Site i\u00e7i arama'}
+              ? '\u0022' + query + '\u0022 için arama sonuçları'
+              : 'Site içi arama'}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {query
-              ? 'Toplam ' + totalResults + ' sonu\u00e7 \u2014 ara\u00e7lar, endeksler, d\u00f6viz, alt\u0131n, hisseler ve blog yaz\u0131lar\u0131 aras\u0131nda aran\u0131r.'
-              : 'Finans\u00c7\u00f6zum i\u00e7inde en az 2 harf girerek arama yapabilirsiniz.'}
+              ? 'Toplam ' + totalResults + ' sonuç \u2014 araçlar, endeksler, döviz, altın, hisseler ve blog yazıları arasında aranır.'
+              : 'Finans\u00c7özum içinde en az 2 harf girerek arama yapabilirsiniz.'}
           </p>
         </header>
 
@@ -183,7 +183,7 @@ export default async function AramaPage({ searchParams }: Props) {
             type="search"
             name="q"
             defaultValue={query}
-            placeholder="Ara\u00e7, d\u00f6viz, alt\u0131n, hisse, blog\u2026"
+            placeholder="Araç, döviz, altın, hisse, blog\u2026"
             className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
           />
           <button
@@ -198,7 +198,7 @@ export default async function AramaPage({ searchParams }: Props) {
           <p className="text-sm text-muted-foreground">En az 2 karakter girin.</p>
         ) : totalResults === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {'\u0022' + query + '\u0022 i\u00e7in sonu\u00e7 bulunamad\u0131. Farkl\u0131 anahtar kelime deneyin.'}
+            {'\u0022' + query + '\u0022 için sonuç bulunamadı. Farklı anahtar kelime deneyin.'}
           </p>
         ) : (
           <Suspense>
@@ -206,7 +206,7 @@ export default async function AramaPage({ searchParams }: Props) {
               {dynamic.stocks.length > 0 && (
                 <section>
                   <h2 className="mb-3 text-base font-semibold text-foreground">
-                    Hisse Sonu\u00e7lar\u0131 <span className="text-sm text-muted-foreground">({dynamic.stocks.length})</span>
+                    Hisse Sonuçları <span className="text-sm text-muted-foreground">({dynamic.stocks.length})</span>
                   </h2>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {dynamic.stocks.map((s: StockResult) => (
@@ -225,7 +225,7 @@ export default async function AramaPage({ searchParams }: Props) {
               {staticResults.length > 0 && (
                 <section>
                   <h2 className="mb-3 text-base font-semibold text-foreground">
-                    Site \u0130\u00e7i Sonu\u00e7lar <span className="text-sm text-muted-foreground">({staticResults.length})</span>
+                    Site \u0130çi Sonuçlar <span className="text-sm text-muted-foreground">({staticResults.length})</span>
                   </h2>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {staticResults.map((item: SearchItem) => (
@@ -244,7 +244,7 @@ export default async function AramaPage({ searchParams }: Props) {
               {dynamic.blog.length > 0 && (
                 <section>
                   <h2 className="mb-3 text-base font-semibold text-foreground">
-                    Blog Yaz\u0131lar\u0131 <span className="text-sm text-muted-foreground">({dynamic.blog.length})</span>
+                    Blog Yazıları <span className="text-sm text-muted-foreground">({dynamic.blog.length})</span>
                   </h2>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {dynamic.blog.map((b: BlogResult) => (

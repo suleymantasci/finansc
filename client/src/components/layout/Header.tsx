@@ -7,7 +7,7 @@ import { Menu, X, Sun, Moon, LogIn, User } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS, SITE_NAME } from '@/lib/constants';
-import { SearchInput } from '@/components/shared/SearchInput';
+import { SearchPanel } from '@/components/shared/SearchPanel';
 import { useAuthStore } from '@/stores/auth.store';
 import { LiveTicker } from './LiveTicker';
 
@@ -58,8 +58,8 @@ function Header() {
             ))}
           </nav>
 
-          {/* Search */}
-          <SearchInput className="hidden md:flex" />
+          {/* Search — magnifier icon + overlay (modern Algolia/Linear style) */}
+          <SearchPanel />
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">

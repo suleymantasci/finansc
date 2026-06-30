@@ -1,16 +1,84 @@
 'use client';
 
-import { Suspense, useState, useEffect, FormEvent } from 'react';
+import { Suspense, useState, useEffect, useRef, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SearchInputProps {
   className?: string;
 }
 
-// Outer — Suspense wrapper. Inner useSearchParams kullandigi icin
-// zorunlu (Next 14+ static export / prerender).
+// Pure form component — heredocumentation, form submit to /arama?q=....
+// Outer code: <SearchForm className="..." /> ya da <SearchInput.Inner />
+// dogrudan form kendisi (Suspense wrapper icermez). Prefix hard reset
+// ile inline yapilir, cunku sadece bu sayfada kullaniliyor (Suleyman
+// 'generic YASAK' kurali).
+interface SearchFormProps {
+  className?: string;
+  autoFocus?: boolean;
+  onSubmit?: () => void;
+  onClose?: () => void;
+}
+
+export function SearchForm({ className, autoFocus, onSubmit, onClose }: SearchFormProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [q, setQ] = useState<string>(searchParams.get('q') ?? '');
+  const ref = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    setQ(searchParams.get('q') ?? '');
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (autoFocus) ref.current?.focus();
+  }, [autoFocus]);
+
+  const handle = (e: FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+    const trimmed = q.trim();
+    if (trimmed.length < 2) return;
+    router.push('/arama?q=' + encodeURIComponent(trimmed));
+    onSubmit?.();
+  };
+
+  return (
+    <form
+      onSubmit={handle}
+      role="search"
+      className={cn('flex items-center gap-2', className)}
+    >
+      <input
+        ref={ref}
+        id={autoFocus ? 'overlay-search' : 'header-search'}
+        type="search"
+        inputMode="search"
+        autoComplete="off"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onClose?.();
+        }}
+        placeholder="Araç, döviz, altın, hisse, blog…"
+        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40"
+      />
+      <button
+        type="submit"
+        aria-label="Ara"
+        disabled={q.trim().length < 2}
+        className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"
+      >
+        Ara
+      </button>
+    </form>
+  );
+}
+
+// Backward compat — SearchInput eski API'sini koru (form icin).
+// Hem Header overlay icin hem sayfada inline kullanilabilir.
+// Suspense wrapper GEREKLI (useSearchParams prerender icin).
 export function SearchInput(props: SearchInputProps) {
   return (
     <Suspense fallback={<SearchInputFallback {...props} />}>
@@ -25,58 +93,23 @@ function SearchInputFallback({ className }: SearchInputProps) {
       <input
         type="search"
         disabled
-        placeholder="Ara\u00e7, d\u00f6viz, alt\u0131n, hisse, blog\u2026"
+        placeholder="Araç, döviz, altın, hisse, blog…"
         className="w-40 rounded-md border border-border bg-background px-3 py-1.5 text-sm sm:w-56"
       />
     </div>
   );
 }
 
-function SearchInputInner({ className }: SearchInputProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [q, setQ] = useState<string>(searchParams.get('q') ?? '');
+function SearchInputInner(props: SearchInputProps) {
+  return <SearchForm {...props} />;
+}
 
-  useEffect(() => {
-    setQ(searchParams.get('q') ?? '');
-  }, [searchParams]);
+// SearchTrigger + SearchOverlay — header'a eklenecek modern search UX.
+// Algolia DocSearch / Linear tarzi: icon tıklanınca overlay acılır,
+// sayfanin uzerinde blur + arka plan, header altina centered search input.
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    const trimmed: string = q.trim();
-    if (trimmed.length < 2) return;
-    router.push('/arama?q=' + encodeURIComponent(trimmed));
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      role="search"
-      className={cn('flex items-center gap-2', className)}
-    >
-      <label htmlFor="header-search" className="sr-only">
-        Sitede ara
-      </label>
-      <input
-        id="header-search"
-        type="search"
-        inputMode="search"
-        autoComplete="off"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Ara\u00e7, d\u00f6viz, alt\u0131n, hisse, blog\u2026"
-        className="w-40 rounded-md border border-border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 sm:w-56"
-      />
-      <button
-        type="submit"
-        aria-label="Ara"
-        disabled={q.trim().length < 2}
-        className="rounded-md border border-border bg-card px-2 py-1.5 text-sm hover:bg-muted disabled:opacity-40"
-      >
-        Ara
-      </button>
-    </form>
-  );
+export function SearchTrigger() {
+  return null;
 }
 
 interface SearchResultItemProps {
