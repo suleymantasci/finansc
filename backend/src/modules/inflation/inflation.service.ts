@@ -21,7 +21,7 @@ export class InflationService {
   private readonly logger = new Logger(InflationService.name);
   private readonly baseUrl: string;
 
-  // Cache: tasci-api zaten DB cache'liyor. Biz sadece burst koruma yapıyoruz
+  // Cache: upstream TÜFE/ÜFE servisi DB cache'liyor. Biz sadece burst koruma yapıyoruz
   // (aynı anda birden fazla sayfa istek atmasın).
   // TÜFE ayda 1 güncellenir — cache 1 saat tutmak yeterli (Süleyman kararı).
   // ÜFE için aynı TTL (yine aylık güncelleme).
@@ -105,7 +105,7 @@ export class InflationService {
   }
 
   /**
-   * TÜFE endeks hesaplama proxy — tasci-api POST /api/tufe/endeks/calculate.
+   * TÜFE endeks hesaplama proxy — POST /api/tufe/endeks/calculate (upstream).
    * Dönüş: { base:{period,value}, target:{period,value}, input:{amount},
    *          result:{value,change,changePercent}, duration:{years,months} }
    * Cache yok (parametrik, hard-fail gerekli).
@@ -140,7 +140,7 @@ export class InflationService {
     }
     try {
       const { data } = await fetcher();
-      // Hard-fail: tasci-api her response'da {success: bool} döner.
+      // Hard-fail: upstream her response'da {success: bool} döner.
       // success:false ise DB boş / sorgu bulunamadı / upstream hatası — stale cache YOK, throw.
       if (data && typeof data === 'object' && data.success === false) {
         const msg = data.error || 'upstream returned success:false';

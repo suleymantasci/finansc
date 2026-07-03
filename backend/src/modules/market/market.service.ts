@@ -23,7 +23,7 @@ export class MarketService implements OnModuleInit {
   private readonly currencyStreams = new Map<string, { subject: ReplaySubject<MessageEvent>; active: boolean }>();
 
   // Stocks + indices cache (search ve statik listeler için).
-  // 5dk TTL — tasci-api verisi 15dk gecikmeli, daha sik gerekmez.
+  // 5dk TTL — upstream verisi 15dk gecikmeli, daha sik gerekmez.
   private stocksCache: CacheEntry<BorsaStock[]> | null = null;
   private indicesCache: CacheEntry<BorsaIndex[]> | null = null;
   private static readonly CACHE_TTL_MS = 5 * 60 * 1000;

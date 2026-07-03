@@ -2,7 +2,7 @@ import { IsInt, IsNumber, IsOptional, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
- * TÜFE endeks hesaplama isteği — tasci-api POST /api/tufe/endeks/calculate proxy.
+ * TÜFE endeks hesaplama isteği — POST /api/tufe/endeks/calculate proxy.
  * Frontend'den 4 dönem + opsiyonel tutar gelir.
  *
  * Validate edilmezse 400 → frontend error banner gösterir.
