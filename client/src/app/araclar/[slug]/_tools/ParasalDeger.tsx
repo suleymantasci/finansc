@@ -17,9 +17,9 @@ const API_URL =
 
 const schema = z.object({
   amount: z.coerce.number().min(0.01, 'Tutar giriniz'),
-  baseYear: z.coerce.number().int().min(2003).max(2100),
+  baseYear: z.coerce.number().int().min(1900).max(2100),
   baseMonth: z.coerce.number().int().min(1).max(12),
-  targetYear: z.coerce.number().int().min(2003).max(2100),
+  targetYear: z.coerce.number().int().min(1900).max(2100),
   targetMonth: z.coerce.number().int().min(1).max(12),
 });
 type FormData = z.infer<typeof schema>;
