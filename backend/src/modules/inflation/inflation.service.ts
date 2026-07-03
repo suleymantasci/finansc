@@ -131,6 +131,14 @@ export class InflationService {
     }
     try {
       const { data } = await fetcher();
+      // Hard-fail: tasci-api her response'da {success: bool} döner.
+      // success:false ise DB boş / sorgu bulunamadı / upstream hatası — stale cache YOK, throw.
+      if (data && typeof data === 'object' && data.success === false) {
+        const msg = data.error || 'upstream returned success:false';
+        this.logger.error(`upstream fetch failed: ${msg}`);
+        if (cache) return cache.data;
+        throw new Error(msg);
+      }
       return data;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
