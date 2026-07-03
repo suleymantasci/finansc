@@ -96,7 +96,7 @@ function writeFormToUrl(form: FormData) {
 
 export function EnflasyonHesaplama() {
   const latest = useLatestInflationPeriod();
-  const initialForm = readFormFromUrl(latest ?? undefined);
+  const initialForm = latest ? readFormFromUrl(latest) : null;
   const [result, setResult] = useState<CalcResult | null>(null);
   const [inflationRate, setInflationRate] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -104,17 +104,15 @@ export function EnflasyonHesaplama() {
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } =
     useForm<FormData>({
       resolver: zodResolver(schema),
-      defaultValues: initialForm,
+      defaultValues: initialForm ?? undefined,
     });
 
-  const base: MonthYearValue = {
-    year: watch('baseYear'),
-    month: watch('baseMonth'),
-  };
-  const target: MonthYearValue = {
-    year: watch('targetYear'),
-    month: watch('targetMonth'),
-  };
+  const base: MonthYearValue = initialForm
+    ? { year: watch('baseYear'), month: watch('baseMonth') }
+    : { year: 0, month: 0 };
+  const target: MonthYearValue = initialForm
+    ? { year: watch('targetYear'), month: watch('targetMonth') }
+    : { year: 0, month: 0 };
 
   const onSubmit = async (data: FormData) => {
     setError(null);
@@ -186,6 +184,11 @@ export function EnflasyonHesaplama() {
 
   return (
     <>
+      {!initialForm && (
+        <p className="text-sm text-muted-foreground mb-4">Yükleniyor…</p>
+      )}
+      {initialForm && (
+      <>
       <p className="text-sm text-muted-foreground mb-4">
         TÜFE endeksine göre seçtiğiniz iki dönem arasındaki enflasyon oranını ve
         mal sepetininizin yeni değerini hesaplayın.
@@ -274,6 +277,8 @@ export function EnflasyonHesaplama() {
           { q: 'Enflasyon neden önemlidir?', a: 'Paranın satın alma gücünü doğrudan etkiler. Yüksek enflasyon dönemlerinde aynı para ile daha az ürün/hizmet alınabilir.' },
         ]}
       />
+      </>
+      )}
     </>
   );
 }

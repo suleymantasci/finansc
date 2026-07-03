@@ -57,6 +57,13 @@ export function MonthYearPicker({
   );
 
   // Eğer seçili yıl maxYear ise, ay listesini maxMonth'e kadar kıs.
+  // value.month > maxMonth ise clamp et (üst dışı seçim normalleştir).
+  let effectiveMonth = value.month;
+  if (value.year > effectiveMaxYear) {
+    effectiveMonth = 12;
+  } else if (value.year === effectiveMaxYear && value.month > maxMonth) {
+    effectiveMonth = maxMonth;
+  }
   const monthsAvailable =
     value.year === effectiveMaxYear
       ? MONTHS.slice(0, maxMonth)
@@ -70,14 +77,14 @@ export function MonthYearPicker({
           options={years}
           value={String(value.year)}
           onChange={(e) =>
-            onChange({ year: Number(e.target.value), month: value.month })
+            onChange({ year: Number(e.target.value), month: effectiveMonth })
           }
           error={error}
         />
         <Select
           label={idSuffix ? `${label} — Ay` : 'Ay'}
           options={monthsAvailable}
-          value={String(value.month)}
+          value={String(effectiveMonth)}
           onChange={(e) =>
             onChange({ year: value.year, month: Number(e.target.value) })
           }

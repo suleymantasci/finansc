@@ -100,24 +100,24 @@ function writeFormToUrl(form: FormData) {
 
 export function ParasalDeger() {
   const latest = useLatestInflationPeriod();
-  const initialForm = readFormFromUrl(latest ?? undefined);
+  // Hook fetch bitene kadar bekle — default'lar takvim ayına değil
+  // tasci-api'nin latest dönemine göre seçilmeli.
+  const initialForm = latest ? readFormFromUrl(latest) : null;
   const [result, setResult] = useState<CalcResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } =
     useForm<FormData>({
       resolver: zodResolver(schema),
-      defaultValues: initialForm,
+      defaultValues: initialForm ?? undefined,
     });
 
-  const base: MonthYearValue = {
-    year: watch('baseYear'),
-    month: watch('baseMonth'),
-  };
-  const target: MonthYearValue = {
-    year: watch('targetYear'),
-    month: watch('targetMonth'),
-  };
+  const base: MonthYearValue = initialForm
+    ? { year: watch('baseYear'), month: watch('baseMonth') }
+    : { year: 0, month: 0 };
+  const target: MonthYearValue = initialForm
+    ? { year: watch('targetYear'), month: watch('targetMonth') }
+    : { year: 0, month: 0 };
 
   const onSubmit = async (data: FormData) => {
     setError(null);
@@ -172,6 +172,11 @@ export function ParasalDeger() {
 
   return (
     <>
+      {!initialForm && (
+        <p className="text-sm text-muted-foreground mb-4">Yükleniyor…</p>
+      )}
+      {initialForm && (
+      <>
       <p className="text-sm text-muted-foreground mb-4">
         Bir tutarın TÜFE endeksine göre güncellenmiş değerini hesaplayın.
         Başlangıç ve hedef dönemi seçin, biz otomatik hesaplayalım.
@@ -260,6 +265,8 @@ export function ParasalDeger() {
           { q: 'Endeks ne anlama gelir?', a: '2003 yılı 100 kabul edilir; endeks 250 ise o tarihteki mal sepeti 2003 fiyatının 2,5 katına çıkmış demektir.' },
         ]}
       />
+      </>
+      )}
     </>
   );
 }

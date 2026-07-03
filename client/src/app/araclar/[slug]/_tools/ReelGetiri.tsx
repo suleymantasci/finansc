@@ -103,24 +103,22 @@ function writeFormToUrl(form: FormData) {
 
 export function ReelGetiri() {
   const latest = useLatestInflationPeriod();
-  const initialForm = readFormFromUrl(latest ?? undefined);
+  const initialForm = latest ? readFormFromUrl(latest) : null;
   const [result, setResult] = useState<CalcResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } =
     useForm<FormData>({
       resolver: zodResolver(schema),
-      defaultValues: initialForm,
+      defaultValues: initialForm ?? undefined,
     });
 
-  const base: MonthYearValue = {
-    year: watch('baseYear'),
-    month: watch('baseMonth'),
-  };
-  const target: MonthYearValue = {
-    year: watch('targetYear'),
-    month: watch('targetMonth'),
-  };
+  const base: MonthYearValue = initialForm
+    ? { year: watch('baseYear'), month: watch('baseMonth') }
+    : { year: 0, month: 0 };
+  const target: MonthYearValue = initialForm
+    ? { year: watch('targetYear'), month: watch('targetMonth') }
+    : { year: 0, month: 0 };
 
   const onSubmit = async (data: FormData) => {
     setError(null);
@@ -189,6 +187,11 @@ export function ReelGetiri() {
 
   return (
     <>
+      {!initialForm && (
+        <p className="text-sm text-muted-foreground mb-4">Yükleniyor…</p>
+      )}
+      {initialForm && (
+      <>
       <p className="text-sm text-muted-foreground mb-4">
         Yatırımınızın enflasyondan arındırılmış gerçek getirisini hesaplayın.
         Yatırım başlangıç ve çekim dönemini seçin, TÜFE oranını biz
@@ -287,6 +290,8 @@ export function ReelGetiri() {
           { q: 'Negatif reel getiri ne demek?', a: 'Yatırımınızın enflasyonun altında kaldığı, satın alma gücünüzün azaldığı anlamına gelir.' },
         ]}
       />
+      </>
+      )}
     </>
   );
 }
