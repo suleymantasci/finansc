@@ -104,7 +104,7 @@ async function fetchDynamic(q: string): Promise<{
     if (blog.length > limit) blog.length = limit;
   }
 
-  // Stocks (tasci-api proxy)
+  // Stocks (backend proxy)
   const stocksRes = results[1];
   if (stocksRes.status === 'fulfilled' && stocksRes.value.ok) {
     try {
@@ -124,7 +124,7 @@ async function fetchDynamic(q: string): Promise<{
     if (stocks.length > limit) stocks.length = limit;
   }
 
-  // Indices (tasci-api proxy)
+  // Indices (backend proxy)
   const indicesRes = results[2];
   if (indicesRes.status === 'fulfilled' && indicesRes.value.ok) {
     try {

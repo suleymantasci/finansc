@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { GoldPrice, Stock, MarketIndex, Currency } from '@/types';
 import type { MarketConnectionStatus } from '@/components/shared/MarketStatus';
 
-// ── Stream data shapes from Tasci API ──
+// ── Stream data shapes from upstream Market API ──
 interface BorsaStreamData {
   type: string;
   stocks?: Stock[];

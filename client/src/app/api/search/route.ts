@@ -33,7 +33,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     })
     .catch(() => []);
 
-  // Backend proxy — tasci-api stocks cache'i (5dk TTL) üzerinden.
+  // Backend proxy — stocks cache'i (5dk TTL) üzerinden.
   const stocksPromise: Promise<unknown[]> = fetch(
     API_BASE + '/api/market/stocks/search?q=' + encodeURIComponent(q),
     { next: { revalidate: 300 } },
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     })
     .catch(() => []);
 
-  // Backend proxy — tasci-api indices cache'i.
+  // Backend proxy — indices cache'i.
   const indicesPromise: Promise<unknown[]> = fetch(
     API_BASE + '/api/market/indices/search?q=' + encodeURIComponent(q),
     { next: { revalidate: 300 } },

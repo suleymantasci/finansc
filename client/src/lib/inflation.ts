@@ -1,4 +1,4 @@
-// Server-side fetch helpers for TCMB inflation data (tasci-api).
+// Server-side fetch helpers for TCMB inflation data (upstream TÜFE/ÜFE servisi).
 // ISR: 1 hour revalidate — data updates monthly, this is more than enough.
 
 export const INFLATION_REVALIDATE_SECONDS = 600;

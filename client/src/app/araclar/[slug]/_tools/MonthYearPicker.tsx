@@ -11,7 +11,7 @@ interface MonthYearPickerProps {
   label: string;
   value: MonthYearValue;
   onChange: (v: MonthYearValue) => void;
-  /** Min yıl (default: 1979 — tasci-api TÜFE endeks serisinin başlangıcı). */
+  /** Min yıl (default: 1979 — TÜFE endeks serisinin başlangıcı). */
   minYear?: number;
   /** Max yıl (default: şu anki yıl) */
   maxYear?: number;

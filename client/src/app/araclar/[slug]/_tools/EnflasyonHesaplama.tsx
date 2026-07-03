@@ -140,7 +140,7 @@ export function EnflasyonHesaplama() {
         const body = await res.json().catch(() => ({}));
         setError(
           body?.error ||
-            `TÜFE endeks verisi şu an alınamıyor (HTTP ${res.status}). api.tasci.cloud/status sayfasını kontrol edin.`,
+            `TÜFE endeks verisi şu an alınamıyor (HTTP ${res.status}). Lütfen biraz sonra tekrar deneyin.`,
         );
         setResult(null);
         setInflationRate(null);
@@ -230,7 +230,7 @@ export function EnflasyonHesaplama() {
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          Kaynak: TÜFE 2003=100 bazlı endeks (TCMB, tasci-api üzerinden).
+          Kaynak: TÜFE 2003=100 bazlı endeks (TCMB).
         </p>
         <div className="flex gap-2">
           <Button type="submit" className="flex-1" disabled={loading}>

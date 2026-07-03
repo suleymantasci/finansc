@@ -33,7 +33,7 @@ export function EnflasyonCompareTable({ tufe, ufe, months = 12 }: Props) {
   for (const t of tufe || []) tufeByPeriod.set(t.period, t);
   for (const u of ufe || []) ufeByPeriod.set(u.period, u);
 
-  // Sıralama — tasci-api zaten descending (en yeni üstte) dönüyor.
+  // Sıralama — upstream descending (en yeni üstte) dönüyor.
 // MM-YYYY string sort YANLIŞ (alfabetik), bu yüzden tek tek Date kontrolü.
 // Performans: 257 satır için O(n log n) kabul edilebilir, Date parse ucuz.
   const periods = Array.from(

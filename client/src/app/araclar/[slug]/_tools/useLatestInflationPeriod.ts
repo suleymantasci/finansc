@@ -11,9 +11,9 @@ export interface InflationPeriod {
 }
 
 /**
- * Tasci-api'nin şu anki TÜFE serisinin son dönemini çeker.
+ * Upstream TÜFE servisi son dönemini çeker.
  * MonthYearPicker'ı maxYear/maxMonth olarak sınırlamak için kullanılır
- * (örn. tasci-api henüz Haziran 2026'yı yayınlamadıysa Temmuz seçtirmemeli).
+ * (örn. upstream henüz Haziran 2026'yı yayınlamadıysa Temmuz seçtirmemeli).
  *
  * Fallback: fetch başarısız olursa şu anki takvim ayını kullanır.
  */
