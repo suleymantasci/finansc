@@ -116,7 +116,7 @@ export function ReelGetiri() {
   useEffect(() => {
     if (initialForm) reset(initialForm);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latest?.year, latest?.month]);
+  }, [latest?.year, latest?.month, typeof window !== 'undefined' ? window.location.search : '']);
 
   const base: MonthYearValue = initialForm
     ? { year: watch('baseYear'), month: watch('baseMonth') }

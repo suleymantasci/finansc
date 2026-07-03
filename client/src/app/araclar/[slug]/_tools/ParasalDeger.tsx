@@ -112,10 +112,13 @@ export function ParasalDeger() {
 
   // latest hook fetch tamamlanınca form default'larını güncelle
   // (initial mount'ta latest=null olduğu için).
+  // initialForm her render'da yeni obje (readFormFromUrl window.location.search okur),
+  // ama reset tetikleyebilmek için latest.year/month yeterli — URL değişikliği zaten
+  // writeFormToUrl → re-render → latest değişmediği için tek seferlik problem olabilir.
   useEffect(() => {
     if (initialForm) reset(initialForm);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latest?.year, latest?.month]);
+  }, [latest?.year, latest?.month, typeof window !== 'undefined' ? window.location.search : '']);
 
   const base: MonthYearValue = initialForm
     ? { year: watch('baseYear'), month: watch('baseMonth') }
