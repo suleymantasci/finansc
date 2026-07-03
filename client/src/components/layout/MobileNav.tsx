@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Coins, TrendingUp, Calculator, User } from 'lucide-react';
+import { Coins, Banknote, TrendingUp, Calculator, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const MOBILE_TABS = [
-  { label: 'Ana Sayfa', href: '/', icon: Home },
   { label: 'Altın', href: '/altin', icon: Coins },
+  { label: 'Döviz', href: '/doviz', icon: Banknote },
   { label: 'Borsa', href: '/borsa', icon: TrendingUp },
   { label: 'Araçlar', href: '/araclar', icon: Calculator },
-  { label: 'Profil', href: '/hesabim', icon: User },
+  { label: 'Bilgi Merkezi', href: '/blog', icon: FileText },
 ] as const;
 
 function MobileNav() {
@@ -20,9 +20,7 @@ function MobileNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/90 backdrop-blur-md md:hidden">
       <div className="flex items-center justify-around py-1.5">
         {MOBILE_TABS.map((tab) => {
-          const isActive = tab.href === '/'
-            ? pathname === '/'
-            : pathname.startsWith(tab.href);
+          const isActive = pathname.startsWith(tab.href);
           const Icon = tab.icon;
 
           return (
