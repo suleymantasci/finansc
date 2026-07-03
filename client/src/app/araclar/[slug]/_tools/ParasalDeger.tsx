@@ -10,6 +10,7 @@ import { fmtTL, fmtPct } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
 import { ShareButton } from '@/components/shared/ShareButton';
 import { MonthYearPicker, type MonthYearValue } from './MonthYearPicker';
+import { useLatestInflationPeriod } from './useLatestInflationPeriod';
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || 'https://api.finanscozum.net';
@@ -31,29 +32,40 @@ interface CalcResult {
   duration: { years: number; months: number };
 }
 
-function defaultRange(): { base: MonthYearValue; target: MonthYearValue } {
-  const now = new Date();
-  const targetYear = now.getFullYear();
-  const targetMonth = now.getMonth() + 1;
-  const base = new Date(now);
-  base.setFullYear(base.getFullYear() - 1);
-  return {
-    base: { year: base.getFullYear(), month: targetMonth },
-    target: { year: targetYear, month: targetMonth },
+function defaultRange(
+  latest?: { year: number; month: number },
+): { base: MonthYearValue; target: MonthYearValue } {
+  const target = latest ?? {
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
   };
+  const base = { ...target };
+  if (base.month === 1) {
+    base.year -= 1;
+    base.month = 12;
+  } else {
+    base.month -= 1;
+  }
+  // Eğer base, latest'ten sonraki bir dönem olduysa (latest takvimden gerideyse)
+  // 1 yıl önceye fallback et.
+  if (base.year > target.year || (base.year === target.year && base.month > target.month)) {
+    base.year = target.year - 1;
+    base.month = target.month;
+  }
+  return { base, target };
 }
 
-function readFormFromUrl(): FormData {
-  const defaults: FormData = (() => {
-    const r = defaultRange();
-    return {
-      amount: 0,
-      baseYear: r.base.year,
-      baseMonth: r.base.month,
-      targetYear: r.target.year,
-      targetMonth: r.target.month,
-    };
-  })();
+function readFormFromUrl(
+  latest?: { year: number; month: number },
+): FormData {
+  const r = defaultRange(latest);
+  const defaults: FormData = {
+    amount: 0,
+    baseYear: r.base.year,
+    baseMonth: r.base.month,
+    targetYear: r.target.year,
+    targetMonth: r.target.month,
+  };
   if (typeof window === 'undefined') return defaults;
   const sp = new URLSearchParams(window.location.search);
   const num = (k: keyof FormData, fallback: number): number => {
@@ -87,7 +99,8 @@ function writeFormToUrl(form: FormData) {
 }
 
 export function ParasalDeger() {
-  const initialForm = readFormFromUrl();
+  const latest = useLatestInflationPeriod();
+  const initialForm = readFormFromUrl(latest ?? undefined);
   const [result, setResult] = useState<CalcResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -180,6 +193,8 @@ export function ParasalDeger() {
               setValue('baseYear', v.year);
               setValue('baseMonth', v.month);
             }}
+            maxYear={latest?.year}
+            maxMonth={latest?.month}
           />
           <MonthYearPicker
             label="Hedef Dönem"
@@ -188,6 +203,8 @@ export function ParasalDeger() {
               setValue('targetYear', v.year);
               setValue('targetMonth', v.month);
             }}
+            maxYear={latest?.year}
+            maxMonth={latest?.month}
           />
         </div>
         <p className="text-xs text-muted-foreground">

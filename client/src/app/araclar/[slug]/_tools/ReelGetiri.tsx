@@ -10,6 +10,7 @@ import { fmtTL, fmtPct } from './_shared/calc';
 import { ResultCard, ResultRow, ToolInfo } from './_shared/ToolInfo';
 import { ShareButton } from '@/components/shared/ShareButton';
 import { MonthYearPicker, type MonthYearValue } from './MonthYearPicker';
+import { useLatestInflationPeriod } from './useLatestInflationPeriod';
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || 'https://api.finanscozum.net';
@@ -34,20 +35,31 @@ interface CalcResult {
   target: { period: string; value: number };
 }
 
-function defaultRange(): { base: MonthYearValue; target: MonthYearValue } {
-  const now = new Date();
-  const targetYear = now.getFullYear();
-  const targetMonth = now.getMonth() + 1;
-  const base = new Date(now);
-  base.setFullYear(base.getFullYear() - 1);
-  return {
-    base: { year: base.getFullYear(), month: targetMonth },
-    target: { year: targetYear, month: targetMonth },
+function defaultRange(
+  latest?: { year: number; month: number },
+): { base: MonthYearValue; target: MonthYearValue } {
+  const target = latest ?? {
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
   };
+  const base = { ...target };
+  if (base.month === 1) {
+    base.year -= 1;
+    base.month = 12;
+  } else {
+    base.month -= 1;
+  }
+  if (base.year > target.year || (base.year === target.year && base.month > target.month)) {
+    base.year = target.year - 1;
+    base.month = target.month;
+  }
+  return { base, target };
 }
 
-function readFormFromUrl(): FormData {
-  const r = defaultRange();
+function readFormFromUrl(
+  latest?: { year: number; month: number },
+): FormData {
+  const r = defaultRange(latest);
   const defaults: FormData = {
     investment: 0,
     endValue: 0,
@@ -90,7 +102,8 @@ function writeFormToUrl(form: FormData) {
 }
 
 export function ReelGetiri() {
-  const initialForm = readFormFromUrl();
+  const latest = useLatestInflationPeriod();
+  const initialForm = readFormFromUrl(latest ?? undefined);
   const [result, setResult] = useState<CalcResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -206,6 +219,8 @@ export function ReelGetiri() {
               setValue('baseYear', v.year);
               setValue('baseMonth', v.month);
             }}
+            maxYear={latest?.year}
+            maxMonth={latest?.month}
           />
           <MonthYearPicker
             label="Çekim Dönemi"
@@ -214,6 +229,8 @@ export function ReelGetiri() {
               setValue('targetYear', v.year);
               setValue('targetMonth', v.month);
             }}
+            maxYear={latest?.year}
+            maxMonth={latest?.month}
           />
         </div>
         <p className="text-xs text-muted-foreground">
