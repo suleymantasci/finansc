@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -106,6 +106,11 @@ export function EnflasyonHesaplama() {
       resolver: zodResolver(schema),
       defaultValues: initialForm ?? undefined,
     });
+
+  useEffect(() => {
+    if (initialForm) reset(initialForm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latest?.year, latest?.month]);
 
   const base: MonthYearValue = initialForm
     ? { year: watch('baseYear'), month: watch('baseMonth') }

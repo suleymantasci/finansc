@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || 'https://api.finanscozum.net';
@@ -19,25 +19,25 @@ export interface InflationPeriod {
  */
 export function useLatestInflationPeriod(): InflationPeriod | null {
   const [period, setPeriod] = useState<InflationPeriod | null>(null);
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
+    cancelledRef.current = false;
     fetch(`${API_URL}/api/inflation/tufe/endeks/latest`, { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((body) => {
-        if (cancelled || !body?.period) return;
+        if (cancelledRef.current || !body?.period) return;
         const m = String(body.period).match(/^(\d{4})-(\d{2})$/);
         if (!m) return;
         setPeriod({ year: Number(m[1]), month: Number(m[2]) });
       })
       .catch(() => {
-        // Fallback: takvim ayı
-        if (cancelled) return;
+        if (cancelledRef.current) return;
         const now = new Date();
         setPeriod({ year: now.getFullYear(), month: now.getMonth() + 1 });
       });
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
   }, []);
 

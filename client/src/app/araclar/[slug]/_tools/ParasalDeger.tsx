@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -100,8 +100,6 @@ function writeFormToUrl(form: FormData) {
 
 export function ParasalDeger() {
   const latest = useLatestInflationPeriod();
-  // Hook fetch bitene kadar bekle — default'lar takvim ayına değil
-  // tasci-api'nin latest dönemine göre seçilmeli.
   const initialForm = latest ? readFormFromUrl(latest) : null;
   const [result, setResult] = useState<CalcResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +109,13 @@ export function ParasalDeger() {
       resolver: zodResolver(schema),
       defaultValues: initialForm ?? undefined,
     });
+
+  // latest hook fetch tamamlanınca form default'larını güncelle
+  // (initial mount'ta latest=null olduğu için).
+  useEffect(() => {
+    if (initialForm) reset(initialForm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latest?.year, latest?.month]);
 
   const base: MonthYearValue = initialForm
     ? { year: watch('baseYear'), month: watch('baseMonth') }
