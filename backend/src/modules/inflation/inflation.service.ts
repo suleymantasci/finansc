@@ -31,9 +31,11 @@ export class InflationService {
   private ufeLatestCache: CacheEntry<unknown> | null = null;
   private tufeEndeksAllCache: CacheEntry<unknown> | null = null;
   private tufeEndeksLatestCache: CacheEntry<unknown> | null = null;
-  // calculate için son başarılı isteği cache'le — kullanıcı aynı ayı seçerse sunucuyu yorma.
-  private tufeEndeksCalcCache: CacheEntry<unknown> | null = null;
   private static readonly CACHE_TTL_MS = 60 * 60 * 1000; // 1 saat
+
+  // NOT: calculate endpoint'i cache'lenmez — her çağrı farklı parametre kombinasyonu
+  // (baseYear/Month × targetYear/Month × amount). Stale cache hard-fail semantiğini
+  // bozardı: invalid istek eski başarılı response'u dönerdi.
 
   constructor(
     private readonly http: HttpService,
@@ -106,17 +108,24 @@ export class InflationService {
    * TÜFE endeks hesaplama proxy — tasci-api POST /api/tufe/endeks/calculate.
    * Dönüş: { base:{period,value}, target:{period,value}, input:{amount},
    *          result:{value,change,changePercent}, duration:{years,months} }
+   * Cache yok (parametrik, hard-fail gerekli).
    */
   async calculateTufeEndeks(req: TufeEndeksCalculateRequest): Promise<unknown> {
-    const result = await this.fetchWithCache(
-      this.tufeEndeksCalcCache,
-      () =>
-        firstValueFrom(
-          this.http.post(`${this.baseUrl}/api/tufe/endeks/calculate`, req),
-        ),
-    );
-    this.tufeEndeksCalcCache = { data: result, ts: Date.now() };
-    return result;
+    try {
+      const { data } = await firstValueFrom(
+        this.http.post(`${this.baseUrl}/api/tufe/endeks/calculate`, req),
+      );
+      if (data && typeof data === 'object' && data.success === false) {
+        const msg = data.error || 'upstream returned success:false';
+        this.logger.error(`calculate upstream failed: ${msg}`);
+        throw new Error(msg);
+      }
+      return data;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`calculate failed: ${msg}`);
+      throw err;
+    }
   }
 
   // ── Cache helper ──────────────────────────────────────────
