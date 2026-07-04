@@ -11,6 +11,7 @@ import { SearchPanel } from '@/components/shared/SearchPanel';
 import { useAuthStore } from '@/stores/auth.store';
 import { LiveTicker } from './LiveTicker';
 import { DataMenu } from './DataMenu';
+import { MobileMenuDrawer } from './MobileMenuDrawer';
 
 function Header() {
   const pathname = usePathname();
@@ -29,7 +30,7 @@ function Header() {
       <LiveTicker />
 
       {/* Main Header */}
-      <div className="border-b border-border bg-background/80 backdrop-blur-md">
+      <div className="border-b border-border bg-background/95">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 lg:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
@@ -93,21 +94,8 @@ function Header() {
           </div>
         </div>
 
-        {/* Mobile Nav Dropdown */}
-        {mobileOpen && (
-          <nav className="border-t border-border bg-background px-4 py-3 md:hidden">
-            <DataMenu items={NAV_ITEMS} pathname={pathname || ''} />
-            {!user && (
-              <Link
-                href="/giris"
-                onClick={() => setMobileOpen(false)}
-                className="mt-2 block rounded-lg bg-primary px-3 py-2.5 text-center text-sm font-medium text-primary-foreground"
-              >
-                Giriş Yap
-              </Link>
-            )}
-          </nav>
-        )}
+        {/* Mobile Menu — full-screen drawer (MobileMenuDrawer, createPortal ile body'ye mount) */}
+        <MobileMenuDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} />
       </div>
     </header>
   );
