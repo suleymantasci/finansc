@@ -7,6 +7,7 @@ import {
   getKnownStockSymbols,
 } from '@/lib/seo-data/whitelist';
 import { LivePriceTicker } from './LivePriceTicker';
+import { PriceChart } from '@/components/charts/PriceChart';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
@@ -226,6 +227,12 @@ export default async function StockPage({ params }: Props) {
         </p>
 
         <LivePriceTicker symbol={meta.symbol} />
+
+        <PriceChart
+          instrument={`bist:${meta.symbol}`}
+          defaultRange="1y"
+          className="mt-6"
+        />
 
         <AdBanner page={`borsa-hisse-${meta.symbol}`} position="in-article" className="my-8" />
 

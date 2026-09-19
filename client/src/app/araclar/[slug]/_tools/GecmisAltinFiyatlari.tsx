@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { fetchHistory } from '@/lib/history';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -75,11 +76,40 @@ export function GecmisAltinFiyatlari() {
   const [result, setResult] = useState<{ value: number; label: string } | null>(
     hasInitialData ? computeGecmisAltin(initialForm) : null,
   );
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<FormData>({
     resolver: zodResolver(schema), defaultValues: initialForm,
   });
 
   const direction = watch('direction');
+
+  // Tarihten otomatik fiyat çekme — kullanıcı artık gram fiyatını elle
+  // girmek zorunda değil. Seçilen günün kapanışı API'den gelir.
+  const [priceDate, setPriceDate] = useState('');
+  const [lookupState, setLookupState] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
+
+  const lookupPrice = async (date: string) => {
+    setPriceDate(date);
+    if (!date) return;
+    setLookupState('loading');
+    try {
+      const to = new Date(date);
+      const from = new Date(to.getTime() - 10 * 86400000); // tatil/hafta sonu payı
+      const series = await fetchHistory('gold:serbest-piyasa:gram-altin', {
+        interval: '1d',
+        from: from.toISOString().slice(0, 10),
+        to: date,
+      });
+      const last = series.points?.[series.points.length - 1];
+      if (!last) {
+        setLookupState('error');
+        return;
+      }
+      setValue('gramPrice', Number(last.c.toFixed(2)));
+      setLookupState('ok');
+    } catch {
+      setLookupState('error');
+    }
+  };
 
   const onSubmit = (data: FormData) => {
     setResult(computeGecmisAltin(data));
@@ -107,6 +137,26 @@ export function GecmisAltinFiyatlari() {
           { value: 'toGold', label: 'Paradan Altına' },
         ]} {...register('direction')} />
         <Select label="Altın Türü" options={GOLD_TYPES.map(t => ({ value: t.value, label: t.label }))} {...register('goldType')} />
+        <div className="space-y-1">
+          <label className="block text-sm font-medium" htmlFor="gecmis-altin-tarih">
+            Tarih Seçin
+          </label>
+          <input
+            id="gecmis-altin-tarih"
+            type="date"
+            value={priceDate}
+            max={new Date().toISOString().slice(0, 10)}
+            min="2021-01-01"
+            onChange={(e) => lookupPrice(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          />
+          <p className="text-xs text-muted-foreground">
+            {lookupState === 'loading' && 'Fiyat getiriliyor…'}
+            {lookupState === 'ok' && 'O günün gram altın kapanışı otomatik dolduruldu.'}
+            {lookupState === 'error' && 'Bu tarih için fiyat bulunamadı, elle girebilirsiniz.'}
+            {lookupState === 'idle' && 'Tarih seçerseniz gram fiyatı otomatik gelir.'}
+          </p>
+        </div>
         <Input label="O Tarihteki Gram Fiyatı (₺)" type="number" step="0.01" placeholder="Geçmiş tarihte gram altın fiyatı" {...register('gramPrice')} error={errors.gramPrice?.message} />
         <Input
           label={direction === 'toMoney' ? 'Miktar (gram/ons/adet)' : 'Tutar (₺)'}
@@ -133,9 +183,9 @@ export function GecmisAltinFiyatlari() {
 
       <ToolInfo
         title="Geçmiş Altın Fiyatları Nedir?"
-        description="Geçmiş altın fiyatları hesaplama aracı ile eski tarihlerdeki altın fiyatlarıyla hesaplama yapabilirsiniz. Hesaplama yapabilmek için o tarihte geçerli olan gram altın fiyatını giriniz."
+        description="Geçmiş altın fiyatları hesaplama aracı ile eski tarihlerdeki altın fiyatlarıyla hesaplama yapabilirsiniz. Tarih seçtiğinizde o günün gram altın kapanış fiyatı otomatik gelir; isterseniz elle de girebilirsiniz."
         faqs={[
-          { q: 'Geçmiş altın fiyatlarını nereden bulabilirim?', a: 'TÜİK, TCMB ve çeşitli finans sitelerinden eski tarihlere ait altın fiyatlarına ulaşabilirsiniz.' },
+          { q: 'Geçmiş altın fiyatlarını nereden bulabilirim?', a: 'Bu araçta tarih seçmeniz yeterli — son 5 yılın günlük gram altın kapanış fiyatları sistemimizde kayıtlıdır. Daha eski tarihler için TÜİK ve TCMB arşivlerinden yararlanabilirsiniz.' },
         ]}
       />
     </>

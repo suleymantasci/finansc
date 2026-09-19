@@ -6,6 +6,7 @@ import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { getCurrencyBySlug, CURRENCY_SLUGS } from '@/lib/seo-data/currency';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { LiveCurrencyTicker } from './LiveCurrencyTicker';
+import { PriceChart } from '@/components/charts/PriceChart';
 import { AdBanner } from '@/components/ads/AdBanner';
 
 interface Props {
@@ -154,6 +155,13 @@ export default async function CurrencyPage({ params }: Props) {
         </p>
 
         <LiveCurrencyTicker code={meta.code} name={meta.name} />
+
+        <PriceChart
+          instrument={`fx:${meta.code}:serbest-piyasa`}
+          defaultRange="1y"
+          decimals={4}
+          className="mt-6"
+        />
 
         <AdBanner page={`doviz-${meta.slug}`} position="in-article" className="my-8" />
 
