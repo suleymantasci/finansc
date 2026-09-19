@@ -63,6 +63,22 @@ export function PriceChart({
   const [error, setError] = useState<string | null>(null);
   const [hover, setHover] = useState<{ i: number; x: number; y: number } | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const boxRef = useRef<HTMLDivElement | null>(null);
+
+  // Genişliği ölçüyoruz: sabit viewBox + preserveAspectRatio="none" dar
+  // ekranda yazıları yatayda eziyordu. Ölçülen genişlikle çizince
+  // her ekran boyutunda oranlar doğru kalıyor.
+  const [width, setWidth] = useState(800);
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width;
+      if (w && Math.abs(w - width) > 1) setWidth(Math.max(280, Math.round(w)));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [width]);
 
   const preset = useMemo(
     () => RANGE_PRESETS.find((p) => p.id === rangeId) ?? RANGE_PRESETS[3],
@@ -122,7 +138,7 @@ export function PriceChart({
   }, [instrument, live, preset.interval]);
 
   // ── Çizim geometrisi ───────────────────────────────────────────
-  const W = 800;
+  const W = width;
   const H = height;
   const PAD = { top: 16, right: 56, bottom: 28, left: 8 };
 
@@ -162,17 +178,17 @@ export function PriceChart({
   const up = change >= 0;
   const stroke = up ? '#10b981' : '#f43f5e';
 
-  const onMove = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
+  const moveTo = useCallback(
+    (clientX: number) => {
       if (!geom || points.length === 0 || !svgRef.current) return;
       const rect = svgRef.current.getBoundingClientRect();
-      const px = ((e.clientX - rect.left) / rect.width) * W;
+      const px = ((clientX - rect.left) / rect.width) * W;
       const ratio = (px - PAD.left) / (W - PAD.left - PAD.right);
       const i = Math.round(ratio * (points.length - 1));
       const idx = Math.max(0, Math.min(points.length - 1, i));
       setHover({ i: idx, x: geom.x(idx), y: geom.y(points[idx].c) });
     },
-    [geom, points, PAD.left, PAD.right],
+    [geom, points, PAD.left, PAD.right, W],
   );
 
   return (
@@ -213,7 +229,7 @@ export function PriceChart({
       </div>
 
       {/* Grafik */}
-      <div className="relative" style={{ height }}>
+      <div ref={boxRef} className="relative touch-pan-y" style={{ height }}>
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
             Yükleniyor…
@@ -234,10 +250,12 @@ export function PriceChart({
           <svg
             ref={svgRef}
             viewBox={`0 0 ${W} ${H}`}
-            preserveAspectRatio="none"
             className="h-full w-full"
-            onMouseMove={onMove}
+            onMouseMove={(e) => moveTo(e.clientX)}
             onMouseLeave={() => setHover(null)}
+            onTouchStart={(e) => moveTo(e.touches[0].clientX)}
+            onTouchMove={(e) => moveTo(e.touches[0].clientX)}
+            onTouchEnd={() => setHover(null)}
             role="img"
             aria-label={`${series?.label ?? instrument} fiyat grafiği`}
           >
