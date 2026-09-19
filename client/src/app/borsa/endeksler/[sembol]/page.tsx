@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { INDEX_META, INDEX_SYMBOLS, getIndexMeta, type IndexMeta } from '@/lib/seo-data/indices';
 import { LiveIndexTicker } from './LiveIndexTicker';
+import { PriceChart } from '@/components/charts/PriceChart';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
@@ -207,6 +208,12 @@ export default async function IndexPage({ params }: Props) {
         </p>
 
         <LiveIndexTicker symbol={meta.symbol} />
+
+        <PriceChart
+          instrument={`index:${meta.symbol}`}
+          defaultRange="1y"
+          className="mt-6"
+        />
 
         <AdBanner page={`borsa-endeks-${meta.symbol}`} position="in-article" className="my-8" />
 
