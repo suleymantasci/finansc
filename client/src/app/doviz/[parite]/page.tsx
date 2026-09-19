@@ -7,6 +7,7 @@ import { getCurrencyBySlug, CURRENCY_SLUGS } from '@/lib/seo-data/currency';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { LiveCurrencyTicker } from './LiveCurrencyTicker';
 import { PriceChart } from '@/components/charts/PriceChart';
+import { instrumentKey } from '@/lib/history';
 import { AdBanner } from '@/components/ads/AdBanner';
 
 interface Props {
@@ -157,7 +158,7 @@ export default async function CurrencyPage({ params }: Props) {
         <LiveCurrencyTicker code={meta.code} name={meta.name} />
 
         <PriceChart
-          instrument={`fx:${meta.code}:serbest-piyasa`}
+          instrument={instrumentKey.fx(meta.code)}
           defaultRange="1y"
           decimals={4}
           className="mt-6"

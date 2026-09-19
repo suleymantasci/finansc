@@ -90,11 +90,34 @@ export function subscribeHistory(
   return () => es.close();
 }
 
+/**
+ * Sitedeki altın sayfası slug'ı → geçmiş veri tip anahtarı.
+ * Çoğu birebir aynı; sadece ayrışanlar burada.
+ */
+const GOLD_SLUG_ALIAS: Record<string, string> = {
+  bilezik: '22-ayar-bilezik',
+  'bilezik-22': '22-ayar-bilezik',
+  'ziynet-altin': 'tam-altin',
+  'has-altin': 'has-altin',
+};
+
+export function goldTypeKey(slug: string): string {
+  return GOLD_SLUG_ALIAS[slug] ?? slug;
+}
+
 /** Enstrüman anahtarı üreticiler — backend'deki instrument-registry ile aynı format */
 export const instrumentKey = {
-  gold: (source: string, type: string) => `gold:${source}:${type}`,
-  fx: (code: string, source: 'serbest-piyasa' | 'merkez-bankasi' = 'serbest-piyasa') =>
-    `fx:${code.toUpperCase()}:${source}`,
+  gold: (source: string, type: string) => `gold:${source}:${goldTypeKey(type)}`,
+  /**
+   * XAU sitede döviz sayfası olarak duruyor ama bizde altın enstrümanı;
+   * ons altın serisine yönlendiriyoruz.
+   */
+  fx: (code: string, source: 'serbest-piyasa' | 'merkez-bankasi' = 'serbest-piyasa') => {
+    const c = code.toUpperCase();
+    if (c === 'XAU') return 'gold:serbest-piyasa:ons-altin';
+    if (c === 'XAG') return 'gold:serbest-piyasa:gumus';
+    return `fx:${c}:${source}`;
+  },
   stock: (symbol: string) => `bist:${symbol.toUpperCase()}`,
   index: (symbol: string) => `index:${symbol.toUpperCase()}`,
 };

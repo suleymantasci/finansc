@@ -6,6 +6,7 @@ import { GOLD_META } from '@/lib/seo-data/gold';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { LiveGoldTicker } from './LiveGoldTicker';
 import { PriceChart } from '@/components/charts/PriceChart';
+import { instrumentKey } from '@/lib/history';
 import { AdBanner } from '@/components/ads/AdBanner';
 
 interface Props {
@@ -159,7 +160,7 @@ export default async function GoldTypePage({ params }: Props) {
         <LiveGoldTicker goldType={meta.name} slug={meta.slug} />
 
         <PriceChart
-          instrument={`gold:serbest-piyasa:${meta.slug}`}
+          instrument={instrumentKey.gold('serbest-piyasa', meta.slug)}
           defaultRange="1y"
           className="mt-6"
         />
