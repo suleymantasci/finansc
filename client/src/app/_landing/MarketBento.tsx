@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { pctTr } from '@/lib/formatters';
 import Link from 'next/link';
 import NumberFlow from '@number-flow/react';
 import { Calculator, CandlestickChart, Coins, ArrowRight } from 'lucide-react';
@@ -9,7 +10,7 @@ import { fetchHistory, instrumentKey, type HistoryPoint, type Interval } from '@
 import { pickCurrency, pickGold, pickIndex } from '@/lib/market-pick';
 import { AreaChart, CandleChart, Sparkline, type SeriesPoint } from '@/components/charts/MiniCharts';
 import { cn } from '@/lib/utils';
-import { CardHead, ChangePill, RangeTabs, timeOf } from './parts';
+import { ArrowLink, CardHead, ChangePill, RangeTabs, timeOf } from './parts';
 
 // ── Yardımcılar ────────────────────────────────────────────────────
 
@@ -85,7 +86,7 @@ function GoldCard() {
       <dl className="mt-3 flex gap-6">
         <Stat label="Alış" value={tr(gold?.buyPrice)} />
         <Stat label="Satış" value={tr(gold?.sellPrice)} />
-        <Stat label={`${r.label} değişim`} value={periodChange == null ? '—' : `%${tr(periodChange)}`} />
+        <Stat label={`${r.label} değişim`} value={periodChange == null ? '—' : pctTr(periodChange, { signed: true })} />
       </dl>
 
       <div className="mt-6 flex-1">
@@ -93,9 +94,9 @@ function GoldCard() {
       </div>
       <div className="mt-4 flex items-center justify-between">
         <RangeTabs options={RANGES} value={range} onChange={setRange} label="Grafik aralığı" />
-        <Link href="/altin" className="text-[12px] text-muted-foreground hover:text-primary">
-          Tüm altın fiyatları
-        </Link>
+        <ArrowLink href="/altin" className="text-[13px]">
+          Tüm altınlar
+        </ArrowLink>
       </div>
     </article>
   );

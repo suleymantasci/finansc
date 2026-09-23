@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { pctTr } from '@/lib/formatters';
 import { useMarketStore } from '@/stores/market.store';
 import { pickGold } from '@/lib/market-pick';
 import { cn } from '@/lib/utils';
-import { SectionHead } from './parts';
+import { ArrowLink, SectionHead } from './parts';
 
 /**
  * Altın & döviz fiyat panoları — "çeyrek altın kaç TL", "sterlin ne kadar"
@@ -40,8 +41,7 @@ function Change({ v }: { v: number | null | undefined }) {
   const x = v ?? 0;
   return (
     <span className={cn('num', x > 0 && 'text-up', x < 0 && 'text-down', x === 0 && 'text-neutral')}>
-      {x > 0 ? '+' : ''}
-      {fmt(x, 2)}%
+      {pctTr(x, { signed: true })}
     </span>
   );
 }
@@ -67,9 +67,7 @@ function Board({
         <h3 id={id} className="font-display text-2xl text-foreground">
           {title}
         </h3>
-        <Link href={href} className="text-sm text-muted-foreground hover:text-primary">
-          {hrefLabel}
-        </Link>
+        <ArrowLink href={href}>{hrefLabel}</ArrowLink>
       </div>
       <table className="w-full text-sm" aria-labelledby={id}>
         <thead>

@@ -72,3 +72,13 @@ export function formatDate(dateStr: string): string {
     minute: '2-digit',
   }).format(new Date(dateStr));
 }
+
+/**
+ * Türkçe yüzde yazımı: işaret yüzde sembolünden önce gelir → "+%9,94", "-%5,61".
+ * signed=false iken pozitifte işaret yazılmaz ("%31,51").
+ */
+export function pctTr(value: number, { digits = 2, signed = false }: { digits?: number; signed?: boolean } = {}): string {
+  const abs = Math.abs(value).toLocaleString('tr-TR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  const sign = value < 0 ? '-' : signed && value > 0 ? '+' : '';
+  return `${sign}%${abs}`;
+}

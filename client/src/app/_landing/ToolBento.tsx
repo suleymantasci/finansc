@@ -1,16 +1,17 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { pctTr } from '@/lib/formatters';
 import Link from 'next/link';
 import NumberFlow from '@number-flow/react';
-import { ArrowRight, ArrowUpRight, LineChart, Wallet } from 'lucide-react';
+import { ArrowRight, LineChart, Wallet } from 'lucide-react';
 import { API_URL } from '@/lib/constants';
 import { fetchHistory, instrumentKey, type HistoryPoint } from '@/lib/history';
-import { DualLineChart } from '@/components/charts/MiniCharts';
+import { CompareChart, type CompareRow } from '@/components/charts/MiniCharts';
 import { bruttenNete, nettenBrute } from '@/app/araclar/[slug]/_tools/_shared/maas-engine';
 import { AVAILABLE_YEARS, TAX_DATA, type MaasFormData } from '@/app/araclar/[slug]/_tools/_shared/tax-data';
 import { cn } from '@/lib/utils';
-import { CardHead } from './parts';
+import { ArrowLink, CardHead } from './parts';
 
 const fmt2 = { minimumFractionDigits: 2, maximumFractionDigits: 2 } as const;
 
@@ -136,9 +137,19 @@ function prevYearKey(key: string): string {
   return `${mm}-${Number(yyyy) - 1}`;
 }
 
+type AssetId = 'gold' | 'usd' | 'eur' | 'bist';
+const ASSETS: { id: AssetId; label: string; short: string; instrument: string; href: string }[] = [
+  { id: 'gold', label: 'Altın', short: 'Gram altın', instrument: instrumentKey.gold('serbest-piyasa', 'gram-altin'), href: '/altin/gram-altin' },
+  { id: 'usd', label: 'Dolar', short: 'Dolar', instrument: instrumentKey.fx('USD'), href: '/doviz/dolar' },
+  { id: 'eur', label: 'Euro', short: 'Euro', instrument: instrumentKey.fx('EUR'), href: '/doviz/euro' },
+  { id: 'bist', label: 'BIST 100', short: 'BIST 100', instrument: instrumentKey.index('XU100'), href: '/borsa/endeksler/XU100' },
+];
+
 function RealReturnCard() {
   const [tufe, setTufe] = useState<TufeEntry[]>([]);
-  const [gold, setGold] = useState<HistoryPoint[]>([]);
+  const [asset, setAsset] = useState<AssetId>('gold');
+  const [series, setSeries] = useState<Partial<Record<AssetId, HistoryPoint[]>>>({});
+  const meta = ASSETS.find((a) => a.id === asset)!;
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -146,30 +157,38 @@ function RealReturnCard() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d?.history && setTufe(d.history as TufeEntry[]))
       .catch(() => {});
-    fetchHistory(instrumentKey.gold('serbest-piyasa', 'gram-altin'), { range: '5y', interval: '1w', signal: ctrl.signal })
-      .then((s) => setGold(s.points ?? []))
-      .catch(() => {});
     return () => ctrl.abort();
   }, []);
 
+  // Seçilen varlığın 5 yıllık haftalık serisi — bir kez çekilir, önbellekte kalır
+  useEffect(() => {
+    if (series[asset]) return;
+    const ctrl = new AbortController();
+    fetchHistory(meta.instrument, { range: '5y', interval: '1w', signal: ctrl.signal })
+      .then((s) => setSeries((prev) => ({ ...prev, [asset]: s.points ?? [] })))
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [asset, meta.instrument, series]);
+
   const data = useMemo(() => {
-    if (!tufe.length || !gold.length) return null;
-    const closes = monthEndCloses(gold);
-    const rows: { period: string; inf: number; gold: number }[] = [];
+    const points = series[asset];
+    if (!tufe.length || !points?.length) return null;
+    const closes = monthEndCloses(points);
+    const rows: CompareRow[] = [];
     // TÜFE en yeni başta geliyor — kronolojik sıraya çevir
     for (const e of [...tufe].reverse()) {
       if (e.yearlyChange == null) continue;
       const now = closes.get(e.period);
       const prev = closes.get(prevYearKey(e.period));
       if (!now || !prev) continue;
-      rows.push({ period: e.period, inf: e.yearlyChange, gold: (now / prev - 1) * 100 });
+      rows.push({ period: e.period, inflation: e.yearlyChange, asset: (now / prev - 1) * 100 });
     }
     const recent = rows.slice(-36);
     if (recent.length < 2) return null;
     const last = recent[recent.length - 1];
-    const real = ((1 + last.gold / 100) / (1 + last.inf / 100) - 1) * 100;
+    const real = ((1 + last.asset / 100) / (1 + last.inflation / 100) - 1) * 100;
     return { rows: recent, last, real };
-  }, [tufe, gold]);
+  }, [tufe, series, asset]);
 
   const periodLabel = data
     ? new Date(Number(data.last.period.slice(3)), Number(data.last.period.slice(0, 2)) - 1).toLocaleDateString('tr-TR', {
@@ -180,50 +199,68 @@ function RealReturnCard() {
 
   return (
     <article className="atlas-card flex flex-col p-5 sm:p-6 md:order-last md:col-span-2 lg:order-none">
-      <CardHead icon={<LineChart className="h-4 w-4" />} title="Altın mı, enflasyon mu?" href="/araclar/reel-getiri" meta={periodLabel} />
+      <CardHead icon={<LineChart className="h-4 w-4" />} title="Enflasyonu kim yendi?" href="/araclar/reel-getiri" meta={periodLabel} />
 
-      <div className="mt-5 grid flex-1 gap-6 sm:grid-cols-[1fr_auto]">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div role="group" aria-label="Karşılaştırılacak varlık" className="flex rounded-full border border-border bg-elevated p-1">
+          {ASSETS.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              aria-pressed={asset === a.id}
+              onClick={() => setAsset(a.id)}
+              className={cn(
+                'h-7 rounded-full px-3 text-[12px] transition-colors',
+                asset === a.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-4 text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="h-0.5 w-4 rounded bg-primary" aria-hidden="true" /> {meta.short} (yıllık)
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-0 w-4 border-t-2 border-dashed border-down" aria-hidden="true" /> Enflasyon (TÜFE)
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 grid flex-1 gap-5 sm:grid-cols-[1fr_auto]">
         <div className="min-w-0">
-          <div className="mb-3 flex flex-wrap gap-4 text-[12px] text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <span className="h-0.5 w-4 rounded bg-primary" aria-hidden="true" /> Enflasyon (TÜFE, yıllık)
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-0.5 w-4 rounded bg-up" aria-hidden="true" /> Gram altın (yıllık getiri)
-            </span>
-          </div>
-          {data ? (
-            <DualLineChart
-              labels={data.rows.map((r) => r.period)}
-              a={data.rows.map((r) => r.inf)}
-              b={data.rows.map((r) => r.gold)}
-              height={170}
-              label={`Son ${data.rows.length} ayda yıllık TÜFE ile gram altının yıllık getirisi karşılaştırması`}
-            />
-          ) : (
-            <div className="skeleton-shimmer h-[190px] rounded-lg" aria-hidden="true" />
-          )}
+          <CompareChart
+            rows={data?.rows ?? []}
+            assetLabel={meta.short}
+            height={230}
+            label={
+              data
+                ? `Son ${data.rows.length} ayda yıllık TÜFE ile ${meta.short} yıllık getirisi. Son ay: ${meta.short} %${data.last.asset.toFixed(1)}, enflasyon %${data.last.inflation.toFixed(1)}.`
+                : 'Grafik yükleniyor'
+            }
+          />
         </div>
 
-        <dl className="grid grid-cols-3 gap-4 sm:w-40 sm:grid-cols-1 sm:content-center sm:gap-5 sm:border-l sm:border-border sm:pl-6">
+        <dl className="grid grid-cols-3 gap-4 sm:w-36 sm:grid-cols-1 sm:content-center sm:gap-5 sm:border-l sm:border-border sm:pl-5">
           <div>
             <dt className="text-[11px] text-muted-foreground">Enflasyon</dt>
-            <dd className="num mt-1 text-xl font-medium text-primary">{data ? `%${data.last.inf.toLocaleString('tr-TR', fmt2)}` : '—'}</dd>
+            <dd className="num mt-1 text-xl font-medium text-down">{data ? pctTr(data.last.inflation) : '—'}</dd>
           </div>
           <div>
-            <dt className="text-[11px] text-muted-foreground">Altın getirisi</dt>
-            <dd className="num mt-1 text-xl font-medium text-up">{data ? `%${data.last.gold.toLocaleString('tr-TR', fmt2)}` : '—'}</dd>
+            <dt className="text-[11px] text-muted-foreground">{meta.short} getirisi</dt>
+            <dd className="num mt-1 text-xl font-medium text-primary">{data ? pctTr(data.last.asset) : '—'}</dd>
           </div>
           <div>
             <dt className="text-[11px] text-muted-foreground">Reel getiri</dt>
-            <dd className={cn('num mt-1 text-xl font-medium', data && data.real < 0 ? 'text-down' : 'text-foreground')}>
-              {data ? `%${data.real.toLocaleString('tr-TR', fmt2)}` : '—'}
+            <dd className={cn('num mt-1 text-xl font-medium', data && data.real < 0 ? 'text-down' : 'text-up')}>
+              {data ? pctTr(data.real, { signed: true }) : '—'}
             </dd>
           </div>
         </dl>
       </div>
-      <p className="mt-4 text-[11px] text-muted-foreground">
-        Kaynak: TCMB (TÜFE), serbest piyasa gram altın ay sonu kapanışları. Reel getiri = (1 + altın) ÷ (1 + enflasyon) − 1.
+      <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+        Yıllık getiri: ay sonu kapanışının 12 ay öncesine göre değişimi. Kaynak: TCMB (TÜFE), serbest piyasa ve BIST. Reel = (1 + getiri) ÷ (1 + enflasyon) − 1.
       </p>
     </article>
   );
@@ -280,10 +317,9 @@ function ToolsCard() {
           </li>
         ))}
       </ul>
-      <Link href="/araclar" className="group mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-medium text-primary">
+      <ArrowLink href="/araclar" className="mt-auto self-start pt-6">
         Tüm araçları keşfet
-        <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
-      </Link>
+      </ArrowLink>
     </article>
   );
 }

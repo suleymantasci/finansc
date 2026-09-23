@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function CardHead({
@@ -92,6 +92,22 @@ export function RangeTabs<T extends string>({
   );
 }
 
+/** "Tümünü gör →" tarzı CTA — varsayılan altın, hover'da ok ilerler */
+export function ArrowLink({ href, children, className }: { href: string; children: ReactNode; className?: string }) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        'group inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-primary decoration-primary/40 underline-offset-4 hover:underline',
+        className,
+      )}
+    >
+      {children}
+      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />
+    </Link>
+  );
+}
+
 export function SectionHead({
   id,
   eyebrow,
@@ -114,13 +130,7 @@ export function SectionHead({
         </h2>
       </div>
       {href && (
-        <Link
-          href={href}
-          className="group flex shrink-0 items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
-        >
-          {hrefLabel}
-          <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
-        </Link>
+        <ArrowLink href={href}>{hrefLabel}</ArrowLink>
       )}
     </div>
   );

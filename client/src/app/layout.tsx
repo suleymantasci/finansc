@@ -1,6 +1,6 @@
 import { Analytics } from '@/components/analytics/GoogleAnalytics';
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono, Instrument_Serif } from 'next/font/google';
+import { Geist, Geist_Mono, Newsreader } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { Header } from '@/components/layout/Header';
@@ -21,12 +21,12 @@ const geistMono = Geist_Mono({
   display: 'swap',
 });
 
-// Editoryal başlık fontu — sadece display boyutlarda kullanılır
-const instrumentSerif = Instrument_Serif({
-  variable: '--font-instrument-serif',
+// Başlık fontu — klasik gazete serif'i, optik boyut ekseniyle büyük puntoda sıkı durur
+const displaySerif = Newsreader({
+  variable: '--font-display-serif',
   subsets: ['latin', 'latin-ext'],
-  weight: '400',
-  style: ['normal', 'italic'],
+  axes: ['opsz'],
+  style: ['normal'],
   display: 'swap',
 });
 
@@ -134,7 +134,7 @@ export default function RootLayout({
     <html
       lang="tr"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable}`}
     >
       <head>
         {/* ── Performance: third-party DNS+TLS warmup ──

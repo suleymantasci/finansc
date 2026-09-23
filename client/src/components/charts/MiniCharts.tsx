@@ -1,6 +1,7 @@
 'use client';
 
-import { useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { pctTr } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
 /**
@@ -323,73 +324,149 @@ export function RangeBar({ low, high, value }: { low: number; high: number; valu
   );
 }
 
-// ── İki serili çizgi grafik (aynı ölçek, % değerler) ──────────────
+// ── Karşılaştırma grafiği: varlık yıllık getirisi vs enflasyon ─────
+// Gerçek piksel koordinatlarında çizilir (ResizeObserver) — metin ve çizgiler esnemez.
 
-export function DualLineChart({
-  labels,
-  a,
-  b,
-  colorA = 'var(--color-primary)',
-  colorB = 'var(--color-up)',
-  height = 150,
+export interface CompareRow {
+  /** "MM-YYYY" */
+  period: string;
+  asset: number;
+  inflation: number;
+}
+
+const MONTHS_TR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+
+function niceTicks(min: number, max: number, target = 4): number[] {
+  const span = max - min || 1;
+  const raw = span / target;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((st) => span / st <= target + 1) ?? 10 * mag;
+  // Alt sınır aşağı, üst sınır yukarı yuvarlanır — veri eksen dışına taşmaz
+  const start = Math.floor(min / step) * step;
+  const end = Math.ceil(max / step) * step;
+  const out: number[] = [];
+  for (let v = start; v <= end + 1e-9; v += step) out.push(Math.round(v * 100) / 100);
+  return out;
+}
+
+const pct = (v: number) => pctTr(v, { digits: 1 });
+
+export function CompareChart({
+  rows,
+  assetLabel,
+  height = 190,
   label,
 }: {
-  labels: string[];
-  a: number[];
-  b: number[];
-  colorA?: string;
-  colorB?: string;
+  rows: CompareRow[];
+  assetLabel: string;
   height?: number;
   label: string;
 }) {
-  const dom = useMemo(() => {
-    const [min, max] = extent([...a, ...b, 0], 0.1);
-    return [min, max] as [number, number];
-  }, [a, b]);
-  const ticks = useMemo(() => {
-    const [min, max] = dom;
-    return [0.1, 0.5, 0.9].map((r) => ({ r, v: max - (max - min) * r }));
-  }, [dom]);
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  const [hover, setHover] = useState<number | null>(null);
+  const ready = rows.length >= 2;
 
-  if (a.length < 2 || b.length < 2) {
-    return <div className="skeleton-shimmer rounded-lg" style={{ height }} aria-hidden="true" />;
+  // İskelet → grafik geçişinde farklı eleman; gözlemciyi yeniden bağla
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setWidth(Math.round(e.contentRect.width)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ready]);
+
+  const pad = { l: 40, r: 12, t: 10, b: 24 };
+  const iw = Math.max(0, width - pad.l - pad.r);
+  const ih = height - pad.t - pad.b;
+
+  const { ticks, lo, hi } = useMemo(() => {
+    if (rows.length < 2) return { ticks: [0, 100], lo: 0, hi: 100 };
+    const vals = rows.flatMap((r) => [r.asset, r.inflation]);
+    const t = niceTicks(Math.min(0, ...vals), Math.max(...vals));
+    return { ticks: t, lo: t[0], hi: t[t.length - 1] };
+  }, [rows]);
+
+  const x = (i: number) => pad.l + (i / (rows.length - 1)) * iw;
+  const y = (v: number) => pad.t + ih - ((v - lo) / (hi - lo)) * ih;
+  const line = (key: 'asset' | 'inflation') => rows.map((r, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(r[key]).toFixed(1)}`).join('');
+  const years = rows.map((r, i) => ({ r, i })).filter(({ r }) => r.period.startsWith('01-'));
+  const h = hover != null ? rows[hover] : null;
+
+  function onMove(e: React.PointerEvent<SVGSVGElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const rel = (e.clientX - rect.left - pad.l) / iw;
+    setHover(Math.min(rows.length - 1, Math.max(0, Math.round(rel * (rows.length - 1)))));
   }
-  const zeroY = height - ((0 - dom[0]) / (dom[1] - dom[0])) * height;
-  // Sadece ocak aylarını etiketle — kısmi ilk yıl etiketi çakışmasın
-  const years = labels.map((l, i) => ({ l, i })).filter((x) => x.l.startsWith('01-'));
+
+  const last = rows[rows.length - 1];
+
+  if (!ready) {
+    return <div ref={ref} className="skeleton-shimmer w-full rounded-lg" style={{ height }} aria-hidden="true" />;
+  }
 
   return (
     <figure className="relative m-0">
       <figcaption className="sr-only">{label}</figcaption>
-      <div className="relative pl-9" style={{ height }}>
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-9" aria-hidden="true">
-          {ticks.map((t) => (
-            <span key={t.r} className="num absolute left-0 -translate-y-1/2 text-[10px] text-muted-foreground" style={{ top: `${t.r * 100}%` }}>
-              %{Math.round(t.v)}
-            </span>
-          ))}
-        </div>
-        <svg viewBox={`0 0 ${W} ${height}`} preserveAspectRatio="none" className="block h-full w-full overflow-visible" aria-hidden="true">
-          {ticks.map((t) => (
-            <line key={t.r} x1="0" x2={W} y1={t.r * height} y2={t.r * height} stroke="var(--color-border)" strokeDasharray="2 4" vectorEffect="non-scaling-stroke" />
-          ))}
-          {dom[0] < 0 && (
-            <line x1="0" x2={W} y1={zeroY} y2={zeroY} stroke="var(--color-border-strong)" vectorEffect="non-scaling-stroke" />
-          )}
-          <path d={pathFor(a, height, dom)} fill="none" stroke={colorA} strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-          <path d={pathFor(b, height, dom)} fill="none" stroke={colorB} strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-        </svg>
-      </div>
-      <div className="relative mt-1.5 h-4 pl-9" aria-hidden="true">
-        {years.map(({ l, i }) => (
-          <span
-            key={l}
-            className="num absolute -translate-x-1/2 text-[10px] text-muted-foreground"
-            style={{ left: `calc(2.25rem + (100% - 2.25rem) * ${i / (labels.length - 1)})` }}
+      <div ref={ref} className="relative w-full" style={{ height }}>
+        {width > 0 && (
+          <svg width={width} height={height} className="block touch-pan-y" onPointerMove={onMove} onPointerLeave={() => setHover(null)} aria-hidden="true">
+            {ticks.map((t) => (
+              <g key={t}>
+                <line
+                  x1={pad.l}
+                  x2={width - pad.r}
+                  y1={y(t)}
+                  y2={y(t)}
+                  stroke={t === 0 ? 'var(--color-border-strong)' : 'var(--color-border)'}
+                  strokeDasharray={t === 0 ? undefined : '2 4'}
+                />
+                <text x={pad.l - 8} y={y(t)} dy="0.32em" textAnchor="end" className="num fill-muted-foreground text-[10px]">
+                  {pctTr(t, { digits: 0 })}
+                </text>
+              </g>
+            ))}
+            {years.map(({ r, i }) => (
+              <text key={r.period} x={x(i)} y={height - 6} textAnchor="middle" className="num fill-muted-foreground text-[10px]">
+                {r.period.slice(3)}
+              </text>
+            ))}
+            <path d={line('inflation')} fill="none" stroke="var(--color-down)" strokeWidth="1.8" strokeDasharray="5 4" strokeLinejoin="round" />
+            <path d={line('asset')} fill="none" stroke="var(--color-primary)" strokeWidth="2.2" strokeLinejoin="round" />
+            {/* Son noktalar */}
+            <circle cx={x(rows.length - 1)} cy={y(last.inflation)} r="3.5" fill="var(--color-down)" />
+            <circle cx={x(rows.length - 1)} cy={y(last.asset)} r="3.5" fill="var(--color-primary)" />
+            {h && hover != null && (
+              <g>
+                <line x1={x(hover)} x2={x(hover)} y1={pad.t} y2={pad.t + ih} stroke="var(--color-border-strong)" />
+                <circle cx={x(hover)} cy={y(h.inflation)} r="4" fill="var(--color-down)" stroke="var(--color-card)" strokeWidth="2" />
+                <circle cx={x(hover)} cy={y(h.asset)} r="4" fill="var(--color-primary)" stroke="var(--color-card)" strokeWidth="2" />
+              </g>
+            )}
+          </svg>
+        )}
+        {h && hover != null && (
+          <div
+            className={cn(
+              'pointer-events-none absolute top-0 z-10 min-w-40 rounded-lg border border-border bg-elevated px-3 py-2 text-[11px] shadow-xl',
+              x(hover) > width * 0.6 ? '-translate-x-[calc(100%+10px)]' : 'translate-x-[10px]',
+            )}
+            style={{ left: x(hover) }}
           >
-            {l.slice(-4)}
-          </span>
-        ))}
+            <p className="mb-1 font-medium text-foreground">
+              {MONTHS_TR[Number(h.period.slice(0, 2)) - 1]} {h.period.slice(3)}
+            </p>
+            <p className="flex justify-between gap-4 text-muted-foreground">
+              {assetLabel} <span className="num text-primary">{pct(h.asset)}</span>
+            </p>
+            <p className="flex justify-between gap-4 text-muted-foreground">
+              Enflasyon <span className="num text-down">{pct(h.inflation)}</span>
+            </p>
+            <p className="mt-1 flex justify-between gap-4 border-t border-border pt-1 text-muted-foreground">
+              Reel <span className="num text-foreground">{pct(((1 + h.asset / 100) / (1 + h.inflation / 100) - 1) * 100)}</span>
+            </p>
+          </div>
+        )}
       </div>
     </figure>
   );

@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { pctTr } from '@/lib/formatters';
 import Link from 'next/link';
 import { useMarketStore } from '@/stores/market.store';
 import { STOCK_META } from '@/lib/seo-data/stocks';
 import { RangeBar } from '@/components/charts/MiniCharts';
 import type { Stock } from '@/types';
 import { cn } from '@/lib/utils';
-import { SectionHead } from './parts';
+import { ArrowLink, SectionHead } from './parts';
 
 type Tab = 'gainers' | 'losers' | 'active';
 const TABS: { id: Tab; label: string }[] = [
@@ -89,8 +90,7 @@ function MoversTable({ rows, start, caption, flashMap }: { rows: Stock[]; start:
               </td>
               <td className="num py-2.5 text-right text-foreground">{fmt(s.lastPrice)} ₺</td>
               <td className={cn('num py-2.5 pl-3 text-right font-medium', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
-                {ch > 0 ? '+' : ''}
-                {fmt(ch)}%
+                {pctTr(ch, { signed: true })}
               </td>
               <td className="hidden py-2.5 pl-6 sm:table-cell">
                 <RangeBar low={s.low} high={s.high} value={s.lastPrice} />
@@ -144,9 +144,9 @@ export function MoversSection() {
                 </button>
               ))}
             </div>
-            <Link href="/borsa?tab=hisseler" className="hidden text-sm text-muted-foreground hover:text-primary md:block">
+            <ArrowLink href="/borsa?tab=hisseler" className="hidden md:inline-flex">
               Tüm hisseler
-            </Link>
+            </ArrowLink>
           </div>
         </div>
 

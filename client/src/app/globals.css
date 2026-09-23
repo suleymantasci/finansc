@@ -31,7 +31,7 @@
   --color-surface-hover: #1a1d23;
   --color-chart-fx: #5b8def;
 
-  --font-serif: var(--font-instrument-serif), 'Times New Roman', serif;
+  --font-serif: var(--font-display-serif), Georgia, 'Times New Roman', serif;
   --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --radius: 0.75rem;
@@ -271,9 +271,10 @@ article img {
 /* Editoryal serif başlık: optik boşluk, sıkı satır aralığı */
 @utility font-display {
   font-family: var(--font-serif);
-  font-weight: 400;
-  letter-spacing: -0.015em;
-  line-height: 1.02;
+  font-weight: 500;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
 }
 
 /* Rakamlar: tablo hizalı mono */
@@ -330,11 +331,14 @@ article img {
   mix-blend-mode: multiply;
 }
 
-/* Klavye odağı: tüm site için net ve tema uyumlu */
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-ring);
-  outline-offset: 2px;
-  border-radius: 6px;
+/* Klavye odağı: tüm site için net ve tema uyumlu.
+   base katmanında — bileşen utility'leri (focus-visible:outline-none) ezebilsin */
+@layer base {
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
 }
 
 /* Yatay kaydırma şeritleri: scrollbar gizli ama erişilebilir */
@@ -382,3 +386,7 @@ article img {
 }
 .atlas-range:active::-webkit-slider-thumb { transform: scale(1.15); }
 .atlas-range:focus-visible { outline-offset: 6px; }
+
+/* Temaya özel görseller (next-themes data-theme) */
+[data-theme="light"] .theme-dark-only { display: none; }
+:root:not([data-theme="light"]) .theme-light-only { display: none; }

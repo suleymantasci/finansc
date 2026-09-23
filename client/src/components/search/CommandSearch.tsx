@@ -104,8 +104,9 @@ function SearchBox({
       if (open && active < options.length) go(options[active].href);
       else submitQuery();
     } else if (e.key === 'Escape') {
-      if (open) setOpen(false);
-      else onEscape?.();
+      // Palette içindeyse tek Esc paleti kapatır; hero'da sadece öneri listesini
+      if (onEscape) onEscape();
+      else setOpen(false);
     }
   }
 

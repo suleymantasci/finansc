@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Image from 'next/image';
 import { HeroSearch, QuickChips } from '@/components/search/CommandSearch';
+import { cn } from '@/lib/utils';
 
 /**
  * Hero — H1 hem anahtar kelimeyi (SEO) hem editoryal sloganı taşır.
@@ -9,10 +10,11 @@ import { HeroSearch, QuickChips } from '@/components/search/CommandSearch';
  */
 
 const HERO_IMAGE = '/atlas/hero.webp';
+const HERO_IMAGE_LIGHT = '/atlas/hero-light.webp';
 
-function heroImageExists(): boolean {
+function publicFileExists(file: string): boolean {
   try {
-    return fs.existsSync(path.join(process.cwd(), 'public', HERO_IMAGE));
+    return fs.existsSync(path.join(process.cwd(), 'public', file));
   } catch {
     return false;
   }
@@ -69,14 +71,34 @@ function HeroArt() {
 }
 
 export function AtlasHero() {
-  const hasImage = heroImageExists();
+  const hasImage = publicFileExists(HERO_IMAGE);
+  // Açık tema görseli yoksa koyu görsel iki temada da kullanılır
+  const hasLight = hasImage && publicFileExists(HERO_IMAGE_LIGHT);
 
   return (
     <section aria-labelledby="hero-title" className="relative z-10 border-b border-border">
       {/* Sanat alanı — büyük ekranda sağ yarı, küçükte arka plan */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden lg:left-[42%]" aria-hidden="true">
         {hasImage ? (
-          <Image src={HERO_IMAGE} alt="" fill priority sizes="(min-width:1024px) 60vw, 100vw" className="object-cover object-right opacity-90" />
+          <>
+            <Image
+              src={HERO_IMAGE}
+              alt=""
+              fill
+              priority
+              sizes="(min-width:1024px) 60vw, 100vw"
+              className={cn('object-cover object-right opacity-90', hasLight && 'theme-dark-only')}
+            />
+            {hasLight && (
+              <Image
+                src={HERO_IMAGE_LIGHT}
+                alt=""
+                fill
+                sizes="(min-width:1024px) 60vw, 100vw"
+                className="theme-light-only object-cover object-right"
+              />
+            )}
+          </>
         ) : (
           <HeroArt />
         )}
@@ -85,16 +107,14 @@ export function AtlasHero() {
       </div>
 
       <div className="relative mx-auto max-w-[1440px] px-4 pb-14 pt-12 sm:pt-16 lg:px-8 lg:pb-20 lg:pt-24">
-        <div className="max-w-3xl">
+        <div className="max-w-4xl">
           <h1 id="hero-title">
             <span className="eyebrow block text-primary">
               Canlı altın, döviz, borsa &amp; 40+ hesaplama aracı
             </span>
-            <span className="font-display mt-5 block text-[2.75rem] leading-[1.02] text-foreground sm:text-6xl lg:text-[5.25rem]">
+            <span className="font-display mt-5 block text-[2.6rem] leading-[1.05] text-foreground sm:text-6xl lg:text-[4.75rem]">
               Tüm finansal cevaplar,{' '}
-              <span className="text-primary">
-                <em className="italic">tek bir arama</em> uzağında.
-              </span>
+              <span className="text-primary sm:block">tek bir arama uzağında.</span>
             </span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -107,7 +127,13 @@ export function AtlasHero() {
           </div>
         </div>
 
-        <p className="eyebrow absolute bottom-8 right-8 hidden text-right leading-relaxed text-foreground/70 lg:block">
+        <p
+          className={cn(
+            'eyebrow absolute right-8 top-10 hidden text-right leading-relaxed lg:block',
+            // Tek (koyu) görsel varsa yazı her temada görselin üstünde — açık renk kalmalı
+            hasImage && !hasLight ? 'text-[#ece8df]/80' : 'text-foreground/70',
+          )}
+        >
           Piyasalar hareket eder.
           <br />
           Siz önde kalın.
