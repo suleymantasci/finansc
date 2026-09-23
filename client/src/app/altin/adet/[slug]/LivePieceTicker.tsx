@@ -52,7 +52,7 @@ export function LivePieceTicker({ count, goldType, goldSlug }: Props) {
             1 Adet {goldType}
           </p>
           <p
-            className={`text-2xl font-bold font-mono tabular-nums ${
+            className={`text-2xl font-bold num ${
               flashMap[flashKey] === 'up'
                 ? 'text-flash-up'
                 : flashMap[flashKey] === 'down'
@@ -68,7 +68,7 @@ export function LivePieceTicker({ count, goldType, goldSlug }: Props) {
         {/* Adet */}
         <div className="rounded-xl border border-border bg-card/50 p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Adet</p>
-          <p className="text-3xl font-extrabold font-mono tabular-nums">
+          <p className="text-3xl font-extrabold num">
             {count}
           </p>
         </div>
@@ -78,7 +78,7 @@ export function LivePieceTicker({ count, goldType, goldSlug }: Props) {
           <p className="text-xs text-primary uppercase tracking-wider font-semibold mb-1">
             Toplam Tutar
           </p>
-          <p className="text-3xl font-extrabold font-mono tabular-nums">
+          <p className="text-3xl font-extrabold num">
             {total > 0 ? formatTL(total) : '—'}
           </p>
           <p className="text-xs text-muted-foreground mt-1">

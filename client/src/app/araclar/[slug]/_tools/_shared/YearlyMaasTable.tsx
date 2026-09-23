@@ -121,7 +121,7 @@ export function YearlyMaasTable({
                     <input
                       type="text"
                       inputMode="decimal"
-                      className="w-full rounded-md border border-border bg-background pl-5 sm:pl-6 pr-1.5 sm:pr-2 py-1 sm:py-1.5 text-right text-xs sm:text-sm font-mono tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      className="w-full rounded-md border border-border bg-background pl-5 sm:pl-6 pr-1.5 sm:pr-2 py-1 sm:py-1.5 text-right text-xs sm:text-sm num focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                       value={monthlyAmounts[idx] > 0 ? monthlyAmounts[idx].toLocaleString('tr-TR', { minimumFractionDigits: 2 }) : '0,00'}
                       onChange={(e) => handleAmountChange(idx, e.target.value)}
                     />
@@ -144,33 +144,33 @@ export function YearlyMaasTable({
             {/* Toplam satırı */}
             <tr className="border-t-2 border-primary/30 bg-primary/5 font-bold">
               <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-xs sm:text-sm whitespace-nowrap">Toplam</td>
-              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right num text-xs sm:text-sm">
                 {fmtNum(direction === 'brutten-nete' ? totals.gross : totals.net)}
               </td>
-              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right num text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">
                 {fmtNum(direction === 'brutten-nete' ? totals.net : totals.gross)}
               </td>
-              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right num text-xs sm:text-sm">
                 {fmtNum(totals.incomeTax)}
               </td>
-              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right num text-xs sm:text-sm">
                 {fmtNum(totals.unemployment)}
               </td>
-              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right num text-xs sm:text-sm">
                 {fmtNum(totals.stampTax)}
               </td>
-              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+              <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right num text-xs sm:text-sm">
                 {fmtNum(totals.sgkEmployee)}
               </td>
               {showEmployer && (
                 <>
-                  <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                  <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right num text-xs sm:text-sm">
                     {fmtNum(totals.sgkEmployer)}
                   </td>
-                  <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                  <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right num text-xs sm:text-sm">
                     {fmtNum(totals.unemploymentEmployer)}
                   </td>
-                  <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm">
+                  <td className="px-1.5 py-2 sm:px-3 sm:py-2.5 text-right num text-xs sm:text-sm">
                     {fmtNum(totals.totalEmployerCost)}
                   </td>
                 </>
@@ -188,7 +188,7 @@ export function YearlyMaasTable({
 function NumCell({ value, highlight }: { value: number; highlight?: boolean }) {
   return (
     <td
-      className={`px-1.5 py-1.5 sm:px-3 sm:py-2 text-right font-mono tabular-nums text-xs sm:text-sm whitespace-nowrap ${
+      className={`px-1.5 py-1.5 sm:px-3 sm:py-2 text-right num text-xs sm:text-sm whitespace-nowrap ${
         highlight ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-muted-foreground'
       } ${value === 0 ? 'opacity-40' : ''}`}
     >

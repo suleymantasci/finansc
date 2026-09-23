@@ -105,21 +105,10 @@ function LiveTicker() {
     return items;
   }, [indices, goldPrices, serbestCurrencies]);
 
-  const live = borsaStatus === 'connected' || goldStatus === 'connected' || currencyStatus === 'connected';
-
   return (
     <div className="border-b border-border bg-background/80">
       <div className="mx-auto flex h-9 max-w-[1440px] items-center gap-4 px-4 lg:px-8">
-        <span className="flex shrink-0 items-center gap-2 border-r border-border pr-4">
-          <span className="relative flex h-2 w-2" aria-hidden="true">
-            {live && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-up opacity-60" />}
-            <span className={cn('relative inline-flex h-2 w-2 rounded-full', live ? 'bg-up' : 'bg-muted-foreground')} />
-          </span>
-          <span className="eyebrow text-[10px] text-muted-foreground">
-            {live ? 'Canlı piyasa' : 'Bağlanıyor'}
-          </span>
-        </span>
-        <ul className="scroll-strip flex min-w-0 flex-1 items-center gap-7" aria-label="Canlı piyasa özeti">
+        <ul className="scroll-strip flex min-w-0 flex-1 items-center gap-7" aria-label="Piyasa özeti">
           {tickerItems.length === 0
             ? Array.from({ length: 6 }).map((_, i) => (
                 <li key={i} className="skeleton-shimmer h-3 w-32 shrink-0 rounded" aria-hidden="true" />

@@ -118,3 +118,35 @@ export async function getWhitelistMeta(): Promise<{
   const result = await getWhitelist();
   return { source: result.source, count: result.count };
 }
+
+// ── Endeks whitelist'i ──
+// Hisselerdeki mekanizmanın aynısı: canlı endeks listesi (24 saat cache).
+// API erişilemezse elle yazılmış INDEX_META sembolleri kullanılır.
+import { INDEX_META } from './indices';
+
+const getIndexWhitelist = nextCache(
+  async (): Promise<string[]> => {
+    try {
+      const res = await fetch(`${API_BASE}/api/market/indices`, { next: { revalidate: 86400 }, signal: AbortSignal.timeout(5000) });
+      if (res.ok) {
+        const data: { symbol?: string }[] = await res.json();
+        const list = Array.isArray(data) ? data.map((d) => d?.symbol).filter((s): s is string => !!s && s !== 'code') : [];
+        if (list.length > 0) return list;
+      }
+    } catch {
+      /* fallback aşağıda */
+    }
+    return Object.keys(INDEX_META);
+  },
+  ['bist-index-whitelist-v1'],
+  { revalidate: 86400 },
+);
+
+export async function getKnownIndexSymbols(): Promise<string[]> {
+  return getIndexWhitelist();
+}
+
+export async function isKnownIndexSymbol(symbol: string): Promise<boolean> {
+  if (symbol in INDEX_META) return true;
+  return (await getIndexWhitelist()).includes(symbol);
+}

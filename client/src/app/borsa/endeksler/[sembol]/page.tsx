@@ -2,12 +2,19 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { INDEX_META, INDEX_SYMBOLS, getIndexMeta, type IndexMeta } from '@/lib/seo-data/indices';
-import { LiveIndexTicker } from './LiveIndexTicker';
+import { STOCK_META } from '@/lib/seo-data/stocks';
+import { getKnownIndexSymbols, isKnownIndexSymbol } from '@/lib/seo-data/whitelist';
+import { instrumentKey } from '@/lib/history';
+import { CandlestickChart } from 'lucide-react';
 import { PriceChart } from '@/components/charts/PriceChart';
 import { AdBanner } from '@/components/ads/AdBanner';
-import { FAQSchema } from '@/components/seo/FAQSchema';
 import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
-import Link from 'next/link';
+import { DetailHeader } from '@/components/instrument/DetailHeader';
+import { LiveQuote } from '@/components/instrument/LiveQuote';
+import { RelatedQuotes } from '@/components/instrument/RelatedQuotes';
+import { AboutBlock } from '@/components/instrument/AboutBlock';
+import { FaqBlock } from '@/components/instrument/FaqBlock';
+import { FavoriteButton } from '@/components/instrument/FavoriteButton';
 
 interface Props {
   params: Promise<{ sembol: string }>;
@@ -32,7 +39,7 @@ function getFallbackMeta(symbol: string): IndexMeta {
     symbol,
     name: symbol,
     fullName: `${symbol} Borsa İstanbul Endeksi`,
-    description: `${symbol} Borsa İstanbul'da (BIST) işlem gören endekslerden biridir. ${symbol} endeksi için güncel değer, günlük değişim yüzdesi, hacim ve gün içi en yüksek/düşük seviyeler bu sayfada anlık olarak güncellenmektedir. Endeksin bileşimi, içerdiği şirketler ve geçmiş performansına bu sayfadan ulaşabilirsiniz.`,
+    description: `${symbol}, Borsa İstanbul (BIST) tarafından hesaplanan endekslerden biridir. Bu sayfada ${symbol} endeksinin güncel değeri, günlük değişim yüzdesi, gün içi en yüksek ve en düşük seviyeleri ile geçmiş grafiği yer alır. Veriler 15 dakika gecikmelidir.`,
     faq: [
       {
         q: `${symbol} nedir?`,
@@ -44,15 +51,16 @@ function getFallbackMeta(symbol: string): IndexMeta {
       },
       {
         q: `${symbol} yükselirse ne olur?`,
-        a: `${symbol} yükselmesi, endeksteki hisselerin genel olarak değer kazandığını gösterir. Yatırımcı güveni artar, endeksi takip eden fon/ETF performansı olumlu etkilenir.`,
+        a: `${symbol} endeksinin yükselmesi, endeksteki hisselerin ağırlıklı ortalamada değer kazandığını gösterir. Endeksi takip eden fonların performansı da genellikle aynı yönde hareket eder.`,
       },
     ],
     relatedSymbols: related,
   };
 }
 
-export function generateStaticParams() {
-  return INDEX_SYMBOLS.map((sembol) => ({ sembol }));
+export async function generateStaticParams() {
+  const live = await getKnownIndexSymbols();
+  return [...new Set([...INDEX_SYMBOLS, ...live])].map((sembol) => ({ sembol }));
 }
 
 // dynamicParams=true: whitelist'te olmayan endeksler için runtime'da
@@ -65,7 +73,7 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { sembol } = await params;
-  if (!isValidIndexFormat(sembol)) {
+  if (!isValidIndexFormat(sembol) || !(await isKnownIndexSymbol(sembol))) {
     return { title: 'Endeks Bulunamadı', robots: { index: false, follow: false } };
   }
   const meta = isKnownIndex(sembol) ? getIndexMeta(sembol) : getFallbackMeta(sembol);
@@ -91,7 +99,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url: `${SITE_URL}/borsa/endeksler/${meta.symbol}`,
       siteName: SITE_NAME,
-      locale: 'tr-TR',
+      locale: 'tr_TR',
       images: [
         {
           url: `/api/og?type=endeks&title=${encodeURIComponent(`${meta.name} (${meta.symbol})`)}&subtitle=${encodeURIComponent('Borsa Endeksi Bugün, Grafik ve Analiz')}&category=BORSA&url=${encodeURIComponent(`finanscozum.net/borsa/endeksler/${meta.symbol}`)}`,
@@ -113,23 +121,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function IndexPage({ params }: Props) {
   const { sembol } = await params;
-  if (!isValidIndexFormat(sembol)) notFound();
+  if (!isValidIndexFormat(sembol) || !(await isKnownIndexSymbol(sembol))) notFound();
   const meta = isKnownIndex(sembol) ? getIndexMeta(sembol) : getFallbackMeta(sembol);
   const canonical = `${SITE_URL}/borsa/endeksler/${meta.symbol}`;
-  const pageTitle = `${meta.name} (${meta.symbol}) Endeksi`;
+  const known = isKnownIndex(sembol);
 
-  // JSON-LD schema (GEO-friendly)
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
       {
         '@type': 'FinancialProduct',
         name: meta.fullName,
-        alternateName: meta.name,
-        category: 'Borsa Endeksi',
-        identifier: meta.symbol,
-        url: canonical,
+        alternateName: meta.symbol,
+        category: 'Borsa endeksi',
         description: meta.description,
+        url: canonical,
         provider: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
       },
       {
@@ -137,7 +143,7 @@ export default async function IndexPage({ params }: Props) {
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE_URL },
           { '@type': 'ListItem', position: 2, name: 'Borsa', item: `${SITE_URL}/borsa` },
-          { '@type': 'ListItem', position: 3, name: 'Endeksler', item: `${SITE_URL}/borsa?tab=endeksler` },
+          { '@type': 'ListItem', position: 3, name: 'Endeksler', item: `${SITE_URL}/borsa/endeksler` },
           { '@type': 'ListItem', position: 4, name: meta.name, item: canonical },
         ],
       },
@@ -145,120 +151,83 @@ export default async function IndexPage({ params }: Props) {
         '@type': 'WebPage',
         '@id': canonical,
         url: canonical,
-        name: pageTitle,
+        name: `${meta.name} (${meta.symbol})`,
         inLanguage: 'tr-TR',
         isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
-        speakable: {
-          '@type': 'SpeakableSpecification',
-          cssSelector: ['#index-summary', 'h1'],
-        },
+        speakable: { '@type': 'SpeakableSpecification', cssSelector: ['h1', '#index-about'] },
       },
     ],
   };
 
-  // Citable snippet (GEO için)
-  const summary = `${meta.name} (${meta.symbol}) endeksi Borsa İstanbul'da ${meta.companies ? `aralarında ${meta.companies.slice(0, 3).join(', ')} gibi büyük şirketlerin yer aldığı` : 'işlem gören'} bir endekstir. Güncel endeks değeri, günlük değişim, en yüksek/düşük seviyeler yukarıda anlık olarak güncellenmektedir.`;
-
-  // Fallback meta'da companies yok → INDEX_META'dan çekilen related'lerden
-  // uydurma related'ler kullan; bilinen meta'da kendi relatedSymbols'i var.
-  const related = isKnownIndex(sembol)
-    ? meta.relatedSymbols.map((s) => INDEX_META[s]).filter(Boolean)
-    : (meta.relatedSymbols || []).map((s) => INDEX_META[s]).filter(Boolean);
+  const related = (meta.relatedSymbols ?? []).filter((r) => r !== meta.symbol).slice(0, 6);
+  const companies = meta.companies ?? [];
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      <DetailHeader
+        category="borsa"
+        crumbs={[
+          { label: 'Ana Sayfa', href: '/' },
+          { label: 'Borsa', href: '/borsa' },
+          { label: 'Endeksler', href: '/borsa/endeksler' },
+          { label: meta.symbol },
+        ]}
+        eyebrow="Borsa İstanbul · Endeks"
+        title={known ? `${meta.name} (${meta.symbol})` : `${meta.symbol} endeksi`}
+        subtitle={known ? meta.fullName : 'Borsa İstanbul endeksi · güncel değer ve geçmiş grafik'}
+        emblem={<CandlestickChart className="h-7 w-7" />}
+        tagline="Piyasalar hareket eder, siz önde kalın."
+        actions={<FavoriteButton type="index" symbol={meta.symbol} label={`${meta.symbol} endeksi`} />}
       />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground mb-4">
-          <ol className="flex flex-wrap items-center gap-1.5">
-            <li><Link href="/" className="hover:text-primary">Ana Sayfa</Link></li>
-            <li aria-hidden>/</li>
-            <li><Link href="/borsa" className="hover:text-primary">Borsa</Link></li>
-            <li aria-hidden>/</li>
-            <li>
-              <Link href="/borsa?tab=endeksler" className="hover:text-primary">Endeksler</Link>
-            </li>
-            <li aria-hidden>/</li>
-            <li className="text-foreground font-medium">{meta.name}</li>
-          </ol>
-        </nav>
+      <div className="mx-auto grid max-w-[1440px] gap-6 px-4 py-8 pb-24 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 md:pb-12">
+        <div className="min-w-0 space-y-6">
+          <section aria-label={`${meta.symbol} anlık değer`}>
+            <LiveQuote spec={{ kind: 'index', symbol: meta.symbol }} label={`${meta.symbol} endeksi`} />
+          </section>
 
-        <DataDisclaimer variant="borsa" />
+          <PriceChart instrument={instrumentKey.index(meta.symbol)} defaultRange="1y" height={360} />
 
-        <header className="mb-6">
-          <h1 className="text-2xl lg:text-3xl font-bold">
-            {meta.name} ({meta.symbol}) Endeksi
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {meta.fullName}
-          </p>
-        </header>
+          <AdBanner page={`endeks-${meta.symbol}`} position="in-article" />
 
-        {/* Citable snippet */}
-        <p
-          id="index-summary"
-          className="mb-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 text-sm leading-relaxed"
-        >
-          {summary}
-        </p>
+          <AboutBlock
+            id="index-about"
+            title={`${meta.name} nedir?`}
+            facts={[
+              { label: 'Sembol', value: meta.symbol },
+              { label: 'Borsa', value: 'Borsa İstanbul' },
+              { label: 'Veri', value: '15 dk gecikmeli' },
+              { label: 'Birim', value: 'Puan' },
+            ]}
+          >
+            <p>{meta.description}</p>
+            {companies.length > 0 && (
+              <p className="mt-3">
+                Endeksin başlıca bileşenleri arasında {companies.slice(0, 8).join(', ')} yer alır.
+              </p>
+            )}
+          </AboutBlock>
 
-        <LiveIndexTicker symbol={meta.symbol} />
-
-        <PriceChart
-          instrument={`index:${meta.symbol}`}
-          defaultRange="1y"
-          className="mt-6"
-        />
-
-        <AdBanner page={`borsa-endeks-${meta.symbol}`} position="in-article" className="my-8" />
-
-        <section className="prose prose-slate dark:prose-invert max-w-none mt-8">
-          <h2 className="text-xl font-semibold mb-3">{meta.name} Nedir?</h2>
-          <p className="text-muted-foreground leading-relaxed">{meta.description}</p>
-
-          {meta.companies && meta.companies.length > 0 && (
-            <>
-              <h3 className="text-lg font-semibold mt-6 mb-3">{meta.name} İçindeki Önemli Şirketler</h3>
-              <ul>
-                {meta.companies.map((c) => (
-                  <li key={c}><strong>{c}</strong> — BIST endeksinde yer alan önemli şirketlerden biridir.</li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          <h3 className="text-lg font-semibold mt-6 mb-3">Sıkça Sorulan Sorular</h3>
-          <FAQSchema faqs={meta.faq} />
-
-          {related.length > 0 && (
-            <>
-              <h3 className="text-lg font-semibold mt-6 mb-3">İlgili Endeksler</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 not-prose">
-                {related.map((r) => (
-                  <Link
-                    key={r.symbol}
-                    href={`/borsa/endeksler/${r.symbol}`}
-                    className="rounded-lg border border-border bg-card p-3 hover:border-primary/30 transition-colors"
-                  >
-                    <div className="font-semibold text-sm">{r.name} ({r.symbol})</div>
-                    <div className="text-xs text-muted-foreground truncate">{r.fullName}</div>
-                  </Link>
-                ))}
-              </div>
-            </>
-          )}
-        </section>
-
-        <AdBanner page={`borsa-endeks-${meta.symbol}`} position="footer" className="mt-8" />
-
-        <div className="mt-8 flex justify-end">
-          <Link href="/borsa" className="text-sm text-primary hover:underline">← Borsa Ana Sayfası</Link>
+          <FaqBlock title={`${meta.name} hakkında sık sorulanlar`} faqs={meta.faq ?? []} />
+          <DataDisclaimer variant="borsa" />
         </div>
+
+        <aside className="space-y-6">
+          <RelatedQuotes
+            title="İlgili endeksler"
+            moreHref="/borsa/endeksler"
+            moreLabel="Tüm endeksler"
+            items={related.map((r) => ({ label: INDEX_META[r]?.name ?? r, sub: r, href: `/borsa/endeksler/${r}`, spec: { kind: 'index' as const, symbol: r } }))}
+          />
+          <RelatedQuotes
+            title="Öne çıkan hisseler"
+            moreHref="/borsa/hisseler"
+            moreLabel="Tüm hisseler"
+            items={['THYAO', 'GARAN', 'AKBNK', 'ASELS', 'TUPRS', 'BIMAS'].map((x) => ({ label: x, sub: STOCK_META[x]?.name, href: `/borsa/hisseler/${x}`, spec: { kind: 'stock' as const, symbol: x } }))}
+          />
+        </aside>
       </div>
     </>
   );

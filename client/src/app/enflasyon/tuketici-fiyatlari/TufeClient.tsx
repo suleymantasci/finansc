@@ -38,10 +38,10 @@ export function TufeClient({ rows }: Props) {
             {visible.map((row, i) => (
               <tr key={row.period} className={i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                 <td className="px-3 py-2 font-medium text-foreground">{formatPeriodTr(row.period)}</td>
-                <td className="px-3 py-2 text-right font-mono tabular-nums">
+                <td className="px-3 py-2 text-right num">
                   {formatPercentTr(row.yearlyChange)}
                 </td>
-                <td className="px-3 py-2 text-right font-mono tabular-nums">
+                <td className="px-3 py-2 text-right num">
                   {formatPercentTr(row.monthlyChange)}
                 </td>
               </tr>

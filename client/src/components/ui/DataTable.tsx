@@ -95,29 +95,30 @@ function DataTable<T>({
     <div className={cn('space-y-3', className)}>
       {searchable && (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={searchPlaceholder}
-            className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            aria-label={searchPlaceholder}
+            className="h-11 w-full rounded-full border border-border bg-elevated pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="atlas-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className={cn(
-              'border-b border-border bg-muted',
+              'border-b border-border bg-elevated',
               stickyHeader && 'sticky top-0 z-10',
             )}>
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    'px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground',
+                    'whitespace-nowrap px-4 py-3 text-left text-[12px] font-medium text-muted-foreground',
                     col.sortable && 'cursor-pointer select-none hover:text-foreground',
                     col.headerClassName,
                   )}
@@ -144,7 +145,7 @@ function DataTable<T>({
                 <tr
                   key={keyExtractor(item)}
                   className={cn(
-                    'border-b border-border transition-colors last:border-0',
+                    'border-b border-border/60 transition-colors last:border-0 hover:bg-surface-hover',
                     onRowClick && 'cursor-pointer hover:bg-surface-hover',
                     rowClassName?.(item),
                   )}

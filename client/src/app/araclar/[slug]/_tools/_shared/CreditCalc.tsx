@@ -154,12 +154,12 @@ export function CreditCalc({ bsmv = 0.15, kkdf = 0.15, maxTerm = 360, title, des
                   {schedule.map((r) => (
                     <tr key={r.month} className="border-b border-border last:border-0">
                       <td className="px-3 py-1.5">{r.month}</td>
-                      <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.totalPayment)}</td>
-                      <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.principal)}</td>
-                      <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.interest)}</td>
-                      {kkdf > 0 && <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.kkdf)}</td>}
-                      {bsmv > 0 && <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.bsmv)}</td>}
-                      <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.balance)}</td>
+                      <td className="px-3 py-1.5 text-right num">{fmtTL(r.totalPayment)}</td>
+                      <td className="px-3 py-1.5 text-right num">{fmtTL(r.principal)}</td>
+                      <td className="px-3 py-1.5 text-right num">{fmtTL(r.interest)}</td>
+                      {kkdf > 0 && <td className="px-3 py-1.5 text-right num">{fmtTL(r.kkdf)}</td>}
+                      {bsmv > 0 && <td className="px-3 py-1.5 text-right num">{fmtTL(r.bsmv)}</td>}
+                      <td className="px-3 py-1.5 text-right num">{fmtTL(r.balance)}</td>
                     </tr>
                   ))}
                 </tbody>

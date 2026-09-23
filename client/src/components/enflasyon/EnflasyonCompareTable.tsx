@@ -82,16 +82,16 @@ export function EnflasyonCompareTable({ tufe, ufe, months = 12 }: Props) {
               className={i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}
             >
               <td className="px-3 py-2 font-medium text-foreground">{formatPeriodTr(row.period)}</td>
-              <td className="px-3 py-2 text-right font-mono tabular-nums border-l border-border">
+              <td className="px-3 py-2 text-right num border-l border-border">
                 {formatPercentTr(row.tufe?.yearlyChange ?? null)}
               </td>
-              <td className="px-3 py-2 text-right font-mono tabular-nums">
+              <td className="px-3 py-2 text-right num">
                 {formatPercentTr(row.tufe?.monthlyChange ?? null)}
               </td>
-              <td className="px-3 py-2 text-right font-mono tabular-nums border-l border-border">
+              <td className="px-3 py-2 text-right num border-l border-border">
                 {formatPercentTr(row.ufe?.yiUfeYearlyChange ?? null)}
               </td>
-              <td className="px-3 py-2 text-right font-mono tabular-nums">
+              <td className="px-3 py-2 text-right num">
                 {formatPercentTr(row.ufe?.yiUfeMonthlyChange ?? null)}
               </td>
             </tr>

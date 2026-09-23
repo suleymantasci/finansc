@@ -187,9 +187,9 @@ export const GOLD_META: Record<string, GoldTypeMeta> = {
 
   bilezik: {
     slug: 'bilezik',
-    name: 'Altın Bilezik',
+    name: '22 Ayar Bilezik',
     shortName: 'Bilezik',
-    purity: '14 veya 22 ayar',
+    purity: '22 ayar (916 milyem)',
     description:
       'Altın bilezik, çeyrek, yarım ve tam bilezik olarak farklı gramajlarda üretilir. 14 ayar ve 22 ayar seçenekleri mevcuttur. Düğünlerde ve özel günlerde yaygın olarak hediye edilir.',
     faq: [
@@ -220,6 +220,137 @@ export const GOLD_META: Record<string, GoldTypeMeta> = {
     ],
     relatedSlugs: ['gram-altin', 'ons-altin'],
   },
+
+  'has-altin': {
+    slug: 'has-altin',
+    name: 'Has Altın',
+    shortName: 'Has',
+    purity: '24 ayar (995–999,9 milyem)',
+    weight: '1 gram',
+    description:
+      'Has altın, 24 ayar saflıktaki altına verilen addır ve kuyumcu piyasasında gram bazında işlem görür. İçinde alaşım metali bulunmadığı için fiyatı doğrudan uluslararası altın fiyatı ve USD/TRY kuruyla hareket eder. Ziynet ve bilezik gibi işlenmiş ürünlerin fiyatları da has altın fiyatı referans alınarak belirlenir.',
+    faq: [
+      {
+        q: 'Has altın ile gram altın aynı şey mi?',
+        a: 'İkisi de 24 ayar saf altındır. Gram altın genellikle paketli külçe veya kart altın olarak satılırken, has altın ifadesi kuyumcu piyasasında saflık derecesini belirtmek için kullanılır. Fiyatları birbirine çok yakındır.',
+      },
+      {
+        q: 'Has altın kaç ayardır?',
+        a: 'Has altın 24 ayardır; milyem olarak 995 ile 999,9 arasında saflığa karşılık gelir.',
+      },
+    ],
+    relatedSlugs: ['gram-altin', 'bilezik', 'ons-altin'],
+  },
+
+  'besli-altin': {
+    slug: 'besli-altin',
+    name: 'Beşli Altın',
+    shortName: 'Beşli',
+    purity: '22 ayar',
+    weight: 'yaklaşık 36 gram',
+    description:
+      'Beşli altın, beş adet tam (lira) altın ağırlığına denk gelen 22 ayar ziynet altınıdır. Bir Cumhuriyet altını yaklaşık 7,216 gram olduğundan beşli altın yaklaşık 36 gram ağırlığındadır. Düğün ve özel günlerde takı olarak tercih edilir.',
+    faq: [
+      {
+        q: 'Beşli altın kaç gramdır?',
+        a: 'Beşli altın, beş tam altına denk gelir ve yaklaşık 36 gram ağırlığındadır (5 × 7,216 gram).',
+      },
+      {
+        q: 'Beşli altın mı, beş adet tam altın mı?',
+        a: 'Altın içeriği yakın olsa da beşli altın tek parça takı olarak basıldığı için işçilik ve alış-satış farkı farklı olabilir. Güncel alış ve satış fiyatlarını bu sayfada karşılaştırabilirsiniz.',
+      },
+    ],
+    relatedSlugs: ['ikibucuk-altin', 'cumhuriyet-altini', 'tam-altin'],
+  },
+
+  'ikibucuk-altin': {
+    slug: 'ikibucuk-altin',
+    name: 'İkibuçuk Altın',
+    shortName: 'İkibuçuk',
+    purity: '22 ayar',
+    weight: 'yaklaşık 18 gram',
+    description:
+      'İkibuçuk (2,5 luk) altın, iki buçuk tam altın ağırlığına denk gelen 22 ayar ziynet altınıdır. Yaklaşık 18 gram ağırlığındadır ve beşli altının yarısı kadardır.',
+    faq: [
+      {
+        q: 'İkibuçuk altın kaç gramdır?',
+        a: 'İkibuçuk altın, 2,5 tam altına denk gelir ve yaklaşık 18 gram ağırlığındadır (2,5 × 7,216 gram).',
+      },
+    ],
+    relatedSlugs: ['besli-altin', 'gremse-altin', 'cumhuriyet-altini'],
+  },
+
+  'resat-altin': {
+    slug: 'resat-altin',
+    name: 'Reşat Altın',
+    shortName: 'Reşat',
+    purity: '22 ayar',
+    weight: 'yaklaşık 7,2 gram',
+    description:
+      'Reşat altın, Osmanlı padişahı V. Mehmet Reşat dönemindeki sikke modeline göre basılan 22 ayar lira altınıdır. Tam altın ağırlığındadır ve süslü kenar işlemesiyle takı olarak da kullanılır.',
+    faq: [
+      {
+        q: 'Reşat altın ile Cumhuriyet altını arasındaki fark nedir?',
+        a: 'İkisi de 22 ayar ve tam altın ağırlığındadır. Fark basım modelinden gelir: Reşat altın Osmanlı sikke modeline, Cumhuriyet altını Cumhuriyet dönemi sikke modeline göre basılır. İşçilik ve talep farkı nedeniyle fiyatları ayrışabilir.',
+      },
+    ],
+    relatedSlugs: ['hamit-altin', 'cumhuriyet-altini', 'ata-altin'],
+  },
+
+  'hamit-altin': {
+    slug: 'hamit-altin',
+    name: 'Hamit Altın',
+    shortName: 'Hamit',
+    purity: '22 ayar',
+    weight: 'yaklaşık 7,2 gram',
+    description:
+      'Hamit altın, Osmanlı padişahı II. Abdülhamit dönemindeki sikke modeline göre basılan 22 ayar lira altınıdır. Tam altın ağırlığındadır; koleksiyon ve yatırım amaçlı alınıp satılır.',
+    faq: [
+      {
+        q: 'Hamit altın kaç ayardır?',
+        a: 'Hamit altın 22 ayardır ve tam altın ağırlığındadır (yaklaşık 7,2 gram).',
+      },
+    ],
+    relatedSlugs: ['resat-altin', 'cumhuriyet-altini', 'ata-altin'],
+  },
+
+  '18-ayar-altin': {
+    slug: '18-ayar-altin',
+    name: '18 Ayar Altın',
+    shortName: '18 Ayar',
+    purity: '18 ayar (750 milyem)',
+    weight: '1 gram',
+    description:
+      '18 ayar altın, ağırlığının %75\'i saf altın (750 milyem), kalanı alaşım metallerinden oluşan altındır. Pırlanta ve mücevher üretiminde yaygın olarak kullanılır. Fiyatı gram bazında verilir.',
+    faq: [
+      {
+        q: '18 ayar altın yüzde kaç saf altındır?',
+        a: '18 ayar altın %75 saf altın içerir (750 milyem).',
+      },
+    ],
+    relatedSlugs: ['14-ayar-altin', 'bilezik', 'gram-altin'],
+  },
+
+  '14-ayar-altin': {
+    slug: '14-ayar-altin',
+    name: '14 Ayar Altın',
+    shortName: '14 Ayar',
+    purity: '14 ayar (585 milyem)',
+    weight: '1 gram',
+    description:
+      '14 ayar altın, ağırlığının %58,5\'i saf altın (585 milyem) olan altındır. Sert ve dayanıklı olduğu için günlük takılarda sık kullanılır. Fiyatı gram bazında verilir.',
+    faq: [
+      {
+        q: '14 ayar altın yüzde kaç saf altındır?',
+        a: '14 ayar altın %58,5 saf altın içerir (585 milyem).',
+      },
+      {
+        q: '14 ayar altın yatırım için uygun mu?',
+        a: 'Takı olarak üretildiği için işçilik payı içerir ve alış-satış farkı yüksektir. Yatırım amacıyla genellikle gram altın veya 24 ayar ürünler tercih edilir.',
+      },
+    ],
+    relatedSlugs: ['18-ayar-altin', 'bilezik', 'gram-altin'],
+  },
 };
 
 // altinkaynak/Harem goldType → slug eşlemesi
@@ -238,8 +369,14 @@ export function goldTypeToSlug(goldType: string): string | null {
     'Ons Altın': 'ons-altin',
     'Gremse Altın': 'gremse-altin',
     'Eski Gremse Altın': 'gremse-altin',
-    '14 Ayar Bilezik': 'bilezik',
+    '14 Ayar Bilezik': '14-ayar-altin',
+    '18 Ayar Bilezik': '18-ayar-altin',
     '22 Ayar Bilezik': 'bilezik',
+    'Gram Has Altın': 'has-altin',
+    'Beşli Altın': 'besli-altin',
+    'İkibuçuk Altın': 'ikibucuk-altin',
+    'Reşat Altın': 'resat-altin',
+    'Hamit Altın': 'hamit-altin',
     'Gram Gümüş': 'gumus',
   };
   return map[goldType] ?? null;

@@ -27,8 +27,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors',
-            'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background',
+            'flex h-11 w-full rounded-lg border border-border bg-elevated px-3.5 py-2 text-[15px] text-foreground placeholder:text-muted-foreground/80 transition-colors',
+            'hover:border-border-strong focus:border-primary focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-primary/20',
             'disabled:cursor-not-allowed disabled:opacity-50',
             error && 'border-destructive focus:ring-destructive',
             className,
@@ -36,7 +36,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p className="text-xs text-destructive">{error}</p>
+          <p className="text-xs text-destructive" role="alert">{error}</p>
         )}
         {hint && !error && (
           <p className="text-xs text-muted-foreground">{hint}</p>

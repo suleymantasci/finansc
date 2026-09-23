@@ -17,7 +17,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   danger:
     'bg-destructive/10 text-destructive border-destructive/20',
   warning:
-    'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    'bg-primary/10 text-primary border-primary/25',
   outline:
     'bg-transparent text-muted-foreground border-border',
   secondary:
@@ -28,7 +28,7 @@ function Badge({ children, variant = 'default', className }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium tracking-wide',
+        'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium',
         variantStyles[variant],
         className,
       )}

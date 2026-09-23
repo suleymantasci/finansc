@@ -6,12 +6,17 @@ import {
   isKnownStockSymbol,
   getKnownStockSymbols,
 } from '@/lib/seo-data/whitelist';
-import { LivePriceTicker } from './LivePriceTicker';
+import { instrumentKey } from '@/lib/history';
+import { DetailHeader } from '@/components/instrument/DetailHeader';
+import { LiveQuote } from '@/components/instrument/LiveQuote';
+import { Converter } from '@/components/instrument/Converter';
+import { RelatedQuotes } from '@/components/instrument/RelatedQuotes';
+import { AboutBlock } from '@/components/instrument/AboutBlock';
+import { FaqBlock } from '@/components/instrument/FaqBlock';
+import { FavoriteButton } from '@/components/instrument/FavoriteButton';
 import { PriceChart } from '@/components/charts/PriceChart';
 import { AdBanner } from '@/components/ads/AdBanner';
-import { FAQSchema } from '@/components/seo/FAQSchema';
 import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
-import Link from 'next/link';
 
 interface Props {
   params: Promise<{ sembol: string }>;
@@ -167,140 +172,78 @@ export default async function StockPage({ params }: Props) {
         isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
         speakable: {
           '@type': 'SpeakableSpecification',
-          cssSelector: ['#stock-summary', 'h1'],
+          cssSelector: ['h1', '#stock-about'],
         },
       },
     ],
   };
 
-  // Citable snippet (GEO için) — 50 kelimelik özet
-  // Not: BIST verileri 15dk gecikmelidir (BISTECH Veri Dağıtım Politikası).
-  // "Canlı" yerine "güncel" kullanılır, uyarı DataDisclaimer ile verilir.
-  const summary = `${meta.name} (${meta.symbol}) hisse senedi Borsa İstanbul'da ${meta.sector === 'BIST' ? '' : meta.sector + ' sektöründe '}işlem görmektedir. Güncel alış, satış, günlük değişim, hacim ve gün içi en yüksek/düşük fiyat verileri yukarıda anlık olarak güncellenmektedir.`;
-
-  // Aynı sektördeki diğer hisseler (related links). Fallback meta için relatedSlugs zaten set edilmiş;
-  // yine de ?? [] ile TS strict mode uyumu (StockMeta.relatedSlugs opsiyonel).
-  const isFallback = !STOCK_META[symbol];
-  const related = isFallback
-    ? (meta.relatedSlugs ?? []).map((s) => STOCK_META[s]).filter(Boolean).slice(0, 6)
-    : Object.values(STOCK_META)
-        .filter((s) => s.sector === meta.sector && s.symbol !== meta.symbol)
-        .slice(0, 6);
+  const related = (meta.relatedSlugs ?? []).filter((r) => r !== meta.symbol).slice(0, 6);
+  const hasName = meta.name !== meta.symbol;
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      <DetailHeader
+        category="borsa"
+        crumbs={[
+          { label: 'Ana Sayfa', href: '/' },
+          { label: 'Borsa', href: '/borsa' },
+          { label: 'Hisseler', href: '/borsa/hisseler' },
+          { label: meta.symbol },
+        ]}
+        eyebrow={`Borsa İstanbul · ${meta.sector}`}
+        title={hasName ? `${meta.name} (${meta.symbol})` : `${meta.symbol} hisse senedi`}
+        subtitle={<>Güncel {meta.symbol} hisse fiyatı, gün içi aralık, işlem hacmi ve geçmiş grafik.</>}
+        emblem={<span className="num text-base font-semibold">{meta.symbol.slice(0, 4)}</span>}
+        tagline="Piyasalar hareket eder, siz önde kalın."
+        actions={<FavoriteButton type="stock" symbol={meta.symbol} label={`${meta.symbol} hissesi`} />}
       />
-      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground mb-4">
-          <ol className="flex flex-wrap items-center gap-1.5">
-            <li><Link href="/" className="hover:text-primary">Ana Sayfa</Link></li>
-            <li aria-hidden>/</li>
-            <li><Link href="/borsa" className="hover:text-primary">Borsa</Link></li>
-            <li aria-hidden>/</li>
-            <li><Link href="/borsa/hisseler" className="hover:text-primary">Hisseler</Link></li>
-            <li aria-hidden>/</li>
-            <li className="text-foreground font-medium">{meta.name}</li>
-          </ol>
-        </nav>
 
-        <DataDisclaimer variant="borsa" />
-
-        <header className="mb-6">
-          <h1 className="text-2xl lg:text-3xl font-bold">
-            {meta.name} ({meta.symbol}) Hisse Senedi
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Sektör: <span className="text-foreground font-medium">{meta.sector}</span>
-          </p>
-        </header>
-
-        {/* Citable snippet — AI motorları için */}
-        <p
-          id="stock-summary"
-          className="mb-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 text-sm leading-relaxed"
-        >
-          {summary}
-        </p>
-
-        <LivePriceTicker symbol={meta.symbol} />
-
-        <PriceChart
-          instrument={`bist:${meta.symbol}`}
-          defaultRange="1y"
-          className="mt-6"
-        />
-
-        <AdBanner page={`borsa-hisse-${meta.symbol}`} position="in-article" className="my-8" />
-
-        <section className="prose prose-slate dark:prose-invert max-w-none mt-8">
-          <h2 className="text-xl font-semibold mb-3">{meta.name} Hakkında</h2>
-          <p className="text-muted-foreground leading-relaxed">{meta.description}</p>
-
-          <h2 className="text-xl font-semibold mt-8 mb-3">{meta.symbol} Hissesi Sıkça Sorulan Sorular</h2>
-          <div className="space-y-4 not-prose">
-            {[
-              {
-                q: `${meta.name} hissesi hangi endekste?`,
-                a: `${meta.name} (${meta.symbol}) hissesi Borsa İstanbul'da ${meta.sector} sektöründe işlem görmektedir. Detaylı endeks bilgisi için BIST 30, BIST 50 ve BIST 100 listelerine bakılabilir.`,
-              },
-              {
-                q: `${meta.symbol} hissesi nasıl alınır?`,
-                a: `${meta.symbol} hissesi almak için aracı kurum veya banka yatırım hesabı açmanız, ardından ilgili hisseyi BIST'te alım emriyle almanız gerekir.`,
-              },
-              {
-                q: `${meta.name} hissesi temettü veriyor mu?`,
-                a: `Temettü dağıtımı şirketin yönetim kurulu kararına bağlıdır. Güncel temettü bilgisi için KAP (Kamuyu Aydınlatma Platformu) açıklamalarını inceleyin.`,
-              },
-            ].map((faq, i) => (
-              <details key={i} className="group rounded-lg border border-border bg-card p-4">
-                <summary className="cursor-pointer font-medium list-none flex justify-between items-center">
-                  {faq.q}
-                  <span className="text-muted-foreground group-open:rotate-180 transition-transform">▾</span>
-                </summary>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        <FAQSchema
-          faqs={[
-            { q: `${meta.name} hissesi hangi endekste?`, a: `${meta.name} (${meta.symbol}) BIST'te ${meta.sector} sektöründe işlem görür.` },
-            { q: `${meta.symbol} hissesi nasıl alınır?`, a: 'Aracı kurum veya banka yatırım hesabı ile BIST\'te alım emri verilir.' },
-            { q: `${meta.name} temettü veriyor mu?`, a: 'Temettü dağıtımı şirket kararına bağlıdır, KAP açıklamalarını kontrol edin.' },
-          ]}
-        />
-
-        {related.length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-lg font-semibold mb-4">
-              {meta.sector} Sektöründeki Diğer Hisseler
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {related.map((r) => (
-                <Link
-                  key={r.symbol}
-                  href={`/borsa/hisseler/${r.symbol}`}
-                  className="rounded-lg border border-border bg-card p-3 hover:border-primary/30 transition-colors"
-                >
-                  <div className="font-semibold text-sm">{r.symbol}</div>
-                  <div className="text-xs text-muted-foreground truncate">{r.name}</div>
-                </Link>
-              ))}
-            </div>
+      <div className="mx-auto grid max-w-[1440px] gap-6 px-4 py-8 pb-24 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 md:pb-12">
+        <div className="min-w-0 space-y-6">
+          <section aria-label={`${meta.symbol} anlık fiyat`}>
+            <LiveQuote spec={{ kind: 'stock', symbol: meta.symbol }} label={`${meta.symbol} hissesi`} />
           </section>
-        )}
 
-        <p className="mt-8 text-xs text-muted-foreground italic">
-          Yatırım tavsiyesi değildir. Veriler bilgi amaçlıdır, işlem öncesi kaynak sitelerden teyit ediniz.
-        </p>
+          <PriceChart instrument={instrumentKey.stock(meta.symbol)} defaultRange="1y" height={360} />
+
+          <AdBanner page={`hisse-${meta.symbol}`} position="in-article" />
+
+          <AboutBlock
+            id="stock-about"
+            title={hasName ? `${meta.name} hakkında` : `${meta.symbol} hakkında`}
+            facts={[
+              { label: 'Sembol', value: meta.symbol },
+              { label: 'Sektör', value: meta.sector },
+              { label: 'Borsa', value: 'Borsa İstanbul (BIST)' },
+              { label: 'Veri', value: '15 dk gecikmeli' },
+            ]}
+          >
+            <p>{meta.description}</p>
+          </AboutBlock>
+
+          <FaqBlock title={`${meta.symbol} hakkında sık sorulanlar`} faqs={meta.faq ?? []} />
+          <DataDisclaimer variant="borsa" />
+        </div>
+
+        <aside className="space-y-6">
+          <Converter title={`${meta.symbol} hesaplayıcı`} unitLabel="Lot (adet)" moneyLabel="Türk lirası" spec={{ kind: 'stock', symbol: meta.symbol }} />
+          <RelatedQuotes
+            title="İlgili hisseler"
+            moreHref="/borsa/hisseler"
+            moreLabel="Tüm hisseler"
+            items={related.map((r) => ({ label: r, sub: STOCK_META[r]?.name, href: `/borsa/hisseler/${r}`, spec: { kind: 'stock' as const, symbol: r } }))}
+          />
+          <RelatedQuotes
+            title="Endeksler"
+            moreHref="/borsa/endeksler"
+            moreLabel="Tüm endeksler"
+            items={['XU100', 'XU030', 'XBANK'].map((x) => ({ label: x === 'XU100' ? 'BIST 100' : x === 'XU030' ? 'BIST 30' : 'BIST Banka', sub: x, href: `/borsa/endeksler/${x}`, spec: { kind: 'index' as const, symbol: x } }))}
+          />
+        </aside>
       </div>
     </>
   );
 }
-
-

@@ -87,13 +87,13 @@ function HeroCard({ title, subtitle, href, accent, data, renderValue }: CardProp
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div>
           <div className="text-xs uppercase tracking-wide text-muted-foreground">Yıllık</div>
-          <div className={cn('mt-1 font-mono text-3xl font-bold tabular-nums', upClass)}>
+          <div className={cn('mt-1 num text-3xl font-bold tabular-nums', upClass)}>
             {formatPercentTr(latest.yearly)}
           </div>
         </div>
         <div>
           <div className="text-xs uppercase tracking-wide text-muted-foreground">Aylık</div>
-          <div className="mt-1 font-mono text-3xl font-bold tabular-nums text-foreground">
+          <div className="mt-1 num text-3xl font-bold tabular-nums text-foreground">
             {formatPercentTr(latest.monthly)}
           </div>
         </div>

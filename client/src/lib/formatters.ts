@@ -51,8 +51,11 @@ export function formatDecimal4(value: number): string {
   return DECIMAL4.format(value);
 }
 
+/** Türkçe yazım: işaret yüzde sembolünden önce → "+%1,23", "-%0,45" */
 export function formatPercent(value: number): string {
-  return `%${PERCENT.format(value)}`;
+  const abs = PERCENT.format(Math.abs(value)).replace(/^[+-]/, '');
+  const sign = value > 0 ? '+' : value < 0 ? '-' : '';
+  return `${sign}%${abs}`;
 }
 
 export function formatVolume(value: number): string {

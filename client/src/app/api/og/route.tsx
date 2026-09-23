@@ -26,7 +26,7 @@ export const revalidate = 86400; // 24 saat (saniye)
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const type = (searchParams.get('type') || 'default') as
-    | 'hisse' | 'endeks' | 'doviz' | 'altin' | 'blog' | 'arac' | 'default';
+    | 'hisse' | 'endeks' | 'doviz' | 'altin' | 'emtia' | 'blog' | 'arac' | 'default';
   const title = searchParams.get('title') || SITE_NAME;
   const subtitle = searchParams.get('subtitle') || '';
   const category = (searchParams.get('category') || '').toUpperCase();
@@ -34,13 +34,15 @@ export async function GET(req: Request) {
 
   // Type'a göre kategori badge rengi
   const badgeColors: Record<string, string> = {
-    hisse: '#10b981',     // emerald-500 (borsa yeşil)
-    endeks: '#10b981',
-    doviz: '#3b82f6',     // blue-500
-    altin: '#f59e0b',     // amber-500 (altın)
-    blog: '#8b5cf6',      // violet-500
-    arac: '#06b6d4',      // cyan-500
-    default: '#f59e0b',
+    // Marka paleti: altın vurgu, borsa için yükseliş yeşili
+    hisse: '#22c38e',
+    endeks: '#22c38e',
+    doviz: '#d4a94f',
+    altin: '#d4a94f',
+    emtia: '#d4a94f',
+    blog: '#d4a94f',
+    arac: '#d4a94f',
+    default: '#d4a94f',
   };
   const badgeColor = badgeColors[type] || badgeColors.default;
 
@@ -54,9 +56,9 @@ export async function GET(req: Request) {
           width: '100%',
           height: '100%',
           display: 'flex',
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          background: 'linear-gradient(135deg, #0a0b0d 0%, #111317 100%)',
           fontFamily: 'system-ui, -apple-system, sans-serif',
-          color: '#f1f5f9',
+          color: '#ece8df',
           position: 'relative',
         }}
       >
@@ -71,7 +73,7 @@ export async function GET(req: Request) {
             display: 'flex',
             flexDirection: 'column',
             padding: '60px 50px',
-            background: 'linear-gradient(180deg, #0f172a 0%, #0a1428 100%)',
+            background: 'linear-gradient(180deg, #0a0b0d 0%, #0a0b0d 100%)',
           }}
         >
           {/* Top — brand + category badge */}
@@ -82,7 +84,7 @@ export async function GET(req: Request) {
                 width: 14,
                 height: 14,
                 borderRadius: 7,
-                background: '#f59e0b',
+                background: '#d4a94f',
                 marginRight: 4,
               }}
             />
@@ -90,7 +92,7 @@ export async function GET(req: Request) {
               style={{
                 fontSize: 26,
                 fontWeight: 800,
-                color: '#f1f5f9',
+                color: '#ece8df',
                 letterSpacing: -0.5,
                 marginRight: 20,
               }}
@@ -104,7 +106,7 @@ export async function GET(req: Request) {
                   alignItems: 'center',
                   gap: 6,
                   background: badgeColor,
-                  color: '#0f172a',
+                  color: '#0a0b0d',
                   padding: '6px 14px',
                   borderRadius: 999,
                   fontSize: 14,
@@ -117,7 +119,7 @@ export async function GET(req: Request) {
                     width: 6,
                     height: 6,
                     borderRadius: 3,
-                    background: '#0f172a',
+                    background: '#0a0b0d',
                   }}
                 />
                 {category}
@@ -134,7 +136,7 @@ export async function GET(req: Request) {
               display: 'flex',
               fontSize: title.length > 30 ? 44 : 56,
               fontWeight: 800,
-              color: '#f1f5f9',
+              color: '#ece8df',
               lineHeight: 1.1,
               letterSpacing: -1,
               marginBottom: 16,
@@ -150,7 +152,7 @@ export async function GET(req: Request) {
               style={{
                 display: 'flex',
                 fontSize: 22,
-                color: '#94a3b8',
+                color: '#9a958b',
                 lineHeight: 1.3,
                 maxWidth: 560,
                 marginBottom: 8,
@@ -177,12 +179,12 @@ export async function GET(req: Request) {
               style={{
                 width: 4,
                 height: 18,
-                background: '#f59e0b',
+                background: '#d4a94f',
                 borderRadius: 2,
                 marginRight: 6,
               }}
             />
-            <div style={{ display: 'flex', color: '#f1f5f9', fontWeight: 600 }}>
+            <div style={{ display: 'flex', color: '#ece8df', fontWeight: 600 }}>
               {url}
             </div>
           </div>
@@ -199,7 +201,7 @@ export async function GET(req: Request) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+            background: 'linear-gradient(135deg, #111317 0%, #22252b 100%)',
             borderLeft: '1px solid rgba(245, 158, 11, 0.2)',
           }}
         >
@@ -214,7 +216,7 @@ export async function GET(req: Request) {
             left: 0,
             width: '100%',
             height: 4,
-            background: 'linear-gradient(90deg, #f59e0b 0%, transparent 60%)',
+            background: 'linear-gradient(90deg, #d4a94f 0%, transparent 60%)',
             display: 'flex',
           }}
         />
@@ -225,7 +227,7 @@ export async function GET(req: Request) {
             right: 0,
             width: '40%',
             height: 4,
-            background: 'linear-gradient(90deg, transparent 0%, #f59e0b 100%)',
+            background: 'linear-gradient(90deg, transparent 0%, #d4a94f 100%)',
             display: 'flex',
           }}
         />
@@ -290,7 +292,7 @@ function getVisualForType(type: string, title: string) {
               width: 200,
               height: 200,
               borderRadius: 100,
-              background: '#3b82f6',
+              background: '#d4a94f',
               opacity: 0.85,
               display: 'flex',
             }}
@@ -302,13 +304,14 @@ function getVisualForType(type: string, title: string) {
               width: 180,
               height: 180,
               borderRadius: 90,
-              background: '#f59e0b',
+              background: '#d4a94f',
               opacity: 0.85,
               display: 'flex',
             }}
           />
         </div>
       );
+    case 'emtia':
     case 'altin':
       return (
         // Altın külçe (diamond/hex shape)
@@ -326,7 +329,7 @@ function getVisualForType(type: string, title: string) {
             style={{
               width: 220,
               height: 220,
-              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
+              background: 'linear-gradient(135deg, #f0d49a 0%, #d4a94f 50%, #d97706 100%)',
               transform: 'rotate(45deg)',
               borderRadius: 20,
               boxShadow: '0 20px 60px rgba(245, 158, 11, 0.4)',
@@ -349,7 +352,7 @@ function getVisualForType(type: string, title: string) {
             style={{
               width: 140,
               height: 180,
-              background: '#f1f5f9',
+              background: '#ece8df',
               borderRadius: 4,
               transform: 'rotate(-6deg)',
               boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
@@ -379,7 +382,7 @@ function getVisualForType(type: string, title: string) {
             gap: 12,
             width: 200,
             height: 240,
-            background: '#1e293b',
+            background: '#111317',
             borderRadius: 16,
             padding: 16,
             boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
@@ -389,7 +392,7 @@ function getVisualForType(type: string, title: string) {
             style={{
               width: '100%',
               height: 40,
-              background: '#0f172a',
+              background: '#0a0b0d',
               borderRadius: 4,
               display: 'flex',
             }}
@@ -402,7 +405,7 @@ function getVisualForType(type: string, title: string) {
                   style={{
                     width: 36,
                     height: 36,
-                    background: row === 3 ? '#f59e0b' : '#334155',
+                    background: row === 3 ? '#d4a94f' : '#22252b',
                     borderRadius: 4,
                     display: 'flex',
                   }}
@@ -423,7 +426,7 @@ function getVisualForType(type: string, title: string) {
             width: 200,
             height: 200,
             borderRadius: 100,
-            background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
+            background: 'linear-gradient(135deg, #f0d49a 0%, #d4a94f 50%, #d97706 100%)',
             boxShadow: '0 30px 80px rgba(245, 158, 11, 0.4)',
           }}
         />

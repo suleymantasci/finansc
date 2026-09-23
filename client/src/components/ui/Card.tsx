@@ -11,7 +11,7 @@ interface CardProps {
 const paddingStyles = {
   none: '',
   sm: 'p-3',
-  md: 'p-4 lg:p-5',
+  md: 'p-5 lg:p-6',
   lg: 'p-6 lg:p-8',
 };
 
@@ -19,8 +19,8 @@ function Card({ children, className, hover = false, padding = 'md' }: CardProps)
   return (
     <div
       className={cn(
-        'rounded-xl border border-border bg-card text-card-foreground',
-        hover && 'transition-colors hover:border-primary/30 hover:bg-surface-hover',
+        'atlas-card text-card-foreground',
+        hover && 'atlas-card-link',
         paddingStyles[padding],
         className,
       )}
@@ -40,7 +40,7 @@ function CardHeader({ children, className }: { children: ReactNode; className?: 
 
 function CardTitle({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <h3 className={cn('text-lg font-semibold leading-none tracking-tight', className)}>
+    <h3 className={cn('font-display text-xl leading-tight text-foreground', className)}>
       {children}
     </h3>
   );

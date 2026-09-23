@@ -138,7 +138,7 @@ function BlogForm({ post, onSaved }: { post: BlogPost | null; onSaved: () => voi
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={8}
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm num"
         />
       </div>
       <div>

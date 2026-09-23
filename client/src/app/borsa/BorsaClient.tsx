@@ -290,14 +290,14 @@ export function BorsaClient() {
                             {s.symbol}
                           </Link>
                         </td>
-                        <td className="px-2 py-3 text-right font-mono tabular-nums whitespace-nowrap">{formatDecimal(s.lastPrice)}</td>
-                        <td className="px-2 py-3 text-right font-mono tabular-nums whitespace-nowrap">{formatDecimal(s.buyPrice)}</td>
-                        <td className="px-2 py-3 text-right font-mono tabular-nums whitespace-nowrap">{formatDecimal(s.sellPrice)}</td>
-                        <td className="px-2 py-3 text-right font-mono tabular-nums text-muted-foreground whitespace-nowrap">{formatDecimal(s.low)}</td>
-                        <td className="px-2 py-3 text-right font-mono tabular-nums text-muted-foreground whitespace-nowrap">{formatDecimal(s.high)}</td>
+                        <td className="px-2 py-3 text-right num whitespace-nowrap">{formatDecimal(s.lastPrice)}</td>
+                        <td className="px-2 py-3 text-right num whitespace-nowrap">{formatDecimal(s.buyPrice)}</td>
+                        <td className="px-2 py-3 text-right num whitespace-nowrap">{formatDecimal(s.sellPrice)}</td>
+                        <td className="px-2 py-3 text-right num text-muted-foreground whitespace-nowrap">{formatDecimal(s.low)}</td>
+                        <td className="px-2 py-3 text-right num text-muted-foreground whitespace-nowrap">{formatDecimal(s.high)}</td>
                         <td className="px-2 py-3 text-right"><PriceChange value={s.changePercent} size="sm" /></td>
-                        <td className="px-2 py-3 text-right font-mono tabular-nums text-muted-foreground whitespace-nowrap">{formatInteger(s.volume)}</td>
-                        <td className="px-2 py-3 text-right font-mono tabular-nums text-muted-foreground whitespace-nowrap">{formatTL(s.turnover)}</td>
+                        <td className="px-2 py-3 text-right num text-muted-foreground whitespace-nowrap">{formatInteger(s.volume)}</td>
+                        <td className="px-2 py-3 text-right num text-muted-foreground whitespace-nowrap">{formatTL(s.turnover)}</td>
                         <td className="px-2 py-3 text-right text-xs text-muted-foreground whitespace-nowrap">{s.time ?? '—'}</td>
                       </tr>
                     ))
@@ -356,10 +356,10 @@ export function BorsaClient() {
                           {idx.symbol}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal(idx.value)}</td>
+                      <td className="px-4 py-3 text-right num">{formatDecimal(idx.value)}</td>
                       <td className="px-4 py-3 text-right"><PriceChange value={idx.changePercent} size="sm" /></td>
-                      <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(idx.low)}</td>
-                      <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">{formatDecimal(idx.high)}</td>
+                      <td className="px-4 py-3 text-right num text-muted-foreground">{formatDecimal(idx.low)}</td>
+                      <td className="px-4 py-3 text-right num text-muted-foreground">{formatDecimal(idx.high)}</td>
                       <td className="px-4 py-3 text-right text-xs text-muted-foreground">{idx.time}</td>
                     </tr>
                   ))

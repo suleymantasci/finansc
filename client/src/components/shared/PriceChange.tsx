@@ -29,7 +29,7 @@ function PriceChange({ value, size = 'md', showIcon = true, className }: PriceCh
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-0.5 font-mono font-semibold tabular-nums',
+        'num inline-flex items-center gap-1 font-medium',
         sizeStyles[size],
         isUp && 'text-up',
         isDown && 'text-down',

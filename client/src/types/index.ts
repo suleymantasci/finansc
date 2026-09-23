@@ -115,10 +115,12 @@ export interface Tool {
 }
 
 // ── Favorite ─────────────────────────────────────
+export type FavoriteType = 'gold' | 'stock' | 'index' | 'currency' | 'commodity' | 'tool';
+
 export interface Favorite {
   id: string;
-  userId: string;
-  type: 'stock' | 'gold';
+  type: FavoriteType;
+  /** Enstrüman anahtarı: altın/döviz/emtia/araç için slug, hisse/endeks için sembol */
   symbol: string;
   createdAt: string;
 }

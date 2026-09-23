@@ -234,8 +234,8 @@ export function DovizClient() {
                           return c.name;
                         })()}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal4(c.buyPrice)}</td>
-                      <td className="px-4 py-3 text-right font-mono tabular-nums">{formatDecimal4(c.sellPrice)}</td>
+                      <td className="px-4 py-3 text-right num">{formatDecimal4(c.buyPrice)}</td>
+                      <td className="px-4 py-3 text-right num">{formatDecimal4(c.sellPrice)}</td>
                       <td className="px-4 py-3 text-right"><PriceChange value={c.changePercent} size="sm" /></td>
                       <td className="px-4 py-3 text-right text-xs text-muted-foreground">
                         {c.time}

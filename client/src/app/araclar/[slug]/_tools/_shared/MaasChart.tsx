@@ -123,7 +123,7 @@ function LegendRow({ color, label, amount, percent }: { color: string; label: st
     <div className="flex items-center gap-2 text-xs">
       <div className="h-3 w-3 rounded-sm shrink-0" style={{ backgroundColor: color }} />
       <span className="flex-1 truncate text-muted-foreground">{label}</span>
-      <span className="font-mono tabular-nums font-semibold">{fmtTL(amount, 0)}</span>
+      <span className="num font-semibold">{fmtTL(amount, 0)}</span>
       <span className="text-muted-foreground tabular-nums w-12 text-right">{(percent * 100).toFixed(1)}%</span>
     </div>
   );
@@ -135,7 +135,7 @@ function BarRow({ label, amount, max, color }: { label: string; amount: number; 
     <div>
       <div className="flex items-center justify-between text-xs mb-1">
         <span className="font-medium">{label}</span>
-        <span className="font-mono tabular-nums font-semibold">{fmtTL(amount, 0)}</span>
+        <span className="num font-semibold">{fmtTL(amount, 0)}</span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
         <div

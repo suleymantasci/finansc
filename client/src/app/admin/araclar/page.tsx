@@ -120,7 +120,7 @@ export default function AdminAraclarPage() {
                 {tools.map((tool) => (
                   <tr key={tool.id} className="border-b border-border last:border-0">
                     <td className="px-4 py-3 font-medium">{tool.title}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground font-mono">{tool.slug}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground num">{tool.slug}</td>
                     <td className="px-4 py-3 text-center">
                       <Badge variant={tool.isActive ? 'success' : 'secondary'}>
                         {tool.isActive ? 'Aktif' : 'Pasif'}

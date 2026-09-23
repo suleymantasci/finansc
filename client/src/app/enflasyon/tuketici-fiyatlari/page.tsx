@@ -89,7 +89,7 @@ export default async function TufePage() {
           <div className="mb-6 grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-2">
             <div>
               <div className="text-xs uppercase tracking-wide text-muted-foreground">Son Dönem</div>
-              <div className="mt-1 font-mono text-2xl font-bold tabular-nums text-primary">
+              <div className="mt-1 num text-2xl font-bold tabular-nums text-primary">
                 {formatPercentTr(tufeLatest.yearlyChange)}
               </div>
               <div className="text-xs text-muted-foreground">
@@ -98,7 +98,7 @@ export default async function TufePage() {
             </div>
             <div>
               <div className="text-xs uppercase tracking-wide text-muted-foreground">Önceki Dönem</div>
-              <div className="mt-1 font-mono text-2xl font-bold tabular-nums text-foreground">
+              <div className="mt-1 num text-2xl font-bold tabular-nums text-foreground">
                 {formatPercentTr(tufePrevious.yearlyChange)}
               </div>
               <div className="text-xs text-muted-foreground">

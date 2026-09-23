@@ -8,6 +8,8 @@ interface SectionIntroProps {
   ctaLabel?: string;
   ctaHref?: string;
   className?: string;
+  /** Başlık üstündeki küçük altın etiket */
+  eyebrow?: string;
   /**
    * "page" (default) → server-side H1, used on listing pages as the primary SEO heading.
    * "section" → H2, used as a sub-section heading inside a page.
@@ -15,25 +17,23 @@ interface SectionIntroProps {
   as?: 'page' | 'section';
 }
 
-function SectionIntro({ title, description, ctaLabel, ctaHref, className, as = 'page' }: SectionIntroProps) {
-  const headingClass = cn(
-    'font-bold tracking-tight',
-    as === 'page'
-      ? 'text-2xl lg:text-3xl'
-      : 'text-2xl lg:text-3xl',
-  );
-  const descClass = cn(
-    'mt-1 text-muted-foreground',
-    as === 'page' ? 'text-sm max-w-3xl' : 'text-base lg:text-lg',
-  );
+function SectionIntro({ title, description, ctaLabel, ctaHref, className, eyebrow, as = 'page' }: SectionIntroProps) {
   const HeadingTag = as === 'page' ? 'h1' : 'h2';
 
   return (
-    <div className={cn('mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between', className)}>
-      <div className={as === 'page' ? 'flex-1' : 'max-w-2xl'}>
-        <HeadingTag className={headingClass}>{title}</HeadingTag>
+    <div className={cn('mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between', className)}>
+      <div className={as === 'page' ? 'max-w-3xl flex-1' : 'max-w-2xl'}>
+        {eyebrow && <p className="eyebrow mb-3 text-primary">{eyebrow}</p>}
+        <HeadingTag
+          className={cn(
+            'font-display text-balance text-foreground',
+            as === 'page' ? 'text-4xl sm:text-5xl' : 'text-3xl sm:text-4xl',
+          )}
+        >
+          {title}
+        </HeadingTag>
         {description && (
-          <p className={descClass}>
+          <p className={cn('mt-3 text-pretty text-muted-foreground', as === 'page' ? 'text-base sm:text-lg' : 'text-base')}>
             {description}
           </p>
         )}
@@ -41,10 +41,10 @@ function SectionIntro({ title, description, ctaLabel, ctaHref, className, as = '
       {ctaLabel && ctaHref && (
         <Link
           href={ctaHref}
-          className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary transition-colors hover:underline"
+          className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-primary decoration-primary/40 underline-offset-4 hover:underline"
         >
           {ctaLabel}
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />
         </Link>
       )}
     </div>

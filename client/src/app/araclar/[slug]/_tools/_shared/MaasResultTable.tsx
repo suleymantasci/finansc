@@ -8,7 +8,7 @@ import { fmtTL, fmtPct } from './maas-engine';
 // Süleyman isteği: "masaüstündeki tablo mobilde de aynı görünsün,
 // ayrı bir card layout olmasın." Tek tablo, w-full, overflow-x-auto
 // ile çok dar ekranlarda yatay scroll. Padding küçültüldü (sm:px-3
-// px-2), text-xs/font-mono sıkı tipografi.
+// px-2), text-xs/num sıkı tipografi.
 
 export function MaasResultTable({ lines }: { lines: MaasLineItem[] }) {
   // Brüt (base) satırını bul — yüzde hesabı için
@@ -53,7 +53,7 @@ export function MaasResultTable({ lines }: { lines: MaasLineItem[] }) {
                   </div>
                 </td>
                 <td
-                  className={`px-2 py-2 sm:px-4 sm:py-2.5 text-right font-mono tabular-nums text-xs sm:text-sm whitespace-nowrap ${
+                  className={`px-2 py-2 sm:px-4 sm:py-2.5 text-right num text-xs sm:text-sm whitespace-nowrap ${
                     l.amount < 0 ? 'text-emerald-600' : ''
                   }`}
                 >

@@ -1,12 +1,18 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { GOLD_META } from '@/lib/seo-data/gold';
-import { FAQSchema } from '@/components/seo/FAQSchema';
-import { LiveGoldTicker } from './LiveGoldTicker';
 import { PriceChart } from '@/components/charts/PriceChart';
-import { instrumentKey } from '@/lib/history';
+import { Coins } from 'lucide-react';
+import { GOLD_BY_SLUG, GOLD_ENTRIES, goldHistoryKey } from '@/lib/instruments/gold';
+import { DetailHeader } from '@/components/instrument/DetailHeader';
+import { LiveQuote } from '@/components/instrument/LiveQuote';
+import { SourceTable } from '@/components/instrument/SourceTable';
+import { Converter } from '@/components/instrument/Converter';
+import { RelatedQuotes } from '@/components/instrument/RelatedQuotes';
+import { AboutBlock } from '@/components/instrument/AboutBlock';
+import { FaqBlock } from '@/components/instrument/FaqBlock';
+import { FavoriteButton } from '@/components/instrument/FavoriteButton';
 import { AdBanner } from '@/components/ads/AdBanner';
 
 interface Props {
@@ -75,7 +81,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function GoldTypePage({ params }: Props) {
   const { slug } = await params;
   const meta = GOLD_META[slug];
-  if (!meta) notFound();
+  const entry = GOLD_BY_SLUG[slug];
+  if (!meta || !entry) notFound();
 
   const canonical = `${SITE_URL}/altin/${meta.slug}`;
   const pageTitle = `${meta.name} Fiyatı Bugün`;
@@ -107,112 +114,83 @@ export default async function GoldTypePage({ params }: Props) {
         name: pageTitle,
         inLanguage: 'tr-TR',
         isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
-        speakable: {
-          '@type': 'SpeakableSpecification',
-          cssSelector: ['#gold-summary', 'h1'],
-        },
+        speakable: { '@type': 'SpeakableSpecification', cssSelector: ['h1', '#gold-about'] },
       },
     ],
   };
 
-  // Citable snippet
-  const summary = `${meta.name} (${meta.purity ?? 'altın'}) güncel alış-satış fiyatı yukarıda anlık olarak güncellenmektedir. ${meta.weight ? `Standart ağırlık: ${meta.weight}.` : ''} Veriler serbest piyasa, Kapalıçarşı, Harem Altın, Altınkaynak, Garanti BBVA ve Akbank kaynaklarından derlenir.`;
+  const related = meta.relatedSlugs.map((s) => GOLD_META[s]).filter(Boolean);
+  const unitLabel = entry.unit === 'adet' ? 'Adet' : entry.unit === 'ons' ? 'Ons' : 'Gram';
+  const moneyLabel = entry.currency === 'USD' ? 'ABD doları' : 'Türk lirası';
 
-  const related = meta.relatedSlugs
-    .map((s) => GOLD_META[s])
-    .filter(Boolean);
+  const facts = [
+    meta.purity && { label: 'Ayar / saflık', value: meta.purity },
+    meta.weight && { label: 'Ağırlık', value: meta.weight },
+    { label: 'Fiyat birimi', value: entry.currency === 'USD' ? 'USD / ons' : entry.unit === 'adet' ? '₺ / adet' : '₺ / gram' },
+    { label: 'Kaynaklar', value: 'Serbest piyasa, kuyumcular, bankalar' },
+  ].filter(Boolean) as { label: string; value: string }[];
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      <DetailHeader
+        category="altin"
+        crumbs={[{ label: 'Ana Sayfa', href: '/' }, { label: 'Altın', href: '/altin' }, { label: meta.name }]}
+        eyebrow="Altın"
+        title={meta.name}
+        subtitle={<>Güncel {meta.name.toLocaleLowerCase('tr-TR')} fiyatı, kaynaklara göre alış-satış ve geçmiş grafik.</>}
+        emblem={<Coins className="h-7 w-7" />}
+        tagline="Altın, yalnızca bir yatırım değil; geleceğe duyulan güvendir."
+        actions={<FavoriteButton type="gold" symbol={meta.slug} label={meta.name} />}
       />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground mb-4">
-          <ol className="flex flex-wrap items-center gap-1.5">
-            <li><Link href="/" className="hover:text-primary">Ana Sayfa</Link></li>
-            <li aria-hidden>/</li>
-            <li><Link href="/altin" className="hover:text-primary">Altın</Link></li>
-            <li aria-hidden>/</li>
-            <li className="text-foreground font-medium">{meta.name}</li>
-          </ol>
-        </nav>
-
-        <header className="mb-6">
-          <h1 className="text-2xl lg:text-3xl font-bold">
-            {meta.name} Fiyatı Bugün
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {meta.purity && <>Ayar: <span className="text-foreground font-medium">{meta.purity}</span> · </>}
-            {meta.weight && <>Ağırlık: <span className="text-foreground font-medium">{meta.weight}</span></>}
-          </p>
-        </header>
-
-        <p
-          id="gold-summary"
-          className="mb-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 text-sm leading-relaxed"
-        >
-          {summary}
-        </p>
-
-        <LiveGoldTicker goldType={meta.name} slug={meta.slug} />
-
-        <PriceChart
-          instrument={instrumentKey.gold('serbest-piyasa', meta.slug)}
-          defaultRange="1y"
-          className="mt-6"
-        />
-
-        <AdBanner page={`altin-${meta.slug}`} position="in-article" className="my-8" />
-
-        <section className="prose prose-slate dark:prose-invert max-w-none mt-8">
-          <h2 className="text-xl font-semibold mb-3">{meta.name} Nedir?</h2>
-          <p className="text-muted-foreground leading-relaxed">{meta.description}</p>
-
-          <h2 className="text-xl font-semibold mt-8 mb-4">
-            {meta.name} Hakkında Sıkça Sorulan Sorular
-          </h2>
-          <div className="space-y-3 not-prose">
-            {meta.faq.map((faq, i) => (
-              <details key={i} className="group rounded-lg border border-border bg-card p-4">
-                <summary className="cursor-pointer font-medium list-none flex justify-between items-center">
-                  {faq.q}
-                  <span className="text-muted-foreground group-open:rotate-180 transition-transform">▾</span>
-                </summary>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        <FAQSchema faqs={meta.faq} />
-
-        {related.length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-lg font-semibold mb-4">Diğer Altın Türleri</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {related.map((r) => (
-                <Link
-                  key={r.slug}
-                  href={`/altin/${r.slug}`}
-                  className="rounded-lg border border-border bg-card p-3 hover:border-primary/30 transition-colors"
-                >
-                  <div className="font-semibold text-sm">{r.name}</div>
-                  {r.weight && (
-                    <div className="text-xs text-muted-foreground">{r.purity} · {r.weight}</div>
-                  )}
-                </Link>
-              ))}
-            </div>
+      <div className="mx-auto grid max-w-[1440px] gap-6 px-4 py-8 pb-24 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 md:pb-12">
+        <div className="min-w-0 space-y-6">
+          <section aria-label={`${meta.name} anlık fiyat`}>
+            <LiveQuote spec={{ kind: 'gold', slug: meta.slug }} label={meta.name} />
           </section>
-        )}
 
-        <p className="mt-8 text-xs text-muted-foreground italic">
-          Yatırım tavsiyesi değildir. Fiyatlar bilgi amaçlıdır, işlem öncesi kaynak sitelerden teyit ediniz.
-        </p>
+          <PriceChart instrument={goldHistoryKey(entry)} defaultRange="1y" />
+
+          <SourceTable kind="gold" id={meta.slug} />
+
+          <AdBanner page={`altin-${meta.slug}`} position="in-article" />
+
+          <AboutBlock id="gold-about" title={`${meta.name} nedir?`} facts={facts}>
+            <p>{meta.description}</p>
+          </AboutBlock>
+
+          <FaqBlock title={`${meta.name} hakkında sık sorulanlar`} faqs={meta.faq} />
+        </div>
+
+        <aside className="space-y-6">
+          <Converter
+            title={`${meta.shortName} çevirici`}
+            unitLabel={unitLabel}
+            moneyLabel={moneyLabel}
+            spec={{ kind: 'gold', slug: meta.slug }}
+          />
+          <RelatedQuotes
+            title="İlgili altın türleri"
+            moreHref="/altin"
+            moreLabel="Tüm altınlar"
+            items={related.map((r) => ({ label: r.name, sub: r.purity, href: `/altin/${r.slug}`, spec: { kind: 'gold' as const, slug: r.slug } }))}
+          />
+          <RelatedQuotes
+            title="Diğer altınlar"
+            items={GOLD_ENTRIES.filter((g) => g.slug !== meta.slug && !meta.relatedSlugs.includes(g.slug)).map((g) => ({
+              label: GOLD_META[g.slug]?.name ?? g.liveName,
+              href: `/altin/${g.slug}`,
+              spec: { kind: 'gold' as const, slug: g.slug },
+            }))}
+          />
+        </aside>
       </div>
+
+      <p className="mx-auto max-w-[1440px] px-4 pb-10 text-xs text-muted-foreground lg:px-8">
+        Yatırım tavsiyesi değildir. Fiyatlar bilgi amaçlıdır; işlem öncesi ilgili kurumdan teyit ediniz.
+      </p>
     </>
   );
 }

@@ -76,33 +76,37 @@
 
 /* ── Light Mode Overrides ── */
 @layer base {
+  /* Açık tema — nötr kırık beyaz. Sarımsı kâğıt tonu + grain uzun okumada
+     göz yoruyordu; referans: TradingView/Investing açık temaları (nötr zemin,
+     saf siyah olmayan metin, ince gri çizgi). Tüm metin çiftleri WCAG AA. */
   [data-theme="light"] {
-    --color-background: #f5f2ea;
-    --color-foreground: #16140f;
-    --color-card: #fffdf8;
-    --color-card-foreground: #16140f;
-    --color-elevated: #fbf8f1;
-    --color-border: #e3ddd0;
-    --color-border-strong: #cfc7b6;
-    --color-primary: #86641c;
-    --color-primary-foreground: #fffdf8;
-    --color-gold-soft: #7a5a14;
-    --color-secondary: #efeadf;
-    --color-secondary-foreground: #5e584c;
-    --color-muted: #efeadf;
-    --color-muted-foreground: #645e52;
-    --color-accent: #86641c;
-    --color-accent-foreground: #fffdf8;
-    --color-destructive: #c23b36;
-    --color-success: #0e7a52;
-    --color-ring: #86641c;
-    --color-up: #0e7a52;
-    --color-down: #c23b36;
-    --color-neutral: #645e52;
-    --color-surface: #fffdf8;
-    --color-surface-hover: #f3eee3;
+    --color-background: #f4f4f1;
+    --color-foreground: #24262a;
+    --color-card: #ffffff;
+    --color-card-foreground: #24262a;
+    --color-elevated: #fafaf8;
+    --color-border: #e2e2dd;
+    --color-border-strong: #c9c9c2;
+    --color-primary: #86631a;
+    --color-primary-foreground: #ffffff;
+    --color-gold-soft: #6f5213;
+    --color-secondary: #ecece8;
+    --color-secondary-foreground: #5a5d64;
+    --color-muted: #ecece8;
+    --color-muted-foreground: #5a5d64;
+    --color-accent: #86631a;
+    --color-accent-foreground: #ffffff;
+    --color-destructive: #c0392f;
+    --color-success: #0b7a55;
+    --color-ring: #86631a;
+    --color-up: #0b7a55;
+    --color-down: #c0392f;
+    --color-neutral: #5a5d64;
+    --color-surface: #ffffff;
+    --color-surface-hover: #f1f1ee;
     --color-chart-fx: #2f5fc4;
   }
+
 
 
   body {
@@ -221,7 +225,7 @@
   animation: var(--animate-flash-up);
 
   /* Flash text color on price cells */
-  & .font-mono {
+  & .num {
     animation: var(--animate-text-flash-up);
   }
 }
@@ -229,7 +233,7 @@
 @utility flash-down {
   animation: var(--animate-flash-down);
 
-  & .font-mono {
+  & .num {
     animation: var(--animate-text-flash-down);
   }
 }
@@ -327,8 +331,13 @@ article img {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 [data-theme="light"] .atlas-grain::before {
-  opacity: 0.05;
-  mix-blend-mode: multiply;
+  display: none;
+}
+
+/* Açık temada kartlar: iç parıltı yerine çok hafif gölge — zeminden ayrışsın */
+[data-theme="light"] .atlas-card {
+  background: var(--color-card);
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.03);
 }
 
 /* Klavye odağı: tüm site için net ve tema uyumlu.

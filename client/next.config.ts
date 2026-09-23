@@ -68,6 +68,12 @@ const nextConfig: NextConfig = {
         destination: '/araclar/maas-hesaplama',
         permanent: true,
       },
+      {
+        // /doviz/ons-altin, /altin/ons-altin ile aynı içerik → tek kanonik sayfa
+        source: '/doviz/ons-altin',
+        destination: '/altin/ons-altin',
+        permanent: true,
+      },
     ];
   },
   async headers() {

@@ -14,11 +14,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-primary-foreground hover:opacity-90',
+    'bg-primary text-primary-foreground hover:brightness-110',
   secondary:
-    'bg-secondary text-secondary-foreground hover:bg-surface-hover',
+    'border border-border bg-elevated text-foreground hover:border-border-strong',
   outline:
-    'border border-border bg-transparent text-foreground hover:bg-surface-hover',
+    'border border-primary/60 bg-transparent text-primary hover:bg-primary hover:text-primary-foreground',
   ghost:
     'bg-transparent text-foreground hover:bg-surface-hover',
   destructive:
@@ -26,10 +26,10 @@ const variantStyles: Record<ButtonVariant, string> = {
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs rounded-md',
-  md: 'h-10 px-4 text-sm rounded-lg',
-  lg: 'h-12 px-6 text-base rounded-lg',
-  icon: 'h-10 w-10 rounded-lg',
+  sm: 'h-8 px-3.5 text-xs rounded-full',
+  md: 'h-10 px-5 text-sm rounded-full',
+  lg: 'h-12 px-7 text-base rounded-full',
+  icon: 'size-10 rounded-full',
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -38,7 +38,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center gap-2 font-medium transition-[background-color,border-color,color,filter] duration-150 disabled:pointer-events-none disabled:opacity-50',
           variantStyles[variant],
           sizeStyles[size],
           className,

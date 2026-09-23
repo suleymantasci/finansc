@@ -79,7 +79,7 @@ export default function FavorilerPage() {
                         stock && flashMap[fav.symbol] === 'down' && 'flash-down',
                       )}>
                         <td className="px-4 py-3 font-medium">{fav.symbol}</td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums">{stock ? formatDecimal(stock.buyPrice) : '—'}</td>
+                        <td className="px-4 py-3 text-right num">{stock ? formatDecimal(stock.buyPrice) : '—'}</td>
                         <td className="px-4 py-3 text-right">{stock ? <PriceChange value={stock.changePercent} size="sm" /> : '—'}</td>
                         <td className="px-4 py-3 text-right">
                           <button onClick={() => removeFavorite(fav.id)} className="text-muted-foreground hover:text-danger"><Trash2 className="h-4 w-4" /></button>
@@ -115,7 +115,7 @@ export default function FavorilerPage() {
                         gold && flashMap[`${gold.source}-${gold.goldType}`] === 'down' && 'flash-down',
                       )}>
                         <td className="px-4 py-3 font-medium">{fav.symbol}</td>
-                        <td className="px-4 py-3 text-right font-mono tabular-nums">{gold ? (fav.symbol.toLowerCase().includes('ons') ? formatUSD(gold.sellPrice) : formatTL(gold.sellPrice)) : '—'}</td>
+                        <td className="px-4 py-3 text-right num">{gold ? (fav.symbol.toLowerCase().includes('ons') ? formatUSD(gold.sellPrice) : formatTL(gold.sellPrice)) : '—'}</td>
                         <td className="px-4 py-3 text-right">
                           <button onClick={() => removeFavorite(fav.id)} className="text-muted-foreground hover:text-danger"><Trash2 className="h-4 w-4" /></button>
                         </td>

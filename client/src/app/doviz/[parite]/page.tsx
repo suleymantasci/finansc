@@ -1,21 +1,26 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Breadcrumb } from '@/components/shared/Breadcrumb';
-import Link from 'next/link';
+import { Banknote } from 'lucide-react';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
-import { getCurrencyBySlug, CURRENCY_SLUGS } from '@/lib/seo-data/currency';
-import { FAQSchema } from '@/components/seo/FAQSchema';
-import { LiveCurrencyTicker } from './LiveCurrencyTicker';
+import { CURRENCIES, CURRENCY_BY_SLUG, currencyHistoryKey } from '@/lib/instruments/currencies';
+import { currencyContent } from '@/lib/instruments/currency-content';
 import { PriceChart } from '@/components/charts/PriceChart';
-import { instrumentKey } from '@/lib/history';
 import { AdBanner } from '@/components/ads/AdBanner';
+import { DetailHeader } from '@/components/instrument/DetailHeader';
+import { LiveQuote } from '@/components/instrument/LiveQuote';
+import { SourceTable } from '@/components/instrument/SourceTable';
+import { Converter } from '@/components/instrument/Converter';
+import { RelatedQuotes } from '@/components/instrument/RelatedQuotes';
+import { AboutBlock } from '@/components/instrument/AboutBlock';
+import { FaqBlock } from '@/components/instrument/FaqBlock';
+import { FavoriteButton } from '@/components/instrument/FavoriteButton';
 
 interface Props {
   params: Promise<{ parite: string }>;
 }
 
 export function generateStaticParams() {
-  return CURRENCY_SLUGS.map((parite) => ({ parite }));
+  return CURRENCIES.map((c) => ({ parite: c.slug }));
 }
 
 export const dynamicParams = false; // bilinmeyen parite → 404
@@ -23,193 +28,125 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { parite } = await params;
-  const meta = getCurrencyBySlug(parite);
-  if (!meta) {
-    return { title: 'Döviz Bulunamadı', robots: { index: false, follow: false } };
-  }
+  const e = CURRENCY_BY_SLUG[parite];
+  if (!e) return { title: 'Döviz Bulunamadı', robots: { index: false, follow: false } };
 
-  // Title: page-prefix only. Template '%s | SITE_NAME' ekliyor (Pit 28 fix)
-  const title = `${meta.code}/TRY ${meta.name} Kuru Bugün | Anlık ${meta.code} TL`;
-  // Description: 150-155 char hedefi. meta.description uzun, slice ile sınırla.
-  const description = (meta.description.length > 155
-    ? meta.description.slice(0, 153).trimEnd() + '…'
-    : meta.description);
+  const title = `${e.name} Kuru Bugün (${e.code}/TRY) | Canlı ${e.code} TL`;
+  const { description: long } = currencyContent(e);
+  const description = long.length > 155 ? long.slice(0, 153).trimEnd() + '…' : long;
+  const url = `${SITE_URL}/doviz/${e.slug}`;
+  const og = `/api/og?type=doviz&title=${encodeURIComponent(`${e.code}/TRY ${e.name}`)}&subtitle=${encodeURIComponent('Döviz Kuru Bugün, Grafik ve Çevirici')}&category=DÖVİZ&url=${encodeURIComponent(`finanscozum.net/doviz/${e.slug}`)}`;
 
   return {
     title,
     description,
-    keywords: [
-      `${meta.code} tl`,
-      `${meta.name.toLowerCase()} kuru`,
-      `${meta.code} güncel`,
-      `${meta.code} try`,
-      'döviz kuru',
-      'güncel döviz',
-    ],
-    alternates: { canonical: `${SITE_URL}/doviz/${meta.slug}` },
-    openGraph: {
-      type: 'article',
-      title,
-      description,
-      url: `${SITE_URL}/doviz/${meta.slug}`,
-      siteName: SITE_NAME,
-      locale: 'tr_TR',
-      images: [
-        {
-          url: `/api/og?type=doviz&title=${encodeURIComponent(`${meta.code}/TRY ${meta.name}`)}&subtitle=${encodeURIComponent('Döviz Kuru Bugün, Grafik ve Çevirici')}&category=DÖVİZ&url=${encodeURIComponent(`finanscozum.net/doviz/${meta.slug}`)}`,
-          width: 1200,
-          height: 630,
-          alt: `${meta.code}/TRY ${meta.name} Döviz Kuru — Anlık Kur, Grafik ve Çevirici`,
-          type: 'image/png',
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [`/api/og?type=doviz&title=${encodeURIComponent(`${meta.code}/TRY ${meta.name}`)}&subtitle=${encodeURIComponent('Döviz Kuru Bugün, Grafik ve Çevirici')}&category=DÖVİZ&url=${encodeURIComponent(`finanscozum.net/doviz/${meta.slug}`)}`],
-    },
+    keywords: [`${e.code} tl`, `${e.name.toLocaleLowerCase('tr-TR')} kuru`, `${e.code} try`, `${e.name.toLocaleLowerCase('tr-TR')} kaç tl`, 'döviz kuru'],
+    alternates: { canonical: url },
+    openGraph: { type: 'article', title, description, url, siteName: SITE_NAME, locale: 'tr_TR', images: [{ url: og, width: 1200, height: 630, alt: `${e.code}/TRY ${e.name} kuru` }] },
+    twitter: { card: 'summary_large_image', title, description, images: [og] },
   };
 }
 
 export default async function CurrencyPage({ params }: Props) {
   const { parite } = await params;
-  const meta = getCurrencyBySlug(parite);
-  if (!meta) notFound();
+  const e = CURRENCY_BY_SLUG[parite];
+  if (!e) notFound();
 
-  const canonical = `${SITE_URL}/doviz/${meta.slug}`;
-  const pageTitle = `${meta.code}/TRY ${meta.name} Kuru`;
+  const { description, faq, related } = currencyContent(e);
+  const canonical = `${SITE_URL}/doviz/${e.slug}`;
+  const historyKey = currencyHistoryKey(e);
 
-  // ExchangeRateSpecification schema (GEO-friendly)
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
       {
         '@type': 'ExchangeRateSpecification',
-        currency: meta.code,
-        currentExchangeRate: {
-          '@type': 'UnitPriceSpecification',
-          priceCurrency: 'TRY',
-          referenceCurrency: meta.code,
-        },
-        identifier: `${meta.code}/TRY`,
+        currency: e.code,
+        name: `${e.code}/TRY`,
+        url: canonical,
+        currentExchangeRate: { '@type': 'UnitPriceSpecification', priceCurrency: 'TRY', referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitText: e.code } },
       },
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE_URL },
           { '@type': 'ListItem', position: 2, name: 'Döviz', item: `${SITE_URL}/doviz` },
-          { '@type': 'ListItem', position: 3, name: `${meta.code}/TRY`, item: canonical },
+          { '@type': 'ListItem', position: 3, name: `${e.code}/TRY`, item: canonical },
         ],
       },
       {
         '@type': 'WebPage',
         '@id': canonical,
         url: canonical,
-        name: pageTitle,
+        name: `${e.name} Kuru`,
         inLanguage: 'tr-TR',
         isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
-        speakable: {
-          '@type': 'SpeakableSpecification',
-          cssSelector: ['#currency-summary', 'h1'],
-        },
+        speakable: { '@type': 'SpeakableSpecification', cssSelector: ['h1', '#fx-about'] },
       },
     ],
   };
 
-  const summary = `${meta.code}/TRY (${meta.name} / Türk Lirası) güncel alış-satış kuru yukarıda anlık olarak güncellenmektedir. Veriler serbest piyasa ve Merkez Bankası kaynaklarından derlenir.`;
-
-  const related = meta.relatedSlugs
-    .map((s) => CURRENCY_SLUGS.includes(s) ? getCurrencyBySlug(s) : null)
-    .filter(Boolean) as { slug: string; name: string; code: string }[];
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      <DetailHeader
+        category="doviz"
+        crumbs={[{ label: 'Ana Sayfa', href: '/' }, { label: 'Döviz', href: '/doviz' }, { label: `${e.code}/TRY` }]}
+        eyebrow={`Döviz · ${e.code}/TRY`}
+        title={`${e.name} kuru`}
+        subtitle={<>{e.country} · serbest piyasa{e.tcmbName ? ' ve TCMB' : ''} kuru, geçmiş grafik ve çevirici.</>}
+        emblem={<span className="num text-lg font-semibold">{e.code}</span>}
+        tagline="Kur hareketleri, fiyatların görünmeyen dilidir."
+        actions={<FavoriteButton type="currency" symbol={e.code} label={`${e.name} kuru`} />}
       />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-        <Breadcrumb
-          items={[
-            { label: 'Ana Sayfa', href: '/' },
-            { label: 'Döviz', href: '/doviz' },
-            { label: `${meta.code}/TRY` },
-          ]}
-        />
-        <header className="mb-6">
-          <h1 className="text-2xl lg:text-3xl font-bold">
-            {meta.code}/TRY {meta.name} Kuru
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ülke: <span className="text-foreground font-medium">{meta.country}</span>
-          </p>
-        </header>
-
-        <p
-          id="currency-summary"
-          className="mb-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 text-sm leading-relaxed"
-        >
-          {summary}
-        </p>
-
-        <LiveCurrencyTicker code={meta.code} name={meta.name} />
-
-        <PriceChart
-          instrument={instrumentKey.fx(meta.code)}
-          defaultRange="1y"
-          decimals={4}
-          className="mt-6"
-        />
-
-        <AdBanner page={`doviz-${meta.slug}`} position="in-article" className="my-8" />
-
-        <section className="prose prose-slate dark:prose-invert max-w-none mt-8">
-          <h2 className="text-xl font-semibold mb-3">{meta.name} ({meta.code}) Nedir?</h2>
-          <p className="text-muted-foreground leading-relaxed">{meta.description}</p>
-
-          <h2 className="text-xl font-semibold mt-8 mb-4">
-            {meta.name} Kuru Hakkında Sıkça Sorulan Sorular
-          </h2>
-          <div className="space-y-3 not-prose">
-            {meta.faq.map((faq, i) => (
-              <details key={i} className="group rounded-lg border border-border bg-card p-4">
-                <summary className="cursor-pointer font-medium list-none flex justify-between items-center">
-                  {faq.q}
-                  <span className="text-muted-foreground group-open:rotate-180 transition-transform">▾</span>
-                </summary>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        <FAQSchema faqs={meta.faq} />
-
-        {related.length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-lg font-semibold mb-4">İlgili Döviz Kurları</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {related.map((r) => (
-                <Link
-                  key={r.slug}
-                  href={`/doviz/${r.slug}`}
-                  className="rounded-lg border border-border bg-card p-3 hover:border-primary/30 transition-colors"
-                >
-                  <div className="font-semibold text-sm">{r.code}/TRY</div>
-                  <div className="text-xs text-muted-foreground truncate">{r.name}</div>
-                </Link>
-              ))}
-            </div>
+      <div className="mx-auto grid max-w-[1440px] gap-6 px-4 py-8 pb-24 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 md:pb-12">
+        <div className="min-w-0 space-y-6">
+          <section aria-label={`${e.name} anlık kur`}>
+            <LiveQuote spec={{ kind: 'fx', code: e.code }} label={`${e.code}/TRY`} />
           </section>
-        )}
 
-        <p className="mt-8 text-xs text-muted-foreground italic">
-          Yatırım tavsiyesi değildir. Fiyatlar bilgi amaçlıdır, işlem öncesi kaynak sitelerden teyit ediniz.
-        </p>
+          {historyKey ? (
+            <PriceChart instrument={historyKey} defaultRange="1y" decimals={4} scale={e.historyUnit} />
+          ) : (
+            <p className="atlas-card p-5 text-sm text-muted-foreground">Bu para birimi için geçmiş grafik verisi bulunmuyor.</p>
+          )}
+
+          <SourceTable kind="fx" id={e.code} />
+
+          <AdBanner page={`doviz-${e.slug}`} position="in-article" />
+
+          <AboutBlock
+            id="fx-about"
+            title={`${e.name} (${e.code}) nedir?`}
+            facts={[
+              { label: 'ISO kodu', value: e.code },
+              { label: 'Ülke / bölge', value: e.country },
+              { label: 'Kaynaklar', value: [e.serbestName && 'Serbest piyasa', e.tcmbName && 'TCMB'].filter(Boolean).join(', ') },
+              { label: 'Kotasyon', value: `1 ${e.code} = ? ₺` },
+            ]}
+          >
+            <p>{description}</p>
+          </AboutBlock>
+
+          <FaqBlock title={`${e.name} kuru hakkında sık sorulanlar`} faqs={faq} />
+        </div>
+
+        <aside className="space-y-6">
+          <Converter title={`${e.code} çevirici`} unitLabel={e.code} moneyLabel="Türk lirası" spec={{ kind: 'fx', code: e.code }} decimals={2} />
+          <RelatedQuotes
+            title="İlgili kurlar"
+            moreHref="/doviz"
+            moreLabel="Tüm kurlar"
+            items={related.map((r) => ({ label: r.name, sub: `${r.code}/TRY`, href: `/doviz/${r.slug}`, spec: { kind: 'fx' as const, code: r.code } }))}
+          />
+        </aside>
       </div>
+
+      <p className="mx-auto max-w-[1440px] px-4 pb-10 text-xs text-muted-foreground lg:px-8">
+        Yatırım tavsiyesi değildir. Kurlar bilgi amaçlıdır; işlem öncesi bankanızdan teyit ediniz.
+      </p>
     </>
   );
 }

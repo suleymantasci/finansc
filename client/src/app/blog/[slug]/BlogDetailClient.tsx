@@ -180,12 +180,12 @@ export function BlogDetailClient({ post, relatedPosts, readingTime }: Props) {
                       <span className="font-medium text-foreground">{idx.symbol}</span>
                       <div className="flex items-center gap-2">
                         <span className={cn(
-                          'font-mono tabular-nums',
+                          'num',
                           flashMap[idx.symbol] === 'up' && 'text-flash-up',
                           flashMap[idx.symbol] === 'down' && 'text-flash-down',
                         )}>{formatDecimal(idx.value)}</span>
                         <span className={cn(
-                          'flex items-center gap-0.5 font-mono tabular-nums font-semibold',
+                          'flex items-center gap-0.5 num font-semibold',
                           (idx.changePercent ?? 0) > 0 && 'text-up',
                           (idx.changePercent ?? 0) < 0 && 'text-down',
                           idx.changePercent === 0 && 'text-neutral',
@@ -216,12 +216,12 @@ export function BlogDetailClient({ post, relatedPosts, readingTime }: Props) {
                       <span className="font-medium text-foreground">{g.goldType}</span>
                       <div className="flex items-center gap-2">
                         <span className={cn(
-                          'font-mono tabular-nums',
+                          'num',
                           flashMap[`${g.source}-${g.goldType}`] === 'up' && 'text-flash-up',
                           flashMap[`${g.source}-${g.goldType}`] === 'down' && 'text-flash-down',
                         )}>{formatDecimal(g.buyPrice)}</span>
                         <span className={cn(
-                          'flex items-center gap-0.5 font-mono tabular-nums font-semibold',
+                          'flex items-center gap-0.5 num font-semibold',
                           (g.changePercent ?? 0) > 0 && 'text-up',
                           (g.changePercent ?? 0) < 0 && 'text-down',
                           g.changePercent === 0 && 'text-neutral',

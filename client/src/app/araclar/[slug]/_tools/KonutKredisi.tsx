@@ -151,12 +151,12 @@ export function KonutKredisi() {
                   {schedule.map((r) => (
                     <tr key={r.month} className="border-b border-border last:border-0">
                       <td className="px-3 py-1.5">{r.month}</td>
-                      <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.totalPayment)}</td>
-                      <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.principal)}</td>
-                      <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.interest)}</td>
-                      <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.kkdf)}</td>
-                      {result.bsmvRate > 0 && <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.bsmv)}</td>}
-                      <td className="px-3 py-1.5 text-right font-mono">{fmtTL(r.balance)}</td>
+                      <td className="px-3 py-1.5 text-right num">{fmtTL(r.totalPayment)}</td>
+                      <td className="px-3 py-1.5 text-right num">{fmtTL(r.principal)}</td>
+                      <td className="px-3 py-1.5 text-right num">{fmtTL(r.interest)}</td>
+                      <td className="px-3 py-1.5 text-right num">{fmtTL(r.kkdf)}</td>
+                      {result.bsmvRate > 0 && <td className="px-3 py-1.5 text-right num">{fmtTL(r.bsmv)}</td>}
+                      <td className="px-3 py-1.5 text-right num">{fmtTL(r.balance)}</td>
                     </tr>
                   ))}
                 </tbody>

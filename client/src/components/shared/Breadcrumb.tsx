@@ -30,7 +30,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
     <nav
       aria-label="Breadcrumb"
       className={cn(
-        'mb-4 flex flex-wrap items-center gap-1 text-sm text-muted-foreground',
+        'mb-5 flex flex-wrap items-center gap-1 text-[13px] text-muted-foreground',
         className,
       )}
     >
@@ -40,7 +40,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
         const Icon = isFirst ? Home : ChevronRight;
         return (
           <span key={`${item.label}-${i}`} className="flex items-center gap-1">
-            {i > 0 && <ChevronRight className="h-3.5 w-3.5 opacity-50" />}
+            {i > 0 && <ChevronRight className="h-3.5 w-3.5 opacity-50" aria-hidden="true" />}
             {item.href && !isLast ? (
               <Link
                 href={item.href}

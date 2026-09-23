@@ -47,7 +47,7 @@ export function LiveGoldTicker({ grams }: Props) {
             1 Gram Altın
           </p>
           <p
-            className={`text-2xl font-bold font-mono tabular-nums ${
+            className={`text-2xl font-bold num ${
               flashMap[flashKey] === 'up'
                 ? 'text-flash-up'
                 : flashMap[flashKey] === 'down'
@@ -65,7 +65,7 @@ export function LiveGoldTicker({ grams }: Props) {
           <p className="text-xs text-primary uppercase tracking-wider font-semibold mb-1">
             {grams} Gram Altın Toplam
           </p>
-          <p className="text-3xl font-extrabold font-mono tabular-nums">
+          <p className="text-3xl font-extrabold num">
             {price > 0 ? formatTL(totalValue) : '—'}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
