@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { pctTr } from '@/lib/formatters';
 import Link from 'next/link';
+import Image from 'next/image';
 import NumberFlow from '@number-flow/react';
 import { ArrowRight, LineChart, Wallet } from 'lucide-react';
 import { API_URL } from '@/lib/constants';
@@ -280,44 +281,35 @@ const FEATURED_TOOLS = [
 function ToolsCard() {
   return (
     <article className="atlas-card relative flex flex-col overflow-hidden p-5 sm:p-6">
-      {/* Dekoratif pusula — görsel gelene kadar */}
-      <svg
-        viewBox="0 0 100 100"
-        className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 text-primary opacity-[0.14]"
-        aria-hidden="true"
-      >
-        <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="0.6" />
-        <circle cx="50" cy="50" r="36" fill="none" stroke="currentColor" strokeWidth="0.4" strokeDasharray="1 2" />
-        {Array.from({ length: 36 }).map((_, i) => (
-          <line
-            key={i}
-            x1="50"
-            y1="4"
-            x2="50"
-            y2={i % 9 === 0 ? 12 : 8}
-            stroke="currentColor"
-            strokeWidth="0.5"
-            transform={`rotate(${i * 10} 50 50)`}
-          />
-        ))}
-        <path d="M50 18 L55 50 L50 82 L45 50 Z" fill="currentColor" opacity="0.8" />
-      </svg>
+      {/* Arka plan: pusula görseli tüm kartı kaplar. Görsel her temada koyu olduğundan
+          bu kartın yazı renkleri temadan bağımsız sabit açık tonlardır. */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <Image
+          src="/atlas/tools.webp"
+          alt=""
+          fill
+          sizes="(min-width:1024px) 25vw, (min-width:768px) 50vw, 100vw"
+          className="object-cover object-[10%_65%]"
+        />
+        {/* Metin okunurluğu: soldan koyu geçiş (görsel tüm alanı kaplar) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/0" />
+      </div>
 
-      <p className="eyebrow text-primary">Hesaplama araçları</p>
-      <h3 className="font-display mt-3 max-w-[14ch] text-[2rem] leading-[1.05] text-foreground">
+      <p className="eyebrow relative text-[#d4a94f]">Hesaplama araçları</p>
+      <h3 className="font-display relative mt-3 max-w-[13ch] text-[1.85rem] leading-[1.08] text-[#f3efe6]">
         Daha akıllı kararlar, 40+ ücretsiz araçla.
       </h3>
-      <ul className="mt-5 grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+      <ul className="relative mt-5 grid max-w-[62%] grid-cols-1 gap-y-0.5 text-sm">
         {FEATURED_TOOLS.map((t) => (
           <li key={t.href}>
-            <Link href={t.href} className="group flex items-center gap-1.5 py-1 text-foreground/80 hover:text-primary">
-              <span className="h-px w-3 bg-border-strong transition-all group-hover:w-4 group-hover:bg-primary" aria-hidden="true" />
+            <Link href={t.href} className="group flex items-center gap-1.5 py-1 text-[#f3efe6]/85 hover:text-[#f0d49a]">
+              <span className="h-px w-3 bg-[#f3efe6]/35 transition-all group-hover:w-4 group-hover:bg-[#d4a94f]" aria-hidden="true" />
               {t.label}
             </Link>
           </li>
         ))}
       </ul>
-      <ArrowLink href="/araclar" className="mt-auto self-start pt-6">
+      <ArrowLink href="/araclar" className="relative mt-auto self-start pt-6 text-[#d4a94f] decoration-[#d4a94f]/40">
         Tüm araçları keşfet
       </ArrowLink>
     </article>
