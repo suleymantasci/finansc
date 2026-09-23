@@ -1,3 +1,5 @@
+import { API_URL } from '@/lib/constants';
+import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
@@ -110,7 +112,7 @@ export default async function AraclarPage() {
 
   let activeSlugs: Set<string> | null = null;
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const API_BASE = API_URL;
     const res = await fetch(`${API_BASE}/api/tools?active=true`, { next: { revalidate: 60 } });
     if (res.ok) {
       const tools: { slug: string }[] = await res.json();
@@ -126,7 +128,7 @@ export default async function AraclarPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
       />
       <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
       <h1 className="text-2xl font-bold lg:text-3xl">Hesaplama Araçları</h1>

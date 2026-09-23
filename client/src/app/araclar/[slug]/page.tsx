@@ -1,3 +1,5 @@
+import { API_URL } from '@/lib/constants';
+import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
@@ -41,7 +43,7 @@ export default async function ToolSlugPage({ params }: Props) {
 
   // Check if tool is active in the database
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const API_BASE = API_URL;
     const res = await fetch(`${API_BASE}/api/tools/${slug}`, { next: { revalidate: 60 } });
     if (res.ok) {
       const tool = await res.json();
@@ -95,7 +97,7 @@ export default async function ToolSlugPage({ params }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
       {/* Breadcrumb (sayfanın en üstünde) */}

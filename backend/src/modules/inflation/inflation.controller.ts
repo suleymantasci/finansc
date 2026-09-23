@@ -1,3 +1,4 @@
+import { SkipThrottle } from '@nestjs/throttler';
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { InflationService } from './inflation.service';
@@ -5,6 +6,9 @@ import { Public } from '../../common/decorators';
 import { CalculateTufeDto } from './dto/calculate-tufe.dto';
 
 @ApiTags('Inflation')
+// Salt okunur piyasa verisi: SSR/ISR tek IP'den çok sayıda istek atar; sınırlama
+// sayfaların 429/404 vermesine yol açıyordu. Veri zaten upstream'de önbellekli.
+@SkipThrottle()
 @Controller('inflation')
 export class InflationController {
   constructor(private readonly inflationService: InflationService) {}
@@ -38,6 +42,7 @@ export class InflationController {
   }
 
   @Public()
+  @SkipThrottle({ default: false })
   @Post('tufe/endeks/calculate')
   calculateTufe(@Body() dto: CalculateTufeDto) {
     return this.inflationService.calculateTufeEndeks({

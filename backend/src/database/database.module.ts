@@ -29,7 +29,10 @@ import { join } from 'path';
         // altında JS olarak bulunur (tsc tarafından derlenmiş). Dev'de
         // src/database/migrations altında TS. Her ikisini de tek pattern
         // ile yakalıyoruz.
-        migrations: [join(__dirname, 'database', 'migrations', '*.{ts,js}')],
+        // DÜZELTME: __dirname zaten .../database — eski yol .../database/database/migrations
+        // idi ve hiçbir migration otomatik çalışmıyordu. dist'te yalnızca .js
+        // (.d.ts dosyaları migration sanılmasın), dev'de .ts.
+        migrations: [join(__dirname, 'migrations', __filename.endsWith('.ts') ? '*.ts' : '*.js')],
         logging: config.get<string>('NODE_ENV') === 'development',
       }),
     }),

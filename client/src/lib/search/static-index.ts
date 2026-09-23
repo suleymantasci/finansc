@@ -5,12 +5,13 @@
 
 import { TOOL_META } from '../seo-data/tools';
 import { INDEX_META } from '../seo-data/indices';
-import { CURRENCY_SLUGS, getCurrencyBySlug } from '../seo-data/currency';
+import { CURRENCIES } from '../instruments/currencies';
+import { COMMODITIES } from '../instruments/commodities';
 import { GOLD_SLUGS, getGoldMeta } from '../seo-data/gold';
 import { STOCK_META } from '../seo-data/stocks';
 
 export interface SearchItem {
-  type: 'arac' | 'endeks' | 'doviz' | 'altin' | 'hisse';
+  type: 'arac' | 'endeks' | 'doviz' | 'altin' | 'hisse' | 'emtia';
   slug: string;
   title: string;
   desc: string;
@@ -43,15 +44,22 @@ export const STATIC_SEARCH_INDEX: SearchItem[] = ((): SearchItem[] => {
       url: '/borsa/endeksler/' + symbol,
     });
   }
-  for (const slug of CURRENCY_SLUGS) {
-    const meta = getCurrencyBySlug(slug);
-    if (!meta) continue;
+  for (const c of CURRENCIES) {
     out.push({
       type: 'doviz',
-      slug,
-      title: meta.code + '/TRY ' + meta.name,
-      desc: meta.code + ' (' + meta.name + ') \u2014 g\u00fcncel d\u00f6viz kuru, grafik ve hesaplama ara\u00e7lar\u0131.',
-      url: '/doviz/' + slug,
+      slug: c.slug,
+      title: c.code + '/TRY ' + c.name,
+      desc: c.name + ' (' + c.code + ') \u2014 ' + c.country + ' para birimi, g\u00fcncel kur ve grafik.',
+      url: '/doviz/' + c.slug,
+    });
+  }
+  for (const c of COMMODITIES) {
+    out.push({
+      type: 'emtia',
+      slug: c.slug,
+      title: c.name,
+      desc: trim(c.name + ' fiyat\u0131 (' + c.unit + ') \u2014 ' + c.description),
+      url: '/emtia/' + c.slug,
     });
   }
   for (const slug of GOLD_SLUGS) {

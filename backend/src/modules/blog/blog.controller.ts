@@ -1,3 +1,4 @@
+import { SkipThrottle } from '@nestjs/throttler';
 import {
   Controller,
   Get,
@@ -24,6 +25,7 @@ export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
   @Public()
+  @SkipThrottle()
   @Get()
   findAll(
     @Query('page') page?: number,
@@ -36,6 +38,7 @@ export class BlogController {
   }
 
   @Public()
+  @SkipThrottle()
   @Get(':slug')
   findBySlug(@Param('slug') slug: string) {
     return this.blogService.findBySlug(slug);

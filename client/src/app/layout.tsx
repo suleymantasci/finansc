@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/json-ld';
 import { Analytics } from '@/components/analytics/GoogleAnalytics';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Newsreader } from 'next/font/google';
@@ -162,7 +163,7 @@ export default function RootLayout({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
+              __html: safeJsonLd({
                 '@context': 'https://schema.org',
                 '@type': 'Organization',
                 '@id': 'https://finanscozum.net/#organization',
@@ -218,7 +219,7 @@ export default function RootLayout({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
+              __html: safeJsonLd({
                 '@context': 'https://schema.org',
                 '@type': 'WebSite',
                 '@id': 'https://finanscozum.net/#website',

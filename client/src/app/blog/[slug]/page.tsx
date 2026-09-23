@@ -1,12 +1,45 @@
-import { api } from '@/lib/api';
+import { safeJsonLd } from '@/lib/json-ld';
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
+import { API_URL } from '@/lib/constants';
+import { prepareArticle } from '@/lib/blog-content';
+import { BlogArticle } from './BlogArticle';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import type { BlogPost } from '@/types';
-import { BlogDetailClient } from './BlogDetailClient';
 import type { Metadata } from 'next';
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export const revalidate = 300;
+
+/**
+ * Yazıyı getir. Yalnızca API 404 dönerse null (→ 404 sayfası).
+ * Hız sınırı, zaman aşımı gibi geçici hatalarda hata fırlatılır: ISR eski sayfayı
+ * korur, arama motoru var olan yazıyı "bulunamadı" olarak görmez.
+ * React cache: metadata ve sayfa aynı isteği paylaşır.
+ */
+const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
+  const res = await fetch(`${API_URL}/api/blogs/${encodeURIComponent(slug)}`, {
+    next: { revalidate: 300, tags: ['blogs'] },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Blog API ${res.status}`);
+  return (await res.json()) as BlogPost;
+});
+
+async function getRelated(post: BlogPost): Promise<BlogPost[]> {
+  try {
+    const qs = new URLSearchParams({ limit: '4', status: 'published', ...(post.category ? { category: post.category } : {}) });
+    const res = await fetch(`${API_URL}/api/blogs?${qs}`, { next: { revalidate: 300, tags: ['blogs'] }, signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return [];
+    const json = (await res.json()) as { data?: BlogPost[] };
+    return (json.data ?? []).filter((p) => p.slug !== post.slug).slice(0, 3);
+  } catch {
+    return [];
+  }
 }
 
 function extractFAQFromContent(html: string): { question: string; answer: string }[] {
@@ -29,12 +62,7 @@ function estimateReadingTime(html: string): number {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  let post: BlogPost | null = null;
-  try {
-    post = await api.get<BlogPost>(`/api/blogs/${slug}`);
-  } catch {
-    post = null;
-  }
+  const post = await getPost(slug);
   // Yazı bulunamadı → noindex + canonical yok. Root layout'un global canonical'ı leak etmesin
   if (!post) {
     return {
@@ -83,29 +111,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogSlugPage({ params }: Props) {
   const { slug } = await params;
-  let post: BlogPost | null = null;
-  let relatedPosts: BlogPost[] = [];
-
-  try {
-    post = await api.get<BlogPost>(`/api/blogs/${slug}`);
-    if (post) {
-      const res = await api.get<{ data: BlogPost[] }>(`/api/blogs?limit=3&status=published&category=${post.category || ''}`);
-      relatedPosts = (res.data || []).filter((p) => p.slug !== slug).slice(0, 3);
-    }
-  } catch {
-    post = null;
-  }
+  const post = await getPost(slug);
+  const relatedPosts = post ? await getRelated(post) : [];
 
   // Yazı yoksa 404 → Pit 26: 200 + canonical=root → "duplicate of homepage" riskini kapat
   if (!post) notFound();
 
-  const readingTime = post ? estimateReadingTime(post.content) : 0;
-  const faqs = post ? extractFAQFromContent(post.content) : [];
+  const { html, toc } = prepareArticle(post.content);
+  const readingTime = estimateReadingTime(html);
+  const faqs = extractFAQFromContent(html);
 
   // NewsArticle JSON-LD (Google News + GEO + AI citation)
   const articleJsonLd = post ? {
     '@context': 'https://schema.org',
-    '@type': 'NewsArticle',
+    '@type': 'Article',
     headline: post.seoTitle || post.title,
     description: post.seoDescription || post.excerpt || '',
     image: [post.thumbnailUrl || `${SITE_URL}/og-default.png`],
@@ -133,22 +152,18 @@ export default async function BlogSlugPage({ params }: Props) {
       },
     },
     articleSection: post.category || 'Finans',
-    wordCount: post.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length,
+    wordCount: html.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length,
     timeRequired: `PT${readingTime}M`,
     keywords: post.seoKeywords || post.category,
     isAccessibleForFree: true,
     speakable: {
       '@type': 'SpeakableSpecification',
-      cssSelector: ['h1', 'h2', '.article-summary', '.faq-item'],
+      cssSelector: ['h1', '.article-summary'],
     },
     about: [
       { '@type': 'Thing', name: 'Finans' },
       { '@type': 'Thing', name: 'Yatırım' },
       { '@type': 'Thing', name: post.category || 'Piyasalar' },
-    ],
-    citation: [
-      { '@type': 'CreativeWork', name: 'Türkiye Cumhuriyet Merkez Bankası', url: 'https://www.tcmb.gov.tr' },
-      { '@type': 'CreativeWork', name: 'Borsa İstanbul', url: 'https://www.borsaistanbul.com' },
     ],
   } : null;
 
@@ -159,7 +174,7 @@ export default async function BlogSlugPage({ params }: Props) {
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE_URL },
       { '@type': 'ListItem', position: 2, name: 'Bilgi Merkezi', item: `${SITE_URL}/blog` },
-      { '@type': 'ListItem', position: 3, name: post.title },
+      { '@type': 'ListItem', position: 3, name: post.title, item: `${SITE_URL}/blog/${post.slug}` },
     ],
   } : null;
 
@@ -177,15 +192,15 @@ export default async function BlogSlugPage({ params }: Props) {
   return (
     <>
       {articleJsonLd && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(articleJsonLd) }} />
       )}
       {breadcrumbJsonLd && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
       )}
       {faqJsonLd && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
       )}
-      <BlogDetailClient post={post} relatedPosts={relatedPosts} readingTime={readingTime} />
+      <BlogArticle post={post} html={html} toc={toc} relatedPosts={relatedPosts} readingTime={readingTime} />
     </>
   );
 }

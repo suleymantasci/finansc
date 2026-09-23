@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Calculator, TrendingUp, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { TOOL_META } from '@/lib/seo-data/tools';
 
 interface Tool {
   title: string;
@@ -68,57 +69,34 @@ function detectCategory(slug: string, declaredCategory?: string): string {
 export function RelatedTools({ category, slug }: Props) {
   const cat = detectCategory(slug, category);
   const tools = TOOLS_BY_CATEGORY[cat] || TOOLS_BY_CATEGORY.kredi;
+  const total = Object.keys(TOOL_META).length;
 
   return (
-    <section
-      className="mt-10 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6"
-      aria-labelledby="related-tools-heading"
-    >
-      <div className="mb-4 flex items-center gap-2">
-        <Calculator className="h-5 w-5 text-primary" />
-        <h2 id="related-tools-heading" className="text-lg font-bold">
-          Bu Konuda Hemen Hesap Yapın
-        </h2>
-      </div>
-      <p className="mb-5 text-sm text-muted-foreground">
-        Yazıdaki kavramları pratik araçlarla deneyimleyin. Tüm hesaplamalar ücretsiz ve reklamsız.
-      </p>
+    <section className="atlas-card mt-10 p-5 sm:p-6" aria-labelledby="related-tools-heading">
+      <p className="eyebrow text-primary">Hesaplama araçları</p>
+      <h2 id="related-tools-heading" className="font-display mt-2 text-2xl text-foreground">
+        Bu konuda hemen hesaplayın
+      </h2>
+      <p className="mt-1 text-sm text-muted-foreground">Yazıdaki kavramları ücretsiz araçlarla deneyin; üyelik gerekmez.</p>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <ul className="mt-5 divide-y divide-border/70 border-y border-border">
         {tools.map((tool) => (
-          <Link
-            key={tool.href}
-            href={tool.href}
-            className="group flex items-start gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-sm"
-          >
-            <span className="text-2xl flex-shrink-0" aria-hidden>
-              {tool.icon}
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm group-hover:text-primary transition-colors">
-                {tool.title}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                {tool.description}
-              </p>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-          </Link>
+          <li key={tool.href}>
+            <Link href={tool.href} className="group flex items-center gap-4 py-3.5">
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-medium text-foreground group-hover:text-primary">{tool.title}</span>
+                <span className="block text-[13px] text-muted-foreground">{tool.description}</span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" aria-hidden="true" />
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
 
-      <div className="mt-5 flex items-center justify-between text-xs">
-        <p className="text-muted-foreground">
-          <TrendingUp className="inline h-3 w-3 mr-1" />
-          {tools.length} ilgili araç
-        </p>
-        <Link
-          href="/araclar"
-          className="font-semibold text-primary hover:underline"
-        >
-          Tüm 42 aracı gör →
-        </Link>
-      </div>
+      <Link href="/araclar" className="group mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+        Tüm {total} aracı gör
+        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+      </Link>
     </section>
   );
 }

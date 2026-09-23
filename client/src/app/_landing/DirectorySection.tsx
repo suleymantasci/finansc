@@ -53,6 +53,20 @@ const DIRECTORY: { title: string; href: string; links: { label: string; href: st
     ],
   },
   {
+    title: 'Emtia',
+    href: '/emtia',
+    links: [
+      { label: 'Brent petrol', href: '/emtia/brent-petrol' },
+      { label: 'Ham petrol (WTI)', href: '/emtia/ham-petrol' },
+      { label: 'Doğalgaz', href: '/emtia/dogalgaz' },
+      { label: 'Ons gümüş', href: '/emtia/gumus-ons' },
+      { label: 'Platin', href: '/emtia/platin' },
+      { label: 'Bakır', href: '/emtia/bakir' },
+      { label: 'Buğday', href: '/emtia/bugday' },
+      { label: 'Tüm emtialar', href: '/emtia' },
+    ],
+  },
+  {
     title: 'Hesaplama',
     href: '/araclar',
     links: [
@@ -105,10 +119,10 @@ const FAQS = [
 export function DirectorySection() {
   return (
     <section aria-labelledby="directory-title" className="mx-auto max-w-[1440px] px-4 lg:px-8">
-      <div className="grid gap-10 border-t border-border pt-14 lg:grid-cols-[1.6fr_1fr] lg:gap-16">
+      <div className="grid gap-10 border-t border-border pt-14 xl:grid-cols-[1.8fr_1fr] xl:gap-16">
         <div>
           <SectionHead id="directory-title" eyebrow="Hızlı erişim" title="Aradığınız her şey, tek sayfada" />
-          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 xl:grid-cols-6">
             {DIRECTORY.map((col) => (
               <nav key={col.title} aria-label={col.title}>
                 <h3 className="mb-3 text-sm font-medium text-foreground">

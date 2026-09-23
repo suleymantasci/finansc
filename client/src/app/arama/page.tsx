@@ -1,5 +1,7 @@
 // /arama?q=... — server component. Statik + dinamik sonuclari gosterir.
 
+import { API_URL } from '@/lib/constants';
+import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import {
@@ -63,7 +65,7 @@ async function fetchDynamic(q: string): Promise<{
   indices: IndexResult[];
 }> {
   const limit: number = 15;
-  const base: string = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  const base: string = API_URL;
 
   const results = await Promise.allSettled([
     fetch(
@@ -114,7 +116,7 @@ async function fetchDynamic(q: string): Promise<{
         if (!s || typeof s !== 'object') continue;
         const item = s as MarketApiItem;
         stocks.push({
-          href: '/borsa/hisseler/' + item.symbol.toLowerCase(),
+          href: '/borsa/hisseler/' + item.symbol.toUpperCase(),
           type: 'Hisse',
           title: item.name + ' (' + item.symbol.toUpperCase() + ')',
           desc: 'Borsa İstanbul hissesi',
@@ -153,6 +155,7 @@ const TYPE_LABEL: Record<SearchItem['type'], string> = {
   doviz: 'Döviz',
   altin: 'Altın',
   hisse: 'Hisse',
+  emtia: 'Emtia',
 };
 
 export default async function AramaPage({ searchParams }: Props) {
@@ -184,7 +187,7 @@ export default async function AramaPage({ searchParams }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
       <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">

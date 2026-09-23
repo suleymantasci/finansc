@@ -1,3 +1,4 @@
+import { Throttle } from '@nestjs/throttler';
 import {
   Controller,
   Post,
@@ -19,12 +20,16 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  // Kayıt spam'i: IP başına 10 dakikada 5
+  @Throttle({ default: { limit: 5, ttl: 600000 } })
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
   @Public()
+  // Kaba kuvvet koruması: IP başına dakikada 10 deneme (trust proxy ile gerçek IP)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginDto, @Req() req: Request) {
@@ -36,6 +41,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   refresh(@Body() dto: RefreshTokenDto) {

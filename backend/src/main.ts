@@ -16,6 +16,11 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService);
 
+  // Traefik arkasındayız: gerçek istemci IP'si X-Forwarded-For'da. Bu olmadan
+  // req.ip her istek için proxy adresi oluyor ve rate limit TÜM ziyaretçiler
+  // için tek kova gibi çalışıyordu (dakikada ~100 istekten sonra herkes 429).
+  app.set('trust proxy', 1);
+
   // Security
   app.use(helmet({
     // Allow uploaded images (and other assets) to be loaded cross-origin

@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { SectionIntro } from '@/components/shared/SectionIntro';
@@ -47,7 +48,7 @@ export default async function UfePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'WebPage',
             name: 'ÜFE / Yİ-ÜFE — Yurt İçi Üretici Fiyat Endeksi',

@@ -1,3 +1,5 @@
+import { safeJsonLd } from '@/lib/json-ld';
+
 // Server-side FAQPage JSON-LD bileşeni.
 // Her sayfada tekrar yazmak yerine paylaşılan schema.
 export function FAQSchema({ faqs }: { faqs: { q: string; a: string }[] }) {
@@ -14,7 +16,7 @@ export function FAQSchema({ faqs }: { faqs: { q: string; a: string }[] }) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
     />
   );
 }

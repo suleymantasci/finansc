@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
@@ -143,7 +144,7 @@ export default async function IndexPage({ params }: Props) {
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE_URL },
           { '@type': 'ListItem', position: 2, name: 'Borsa', item: `${SITE_URL}/borsa` },
-          { '@type': 'ListItem', position: 3, name: 'Endeksler', item: `${SITE_URL}/borsa/endeksler` },
+          { '@type': 'ListItem', position: 3, name: 'Endeksler', item: `${SITE_URL}/borsa?tab=endeksler` },
           { '@type': 'ListItem', position: 4, name: meta.name, item: canonical },
         ],
       },
@@ -164,14 +165,14 @@ export default async function IndexPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <DetailHeader
         category="borsa"
         crumbs={[
           { label: 'Ana Sayfa', href: '/' },
           { label: 'Borsa', href: '/borsa' },
-          { label: 'Endeksler', href: '/borsa/endeksler' },
+          { label: 'Endeksler', href: '/borsa?tab=endeksler' },
           { label: meta.symbol },
         ]}
         eyebrow="Borsa İstanbul · Endeks"
@@ -217,13 +218,13 @@ export default async function IndexPage({ params }: Props) {
         <aside className="space-y-6">
           <RelatedQuotes
             title="İlgili endeksler"
-            moreHref="/borsa/endeksler"
+            moreHref="/borsa?tab=endeksler"
             moreLabel="Tüm endeksler"
             items={related.map((r) => ({ label: INDEX_META[r]?.name ?? r, sub: r, href: `/borsa/endeksler/${r}`, spec: { kind: 'index' as const, symbol: r } }))}
           />
           <RelatedQuotes
             title="Öne çıkan hisseler"
-            moreHref="/borsa/hisseler"
+            moreHref="/borsa?tab=hisseler"
             moreLabel="Tüm hisseler"
             items={['THYAO', 'GARAN', 'AKBNK', 'ASELS', 'TUPRS', 'BIMAS'].map((x) => ({ label: x, sub: STOCK_META[x]?.name, href: `/borsa/hisseler/${x}`, spec: { kind: 'stock' as const, symbol: x } }))}
           />

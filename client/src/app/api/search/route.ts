@@ -1,3 +1,4 @@
+import { API_URL } from '@/lib/constants';
 // Search API route — dinamik icerik (blog + hisse + endeks).
 // Statik veri (araçlar, endeksler, döviz, altın) client-side bundle'da
 // aranıyor, bu endpoint sadece DB/API verileri için.
@@ -5,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE: string =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  API_URL;
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const q: string = req.nextUrl.searchParams.get('q')?.trim() ?? '';

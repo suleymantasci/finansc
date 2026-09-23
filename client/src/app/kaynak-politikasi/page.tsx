@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import { Shield, Mail, AlertCircle, CheckCircle2, Globe } from 'lucide-react';
 import Link from 'next/link';
@@ -94,7 +95,7 @@ export default function KaynakPolitikasiPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       <div className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
         <header className="mb-10">

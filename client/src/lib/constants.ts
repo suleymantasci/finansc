@@ -1,7 +1,13 @@
 // ── Site ──
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'FinansÇözüm';
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+/**
+ * Sunucuda (SSR/ISR/build) API_INTERNAL_URL varsa onu kullan: istekler Traefik ve
+ * dış ağ yerine doğrudan backend'e gider (hızlı, rate limit'e takılmaz).
+ * Tarayıcıda her zaman herkese açık adres.
+ */
+export const API_URL = typeof window === 'undefined' ? process.env.API_INTERNAL_URL || PUBLIC_API_URL : PUBLIC_API_URL;
 
 // ── Navigation ──
 // Literal-union: ya direkt link ya da dropdown. `href` yoksa `children` zorunlu.
@@ -13,6 +19,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'Altın', href: '/altin', icon: 'Coins' },
   { label: 'Döviz', href: '/doviz', icon: 'Banknote' },
   { label: 'Borsa', href: '/borsa', icon: 'TrendingUp' },
+  { label: 'Emtia', href: '/emtia', icon: 'Fuel' },
   {
     label: 'Veriler',
     icon: 'BarChart3',
@@ -32,6 +39,7 @@ export const FOOTER_LINKS = {
     { label: 'Döviz Kurları', href: '/doviz' },
     { label: 'Borsa', href: '/borsa' },
     { label: 'Hisse Senetleri', href: '/borsa?tab=hisseler' },
+    { label: 'Emtia Fiyatları', href: '/emtia' },
     { label: 'Enflasyon (TÜFE / ÜFE)', href: '/enflasyon' },
   ],
   araclar: [

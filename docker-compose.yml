@@ -65,6 +65,8 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
+      # SSR/ISR istekleri backend'e iç ağdan gitsin (Traefik + dış ağ + rate limit yok)
+      - API_INTERNAL_URL=http://finansc-backend:3001
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.finansc-client.rule=Host(`finanscozum.net`) || Host(`www.finanscozum.net`)"

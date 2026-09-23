@@ -399,3 +399,101 @@ article img {
 /* Temaya özel görseller (next-themes data-theme) */
 [data-theme="light"] .theme-dark-only { display: none; }
 :root:not([data-theme="light"]) .theme-light-only { display: none; }
+
+/* ── Makale tipografisi (blog içerikleri DB'den HTML gelir) ──
+   Okuma ölçüsü ~68ch, başlıklar serif, tablolar kaydırılabilir kapta. */
+.article-prose {
+  max-width: 68ch;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--color-foreground) 88%, transparent);
+  overflow-wrap: break-word;
+}
+.article-prose > * + * { margin-top: 1.15em; }
+.article-prose h2,
+.article-prose h3,
+.article-prose h4 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  color: var(--color-foreground);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  text-wrap: balance;
+  scroll-margin-top: 8.5rem;
+}
+.article-prose h2 { font-size: 1.85rem; margin-top: 2.2em; }
+.article-prose h3 { font-size: 1.4rem; margin-top: 1.8em; }
+.article-prose h4 { font-size: 1.15rem; margin-top: 1.6em; }
+.article-prose p { text-wrap: pretty; }
+.article-prose strong { color: var(--color-foreground); font-weight: 600; }
+.article-prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+  text-underline-offset: 3px;
+}
+.article-prose a:hover { text-decoration-color: var(--color-primary); }
+.article-prose ul,
+.article-prose ol { padding-left: 1.4em; }
+.article-prose ul { list-style: disc; }
+.article-prose ol { list-style: decimal; }
+.article-prose li { margin-top: 0.45em; padding-left: 0.2em; }
+.article-prose li::marker { color: var(--color-primary); }
+.article-prose blockquote {
+  border-left: 2px solid var(--color-primary);
+  padding: 0.2em 0 0.2em 1.2em;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  line-height: 1.55;
+  color: var(--color-foreground);
+}
+.article-prose hr { border: 0; border-top: 1px solid var(--color-border); margin: 2.5em 0; }
+.article-prose img { border-radius: 0.75rem; border: 1px solid var(--color-border); max-width: 100%; height: auto; }
+.article-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-muted);
+  border-radius: 0.35rem;
+  padding: 0.1em 0.35em;
+}
+.article-prose pre { overflow-x: auto; background: var(--color-muted); border-radius: 0.75rem; padding: 1em; }
+
+/* Tablo: kart içinde, mobilde yatay kaydırma, başlık satırı ayrık */
+.article-prose .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-card);
+  -webkit-overflow-scrolling: touch;
+}
+.article-prose .table-wrap:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+.article-prose table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 0.925rem;
+  line-height: 1.5;
+}
+.article-prose thead th,
+.article-prose tr:first-child th {
+  background: var(--color-elevated);
+  color: var(--color-foreground);
+  font-weight: 600;
+  text-align: left;
+}
+.article-prose th,
+.article-prose td {
+  padding: 0.7em 1em;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+  font-variant-numeric: tabular-nums;
+}
+.article-prose tr:last-child td { border-bottom: 0; }
+.article-prose tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--color-foreground) 2.5%, transparent); }
+
+@media (max-width: 640px) {
+  .article-prose { font-size: 1rem; line-height: 1.75; }
+  .article-prose h2 { font-size: 1.55rem; }
+  .article-prose h3 { font-size: 1.25rem; }
+}

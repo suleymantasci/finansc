@@ -1,12 +1,14 @@
+import { API_URL } from '@/lib/constants';
 import type { MetadataRoute } from 'next';
 import { GOLD_META } from '@/lib/seo-data/gold';
-import { CURRENCY_SLUGS } from '@/lib/seo-data/currency';
+import { CURRENCIES } from '@/lib/instruments/currencies';
+import { COMMODITIES } from '@/lib/instruments/commodities';
 import { INDEX_SYMBOLS } from '@/lib/seo-data/indices';
 import { GRAM_AMOUNTS, PIECE_AMOUNTS } from '@/lib/seo-data/altin-amounts';
-import { getKnownStockSymbols, getWhitelistMeta } from '@/lib/seo-data/whitelist';
+import { getKnownStockSymbols, getWhitelistMeta, getKnownIndexSymbols } from '@/lib/seo-data/whitelist';
 
 const BASE_URL = 'https://finanscozum.net';
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE = API_URL;
 
 // ── Fallback data — API erişilemezse veya boş dönerse kullanılır ───────────
 // Yeni blog/araç eklendiğinde buraya slug ekle; otomatik sitemap için API'ye güven
@@ -105,6 +107,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // listing URL'leri 308 redirect olduğu için sitemap'te YER ALMAZ
     // (redirect'lenen URL'leri Google çıkarsın diye sitemap dışı tutarız).
     { url: `${BASE_URL}/doviz`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
+    { url: `${BASE_URL}/editor-ekibi`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${BASE_URL}/kaynak-politikasi`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${BASE_URL}/duzeltme-politikasi`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${BASE_URL}/gizlilik`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${BASE_URL}/kullanim-sartlari`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
     { url: `${BASE_URL}/enflasyon`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/enflasyon/tuketici-fiyatlari`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/enflasyon/uretici-fiyatlari`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
@@ -153,19 +160,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  const currencyPages: MetadataRoute.Sitemap = CURRENCY_SLUGS.map((slug) => ({
-    url: `${BASE_URL}/doviz/${slug}`,
+  const currencyPages: MetadataRoute.Sitemap = CURRENCIES.map((c) => ({
+    url: `${BASE_URL}/doviz/${c.slug}`,
     lastModified: new Date(),
     changeFrequency: 'hourly' as const,
     priority: 0.9,
   }));
 
-  const indexPages: MetadataRoute.Sitemap = INDEX_SYMBOLS.map((symbol) => ({
+  const indexSymbols = [...new Set([...INDEX_SYMBOLS, ...(await getKnownIndexSymbols())])];
+  const indexPages: MetadataRoute.Sitemap = indexSymbols.map((symbol) => ({
     url: `${BASE_URL}/borsa/endeksler/${symbol}`,
     lastModified: new Date(),
     changeFrequency: 'hourly' as const,
     priority: 0.8,
   }));
+
+  const commodityPages: MetadataRoute.Sitemap = [
+    { url: `${BASE_URL}/emtia`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.8 },
+    ...COMMODITIES.map((c) => ({
+      url: `${BASE_URL}/emtia/${c.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.7,
+    })),
+  ];
 
   const gramAmountPages: MetadataRoute.Sitemap = GRAM_AMOUNTS.map((g) => ({
     url: `${BASE_URL}${g.path}`,
@@ -187,6 +205,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...goldPages,
     ...currencyPages,
     ...indexPages,
+    ...commodityPages,
     ...gramAmountPages,
     ...pieceAmountPages,
     ...blogPages,

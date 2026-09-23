@@ -21,10 +21,11 @@
 // whitelist'i kullanır, böylece sitemap'te listelenen her URL'in
 // 200 dönmesi garanti olur.
 
+import { API_URL } from '@/lib/constants';
 import { unstable_cache as nextCache } from 'next/cache';
 import { STOCK_META } from './stocks';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE = API_URL;
 
 interface ApiStock {
   symbol: string;

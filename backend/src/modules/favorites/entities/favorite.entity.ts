@@ -13,6 +13,9 @@ export enum FavoriteType {
   GOLD = 'gold',
   STOCK = 'stock',
   INDEX = 'index',
+  CURRENCY = 'currency',
+  COMMODITY = 'commodity',
+  TOOL = 'tool',
 }
 
 @Entity('favorites')
@@ -28,7 +31,7 @@ export class Favorite {
   @Column('uuid')
   userId!: string;
 
-  @Column({ type: 'enum', enum: FavoriteType })
+  @Column({ type: 'enum', enum: FavoriteType, enumName: 'favorites_favoritetype_enum' })
   favoriteType!: FavoriteType;
 
   @Column({ length: 50 })

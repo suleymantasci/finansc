@@ -1,3 +1,4 @@
+import { API_URL } from '@/lib/constants';
 // Server-side fetch helpers for TCMB inflation data (upstream TÜFE/ÜFE servisi).
 // ISR: 1 hour revalidate — data updates monthly, this is more than enough.
 
@@ -49,7 +50,7 @@ function getApiUrl(): string {
   // Build-time'da NEXT_PUBLIC_API_URL bake olur (client/Dockerfile ARG).
   // Server-side fetch'te absolute URL gerekli (rewrite sadece client isteklerinde çalışır).
   // Eğer env set değilse API_URL fallback'i kullan (lib/constants.ts).
-  return process.env.NEXT_PUBLIC_API_URL || 'https://api.finanscozum.net';
+  return API_URL;
 }
 
 async function safeJson<T>(res: Response): Promise<T | null> {

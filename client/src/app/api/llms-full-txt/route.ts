@@ -1,3 +1,8 @@
+import { TOOL_META } from '@/lib/seo-data/tools';
+import { GOLD_META } from '@/lib/seo-data/gold';
+import { CURRENCIES } from '@/lib/instruments/currencies';
+import { COMMODITIES } from '@/lib/instruments/commodities';
+import { GRAM_AMOUNTS } from '@/lib/seo-data/altin-amounts';
 import { NextResponse } from 'next/server';
 import { SITE_NAME, SITE_URL, API_URL } from '@/lib/constants';
 
@@ -51,20 +56,8 @@ const CURRENCY_SLUGS: Record<string, string> = {
   'CNY': 'yuan',
 };
 
-const ARAC_SLUGS = [
-  'ihtiyac-kredisi', 'konut-kredisi', 'tasit-kredisi', 'kobi-kredisi',
-  'maas-hesaplama', 'vadeli-mevduat', 'enflasyon-hesaplama', 'reel-getiri',
-  'doviz-hesaplama', 'altin-hesaplama', 'faiz-hesaplama', 'parasal-deger',
-  'kira-artisi', 'tasinir-temettu', 'sermaye-temettu', 'bilesik-buyume',
-  'net-bugunku-deger', 'ic-verim-orani', 'ortalama-vade', 'tahvil-hesaplama',
-  'repo-hesaplama', 'eurobond-hesaplama', 'bono-hesaplama',
-  'doviz-donusumu', 'altin-donusumu', 'kripto-hesaplama',
-  'bireysel-emeklilik', 'saglik-hesaplama', 'mtv-hesaplama',
-  'kdv-hesaplama', 'stopaj-hesaplama', 'konut-uygunluk',
-  'araba-uygunluk', 'ihtiyac-kredisi-karsilastirma', 'mevduat-getirisi',
-  'maliyet-enflasyon', 'reel-faiz', 'kur-koruma', 'dolar-endeksi',
-  'kripto-varlik', 'fon-karsilastirma', 'risk-skoru', 'yatirim-plani',
-];
+// Gerçek araç listesi (seo-data/tools) — elle liste kırık link üretiyordu
+const ARAC_SLUGS = Object.keys(TOOL_META);
 
 const GOLD_NAMES: Record<string, string> = {
   'gram-altin': 'Gram Altın',
@@ -156,7 +149,8 @@ async function fetchMarketStocks(): Promise<string[]> {
     });
     if (!res.ok) return [];
     const data = (await res.json()) as MarketItem[];
-    return data.map((s) => s.symbol).filter((s): s is string => !!s).sort();
+    // Upstream listesinin başlık satırı ('code') sembol değildir
+    return data.map((s) => s.symbol).filter((s): s is string => !!s && /^[A-Z][A-Z0-9]{2,6}$/.test(s)).sort();
   } catch {
     return [];
   }
@@ -188,11 +182,11 @@ async function fetchMarketGoldSlugs(): Promise<string[]> {
  * Otomatik güncellenir: yeni hisse/yazı/araç eklenince bir sonraki istekte görünür.
  */
 export async function GET() {
-  const [blogs, stocks, goldSlugs] = await Promise.all([
+  const [blogs, stocks] = await Promise.all([
     fetchAllBlogs(),
     fetchMarketStocks(),
-    fetchMarketGoldSlugs(),
   ]);
+  const goldSlugs = Object.keys(GOLD_META);
 
   // Blog'ları tarihe göre sırala (en yeni üstte)
   blogs.sort((a, b) => {
@@ -258,32 +252,32 @@ export async function GET() {
   lines.push(`## Altın Fiyatları (${goldSlugs.length} tür)`);
   lines.push('');
   for (const slug of goldSlugs) {
-    const name = GOLD_NAMES[slug] || slug;
+    const name = GOLD_META[slug]?.name || slug;
     lines.push(`- [${name}](${SITE_URL}/altin/${slug}): ${name} alış-satış fiyatı, günlük değişim, grafik`);
   }
   // Miktar sayfaları (sitemap'te var)
-  const miktarSayfalar = ['0-05-gram', '0-1-gram', '0-25-gram', '0-5-gram', '1-gram', '2-gram', '2-5-gram', '5-gram', '10-gram', '20-gram'];
+  const miktarSayfalar = GRAM_AMOUNTS;
   lines.push('');
   lines.push(`### Altın Miktar Çevirici`);
   lines.push('');
   for (const m of miktarSayfalar) {
-    const label = m.replace('-', '.').replace('-gram', ' gram');
-    lines.push(`- [${label} Altın](${SITE_URL}/altin/miktar/${m}): ${label} altın fiyatı`);
+    lines.push(`- [${m.title}](${SITE_URL}${m.path})`);
   }
   lines.push('');
 
   // ── Döviz ──
   lines.push('## Döviz Kurları');
   lines.push('');
-  for (const [code, slug] of Object.entries(CURRENCY_SLUGS)) {
-    const name = code === 'USD' ? 'ABD Doları' :
-                  code === 'EUR' ? 'Euro' :
-                  code === 'GBP' ? 'İngiliz Sterlini' :
-                  code === 'CHF' ? 'İsviçre Frangı' :
-                  code === 'RUB' ? 'Rus Rublesi' :
-                  code === 'JPY' ? 'Japon Yeni' :
-                  code === 'CNY' ? 'Çin Yuanı' : code;
-    lines.push(`- [${code}/TRY ${name}](${SITE_URL}/doviz/${slug}): ${code} Türk Lirası anlık kur, alış-satış`);
+  for (const c of CURRENCIES) {
+    lines.push(`- [${c.code}/TRY ${c.name}](${SITE_URL}/doviz/${c.slug}): ${c.name} kuru — ${[c.serbestName && 'serbest piyasa', c.tcmbName && 'TCMB'].filter(Boolean).join(' ve ')}`);
+  }
+  lines.push('');
+
+  // Emtia (günlük kapanış)
+  lines.push(`## Emtia Fiyatları (${COMMODITIES.length} emtia, günlük kapanış)`);
+  lines.push(`- [Tüm emtialar](${SITE_URL}/emtia): Enerji, değerli metal, endüstriyel metal ve tarım ürünleri`);
+  for (const c of COMMODITIES) {
+    lines.push(`- [${c.name}](${SITE_URL}/emtia/${c.slug}): ${c.name} fiyatı (${c.unit}), geçmiş grafik`);
   }
   lines.push('');
 
@@ -291,8 +285,8 @@ export async function GET() {
   lines.push(`## Hesaplama Araçları (${ARAC_SLUGS.length} araç)`);
   lines.push('');
   for (const slug of ARAC_SLUGS) {
-    const name = ARAC_NAMES[slug] || slug;
-    lines.push(`- [${name} Hesaplama](${SITE_URL}/araclar/${slug}): ${name} online hesaplayıcı`);
+    const name = TOOL_META[slug]?.title ?? slug;
+    lines.push(`- [${name}](${SITE_URL}/araclar/${slug}): ${name} online hesaplayıcı`);
   }
   lines.push('');
 

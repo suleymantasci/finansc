@@ -4,7 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'rea
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Search, X, Calculator, Coins, Landmark, LineChart, Building2, CornerDownLeft } from 'lucide-react';
+import { ArrowRight, Search, X, Calculator, Coins, Landmark, LineChart, Building2, CornerDownLeft, Fuel } from 'lucide-react';
 import { searchStatic, type SearchItem } from '@/lib/search/static-index';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +21,7 @@ const TYPE_META: Record<SearchItem['type'], { label: string; icon: typeof Search
   doviz: { label: 'Döviz', icon: Landmark },
   endeks: { label: 'Endeks', icon: LineChart },
   hisse: { label: 'Hisse', icon: Building2 },
+  emtia: { label: 'Emtia', icon: Fuel },
 };
 
 /** Boş sorguda gösterilen kısayollar — en çok aranan sayfalar */

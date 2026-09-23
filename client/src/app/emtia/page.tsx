@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
@@ -57,7 +58,7 @@ export default async function EmtiaPage() {
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-8 pb-24 lg:px-8 md:pb-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <Breadcrumb items={[{ label: 'Ana Sayfa', href: '/' }, { label: 'Emtia' }]} />
       <SectionIntro
         eyebrow="Emtia"

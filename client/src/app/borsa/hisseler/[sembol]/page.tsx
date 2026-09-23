@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
@@ -159,7 +160,7 @@ export default async function StockPage({ params }: Props) {
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE_URL },
           { '@type': 'ListItem', position: 2, name: 'Borsa', item: `${SITE_URL}/borsa` },
-          { '@type': 'ListItem', position: 3, name: 'Hisseler', item: `${SITE_URL}/borsa/hisseler` },
+          { '@type': 'ListItem', position: 3, name: 'Hisseler', item: `${SITE_URL}/borsa?tab=hisseler` },
           { '@type': 'ListItem', position: 4, name: meta.name, item: canonical },
         ],
       },
@@ -183,14 +184,14 @@ export default async function StockPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <DetailHeader
         category="borsa"
         crumbs={[
           { label: 'Ana Sayfa', href: '/' },
           { label: 'Borsa', href: '/borsa' },
-          { label: 'Hisseler', href: '/borsa/hisseler' },
+          { label: 'Hisseler', href: '/borsa?tab=hisseler' },
           { label: meta.symbol },
         ]}
         eyebrow={`Borsa İstanbul · ${meta.sector}`}
@@ -232,13 +233,13 @@ export default async function StockPage({ params }: Props) {
           <Converter title={`${meta.symbol} hesaplayıcı`} unitLabel="Lot (adet)" moneyLabel="Türk lirası" spec={{ kind: 'stock', symbol: meta.symbol }} />
           <RelatedQuotes
             title="İlgili hisseler"
-            moreHref="/borsa/hisseler"
+            moreHref="/borsa?tab=hisseler"
             moreLabel="Tüm hisseler"
             items={related.map((r) => ({ label: r, sub: STOCK_META[r]?.name, href: `/borsa/hisseler/${r}`, spec: { kind: 'stock' as const, symbol: r } }))}
           />
           <RelatedQuotes
             title="Endeksler"
-            moreHref="/borsa/endeksler"
+            moreHref="/borsa?tab=endeksler"
             moreLabel="Tüm endeksler"
             items={['XU100', 'XU030', 'XBANK'].map((x) => ({ label: x === 'XU100' ? 'BIST 100' : x === 'XU030' ? 'BIST 30' : 'BIST Banka', sub: x, href: `/borsa/endeksler/${x}`, spec: { kind: 'index' as const, symbol: x } }))}
           />
