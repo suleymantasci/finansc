@@ -3,98 +3,104 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Sun, Moon, LogIn, User } from 'lucide-react';
+import { Menu, X, Sun, Moon, User } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
-import { NAV_ITEMS, SITE_NAME } from '@/lib/constants';
-import { SearchPanel } from '@/components/shared/SearchPanel';
+import { NAV_ITEMS } from '@/lib/constants';
+import { CommandPalette } from '@/components/search/CommandSearch';
 import { useAuthStore } from '@/stores/auth.store';
 import { LiveTicker } from './LiveTicker';
 import { DataMenu } from './DataMenu';
 import { MobileMenuDrawer } from './MobileMenuDrawer';
+import { Logo } from './Logo';
+
+/** Güneş/ay anahtarı — tema durumunu görsel olarak da gösterir */
+function ThemeSwitch() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const dark = !mounted || resolvedTheme !== 'light';
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={dark}
+      aria-label="Koyu tema"
+      onClick={() => setTheme(dark ? 'light' : 'dark')}
+      className="relative flex h-9 w-[4.25rem] shrink-0 items-center rounded-full border border-border bg-card/60 px-1 transition-colors hover:border-border-strong"
+    >
+      <Sun className={cn('absolute left-2 h-3.5 w-3.5 transition-opacity', dark ? 'opacity-40' : 'opacity-0')} aria-hidden="true" />
+      <Moon className={cn('absolute right-2 h-3.5 w-3.5 transition-opacity', dark ? 'opacity-0' : 'opacity-40')} aria-hidden="true" />
+      <span
+        className={cn(
+          'grid h-7 w-7 place-items-center rounded-full bg-primary text-primary-foreground shadow transition-transform duration-300',
+          dark ? 'translate-x-[1.95rem]' : 'translate-x-0',
+        )}
+        aria-hidden="true"
+      >
+        {dark ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+      </span>
+    </button>
+  );
+}
 
 function Header() {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const { user } = useAuthStore();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <header className="sticky top-0 z-40">
-      {/* Ticker Strip */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-[200] focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
+      >
+        İçeriğe geç
+      </a>
+
       <LiveTicker />
 
-      {/* Main Header */}
-      <div className="border-b border-border bg-background/95">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 lg:px-8">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-extrabold tracking-tight text-primary">
-              Finans
-            </span>
-            <span className="text-xl font-extrabold tracking-tight text-foreground">
-              Çözüm
-            </span>
-          </Link>
+      <div className="border-b border-border bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-6 px-4 lg:px-8">
+          <Logo />
 
-          {/* Desktop Nav */}
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav aria-label="Ana menü" className="hidden items-center gap-0.5 whitespace-nowrap lg:flex">
             <DataMenu items={NAV_ITEMS} pathname={pathname || ''} />
           </nav>
 
-          {/* Right Actions */}
           <div className="flex items-center gap-2">
-            {/* Search — magnifier icon + overlay (modern Algolia/Linear style) */}
-            <SearchPanel />
+            <CommandPalette />
+            <ThemeSwitch />
 
-            {/* Theme Toggle */}
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
-              aria-label="Tema değiştir"
-            >
-              {mounted ? (
-                theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />
-              ) : (
-                <Sun className="h-4 w-4" />
-              )}
-            </button>
-
-            {/* Auth */}
             {user ? (
               <Link
                 href="/hesabim"
-                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
+                aria-label="Hesabım"
+                className="grid h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground"
               >
-                <User className="h-4 w-4" />
+                <User className="h-4 w-4" aria-hidden="true" />
               </Link>
             ) : (
               <Link
                 href="/giris"
-                className="hidden items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 md:flex"
+                className="hidden h-9 items-center rounded-full px-3 text-sm text-muted-foreground transition-colors hover:text-foreground xl:flex"
               >
-                <LogIn className="h-4 w-4" />
-                Giriş Yap
+                Giriş yap
               </Link>
             )}
 
-            {/* Mobile Menu */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-surface-hover md:hidden"
-              aria-label="Menü"
+              className="grid h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground lg:hidden"
+              aria-label={mobileOpen ? 'Menüyü kapat' : 'Menüyü aç'}
+              aria-expanded={mobileOpen}
             >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Menu className="h-4 w-4" aria-hidden="true" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu — full-screen drawer (MobileMenuDrawer, createPortal ile body'ye mount) */}
         <MobileMenuDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} />
       </div>
     </header>

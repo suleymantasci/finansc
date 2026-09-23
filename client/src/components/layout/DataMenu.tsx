@@ -25,11 +25,12 @@ export function DataMenu({ items, pathname }: DataMenuProps) {
             <Link
               key={direct.href}
               href={direct.href}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                'relative px-3 py-2 text-sm transition-colors after:absolute after:inset-x-3 after:-bottom-[1px] after:h-px after:origin-left after:bg-primary after:transition-transform',
                 isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground',
+                  ? 'text-foreground after:scale-x-100'
+                  : 'text-muted-foreground after:scale-x-0 hover:text-foreground hover:after:scale-x-100',
               )}
             >
               {direct.label}
@@ -90,10 +91,8 @@ function DesktopDropdown({
         aria-expanded={open}
         aria-haspopup="true"
         className={cn(
-          'flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-          isChildActive || open
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground',
+          'flex items-center gap-1 px-3 py-2 text-sm transition-colors',
+          isChildActive || open ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
         )}
       >
         {item.label}
@@ -107,7 +106,7 @@ function DesktopDropdown({
           role="menu"
           // z-50 yeterli değildi — Tailwind v4'te bg-popover token yok.
           // bg-card + backdrop-blur + ring ile net arka plan sağla.
-          className="absolute right-0 top-full z-[100] mt-1 min-w-[280px] rounded-lg border border-border bg-card p-1 shadow-xl ring-1 ring-black/5 backdrop-blur-md"
+          className="absolute left-0 top-full z-[100] mt-2 min-w-[280px] rounded-xl border border-border bg-elevated p-1.5 shadow-2xl"
         >
           {item.children.map((child: { label: string; href: string; description?: string }) => {
             const active = pathname === child.href || pathname.startsWith(child.href + '/');

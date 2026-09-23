@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   // Monorepo: standalone output dosya izlemesini workspace root'tan başlat
   outputFileTracingRoot: path.resolve(__dirname, '..'),
   reactStrictMode: true,
+  // Uzak test sunucusunda (IP:port) dev modunun HMR/chunk isteklerine izin ver
+  allowedDevOrigins: process.env.DEV_ALLOWED_ORIGINS?.split(',').filter(Boolean),
   turbopack: {
     root: path.resolve(__dirname, '..'),
   },
@@ -51,7 +53,7 @@ const nextConfig: NextConfig = {
       // ── Backend API proxy (llms hariç tüm /api/* backend'e gider) ──
       {
         source: '/api/:path+',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path+`,
+        destination: `${process.env.API_PROXY_TARGET || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path+`,
       },
     ];
   },

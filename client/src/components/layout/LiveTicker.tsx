@@ -4,14 +4,21 @@ import { useEffect, useMemo, useCallback } from 'react';
 import { useMarketStore } from '@/stores/market.store';
 import type { BorsaStreamData, GoldStreamData, CurrencyStreamData } from '@/stores/market.store';
 import { useSSE } from '@/hooks/useSSE';
-import { formatDecimal, formatPercent, formatUSD } from '@/lib/formatters';
+import Link from 'next/link';
+import { pickCurrency, pickGold, pickIndex } from '@/lib/market-pick';
+import { API_URL } from '@/lib/constants';
+import type { GoldPrice } from '@/types';
 import { cn } from '@/lib/utils';
 
-const CURRENCY_TICKER_MAP: Record<string, string> = {
-  'Amerikan Doları': 'USD/TRY',
-  'Euro': 'EUR/TRY',
-  'İngiliz Sterlini': 'GBP/TRY',
-};
+interface TickerItem {
+  label: string;
+  href: string;
+  value: number;
+  decimals: number;
+  change: number | null;
+  flashKey: string;
+  prefix?: string;
+}
 
 function LiveTicker() {
   const {
@@ -48,78 +55,101 @@ function LiveTicker() {
   const { status: goldStatus } = useSSE({ url: '/api/market/gold/stream', onMessage: handleGoldSSE });
   const { status: currencyStatus } = useSSE({ url: '/api/market/currency/serbest-piyasa/stream', onMessage: handleCurrencySSE });
 
+  // Altın akışı kaynakları sırayla ve piyasa kapalıyken seyrek gönderiyor; bazı
+  // türler (ör. Cumhuriyet) dakikalarca boş kalıyordu. İlk açılışta REST ile doldur.
+  // Borsa/döviz akışı bağlanır bağlanmaz tam veri gönderdiği için onlara gerek yok.
+  useEffect(() => {
+    const ctrl = new AbortController();
+    const get = <T,>(path: string) =>
+      fetch(`${API_URL}${path}`, { signal: ctrl.signal }).then((r) => (r.ok ? (r.json() as Promise<T>) : null)).catch(() => null);
+
+    get<GoldPrice[]>('/api/market/gold').then((list) => {
+      if (!Array.isArray(list)) return;
+      const bySource = new Map<string, GoldPrice[]>();
+      for (const g of list) bySource.set(g.source, [...(bySource.get(g.source) ?? []), g]);
+      // Akıştan önce gelen kaynağın üzerine yazma
+      const seen = new Set(useMarketStore.getState().goldPrices.map((g) => g.source));
+      for (const [source, prices] of bySource) {
+        if (!seen.has(source)) updateFromGoldStream({ type: 'prices', source, prices });
+      }
+    });
+
+    return () => ctrl.abort();
+  }, [updateFromGoldStream]);
+
   // Propagate SSE statuses to store for page-level MarketStatus indicators
   useEffect(() => { setBorsaStreamStatus(borsaStatus); }, [borsaStatus, setBorsaStreamStatus]);
   useEffect(() => { setGoldStreamStatus(goldStatus); }, [goldStatus, setGoldStreamStatus]);
   useEffect(() => { setCurrencyStreamStatus(currencyStatus); }, [currencyStatus, setCurrencyStreamStatus]);
 
-  // Derive ticker items from store data
+  // Sabit sıra: en çok bakılan enstrümanlar önce. Her öğe kendi sayfasına gider.
   const tickerItems = useMemo(() => {
-    const items: { symbol: string; value: number; changePercent: number | null; flashKey: string }[] = [];
-    if (Array.isArray(indices)) {
-      items.push(
-        ...indices
-          .filter((idx) => idx.symbol && idx.symbol !== 'code')
-          .slice(0, 3)
-          .map((idx) => ({ symbol: idx.symbol, value: idx.value, changePercent: idx.changePercent, flashKey: idx.symbol })),
-      );
-    }
-    if (Array.isArray(goldPrices)) {
-      items.push(
-        ...goldPrices
-          .filter((g) => ['Gram Altın', 'Çeyrek Altın', 'Ons Altın'].includes(g.goldType))
-          .slice(0, 3)
-          .map((g) => ({ symbol: g.goldType, value: g.buyPrice, changePercent: g.changePercent, flashKey: `${g.source}-${g.goldType}` })),
-      );
-    }
-    // Add USD, EUR, GBP from serbest piyasa
-    if (Array.isArray(serbestCurrencies)) {
-      for (const [name, symbol] of Object.entries(CURRENCY_TICKER_MAP)) {
-        const c = serbestCurrencies.find((cur) => cur.name === name);
-        if (c) {
-          items.push({ symbol, value: c.sellPrice, changePercent: c.changePercent, flashKey: `currency-serbest-piyasa-${name}` });
-        }
-      }
-    }
+    const items: TickerItem[] = [];
+    const usd = pickCurrency(serbestCurrencies, 'USD');
+    const eur = pickCurrency(serbestCurrencies, 'EUR');
+    const gbp = pickCurrency(serbestCurrencies, 'GBP');
+    const gram = pickGold(goldPrices, 'Gram Altın');
+    const ceyrek = pickGold(goldPrices, 'Çeyrek Altın');
+    const ons = pickGold(goldPrices, 'Ons Altın');
+    const xu100 = pickIndex(indices, 'XU100');
+    const xu030 = pickIndex(indices, 'XU030');
+
+    if (usd) items.push({ label: 'USD/TRY', href: '/doviz/dolar', value: usd.sellPrice, decimals: 4, change: usd.changePercent, flashKey: `currency-serbest-piyasa-${usd.name}` });
+    if (eur) items.push({ label: 'EUR/TRY', href: '/doviz/euro', value: eur.sellPrice, decimals: 4, change: eur.changePercent, flashKey: `currency-serbest-piyasa-${eur.name}` });
+    if (gram) items.push({ label: 'Gram Altın', href: '/altin/gram-altin', value: gram.sellPrice, decimals: 2, change: gram.changePercent, flashKey: `${gram.source}-${gram.goldType}` });
+    if (xu100) items.push({ label: 'BIST 100', href: '/borsa/endeksler/XU100', value: xu100.value, decimals: 2, change: xu100.changePercent, flashKey: xu100.symbol });
+    if (ons) items.push({ label: 'Ons Altın', href: '/altin/ons-altin', value: ons.sellPrice, decimals: 2, change: ons.changePercent, flashKey: `${ons.source}-${ons.goldType}`, prefix: '$' });
+    if (gbp) items.push({ label: 'GBP/TRY', href: '/doviz/sterlin', value: gbp.sellPrice, decimals: 4, change: gbp.changePercent, flashKey: `currency-serbest-piyasa-${gbp.name}` });
+    if (ceyrek) items.push({ label: 'Çeyrek Altın', href: '/altin/ceyrek-altin', value: ceyrek.sellPrice, decimals: 2, change: ceyrek.changePercent, flashKey: `${ceyrek.source}-${ceyrek.goldType}` });
+    if (xu030) items.push({ label: 'BIST 30', href: '/borsa/endeksler/XU030', value: xu030.value, decimals: 2, change: xu030.changePercent, flashKey: xu030.symbol });
     return items;
   }, [indices, goldPrices, serbestCurrencies]);
 
-  if (tickerItems.length === 0) return null;
-
-  // Duplicate items for seamless infinite scroll
-  const items = [...tickerItems, ...tickerItems];
+  const live = borsaStatus === 'connected' || goldStatus === 'connected' || currencyStatus === 'connected';
 
   return (
-    <div className="w-full overflow-hidden border-b border-border bg-card">
-      <div className="ticker-animate flex items-center gap-6 py-1.5 whitespace-nowrap">
-        {items.map((item, i) => (
-          <div
-            key={`${item.symbol}-${i}`}
-            className="flex items-center gap-2 text-xs"
-          >
-            <span className="font-medium text-foreground">
-              {item.symbol}
-            </span>
-            <span className={cn(
-              'font-mono tabular-nums text-foreground',
-              flashMap[item.flashKey] === 'up' && 'text-flash-up',
-              flashMap[item.flashKey] === 'down' && 'text-flash-down',
-            )}>
-              {item.symbol.toLowerCase().includes('ons') ? formatUSD(item.value) : formatDecimal(item.value)}
-            </span>
-            <span
-              className={cn(
-                'font-mono tabular-nums font-semibold',
-                (item.changePercent ?? 0) > 0 && 'text-up',
-                (item.changePercent ?? 0) < 0 && 'text-down',
-                item.changePercent === 0 && 'text-neutral',
-              )}
-            >
-              {formatPercent(item.changePercent ?? 0)}
-            </span>
-            <span className="mx-2 text-border">•</span>
-          </div>
-        ))}
+    <div className="border-b border-border bg-background/80">
+      <div className="mx-auto flex h-9 max-w-[1440px] items-center gap-4 px-4 lg:px-8">
+        <span className="flex shrink-0 items-center gap-2 border-r border-border pr-4">
+          <span className="relative flex h-2 w-2" aria-hidden="true">
+            {live && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-up opacity-60" />}
+            <span className={cn('relative inline-flex h-2 w-2 rounded-full', live ? 'bg-up' : 'bg-muted-foreground')} />
+          </span>
+          <span className="eyebrow text-[10px] text-muted-foreground">
+            {live ? 'Canlı piyasa' : 'Bağlanıyor'}
+          </span>
+        </span>
+        <ul className="scroll-strip flex min-w-0 flex-1 items-center gap-7" aria-label="Canlı piyasa özeti">
+          {tickerItems.length === 0
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <li key={i} className="skeleton-shimmer h-3 w-32 shrink-0 rounded" aria-hidden="true" />
+              ))
+            : tickerItems.map((item) => {
+                const ch = item.change ?? 0;
+                return (
+                  <li key={item.label} className="relative shrink-0">
+                    <Link href={item.href} className="group flex items-center gap-2 text-xs">
+                      <span className="text-muted-foreground transition-colors group-hover:text-foreground">{item.label}</span>
+                      <span
+                        className={cn(
+                          'num font-medium text-foreground',
+                          flashMap[item.flashKey] === 'up' && 'text-flash-up',
+                          flashMap[item.flashKey] === 'down' && 'text-flash-down',
+                        )}
+                      >
+                        {item.prefix}
+                        {item.value.toLocaleString('tr-TR', { minimumFractionDigits: item.decimals, maximumFractionDigits: item.decimals })}
+                      </span>
+                      <span className={cn('num flex items-center gap-0.5 text-[11px]', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
+                        <span aria-hidden="true">{ch > 0 ? '▲' : ch < 0 ? '▼' : '•'}</span>
+                        <span className="sr-only">{ch > 0 ? 'artış' : ch < 0 ? 'düşüş' : 'değişim yok'}</span>
+                        %{Math.abs(ch).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+        </ul>
       </div>
     </div>
   );

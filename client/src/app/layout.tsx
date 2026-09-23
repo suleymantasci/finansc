@@ -1,6 +1,6 @@
 import { Analytics } from '@/components/analytics/GoogleAnalytics';
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
+import { Geist, Geist_Mono, Instrument_Serif } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { Header } from '@/components/layout/Header';
@@ -8,15 +8,35 @@ import { Footer } from '@/components/layout/Footer';
 import { MobileNav } from '@/components/layout/MobileNav';
 import './globals.css';
 
+// latin-ext: ş, ğ, ı, İ gibi Türkçe glifler için şart (yoksa fallback font'a düşer)
 const geistSans = Geist({
   variable: '--font-geist-sans',
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
+  display: 'swap',
 });
+
+// Editoryal başlık fontu — sadece display boyutlarda kullanılır
+const instrumentSerif = Instrument_Serif({
+  variable: '--font-instrument-serif',
+  subsets: ['latin', 'latin-ext'],
+  weight: '400',
+  style: ['normal', 'italic'],
+  display: 'swap',
+});
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0a0b0d' },
+    { media: '(prefers-color-scheme: light)', color: '#f5f2ea' },
+  ],
+  colorScheme: 'dark light',
+};
 
 export const metadata: Metadata = {
   // ── Metadata Base ──
@@ -111,7 +131,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" suppressHydrationWarning>
+    <html
+      lang="tr"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable}`}
+    >
       <head>
         {/* ── Performance: third-party DNS+TLS warmup ──
             Google Tag Manager ve Analytics için preconnect — DNS lookup
@@ -123,7 +147,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col`}
+        className="atlas-grain flex min-h-screen flex-col"
       >
         <ThemeProvider
           attribute="data-theme"
@@ -131,7 +155,7 @@ export default function RootLayout({
           enableSystem={false}
         >
           <Header />
-          <main className="flex-1">{children}</main>
+          <main id="main" className="flex-1">{children}</main>
           <Footer />
           <MobileNav />
           <Analytics />

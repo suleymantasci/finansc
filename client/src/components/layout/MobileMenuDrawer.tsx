@@ -12,7 +12,7 @@ import { useAuthStore } from '@/stores/auth.store';
 /**
  * Mobil hamburger drawer — Header'daki ☰ butonu tetikler.
  * Tam ekran overlay, backdrop-blur, scroll kilitli.
- * Desktop'ta gizli (md:hidden).
+ * Desktop'ta gizli (lg:hidden).
  *
  * NEDEN createPortal(body)?
  *   Header parent div'inde `backdrop-blur-md` (backdrop-filter) var.
@@ -89,7 +89,7 @@ export function MobileMenuDrawer({ open, onClose }: MobileMenuDrawerProps) {
       role="dialog"
       aria-modal="true"
       aria-label="Menü"
-      className="fixed inset-0 z-[60] md:hidden"
+      className="fixed inset-0 z-[60] lg:hidden"
     >
       {/* Backdrop — tıklayınca kapansın */}
       <button

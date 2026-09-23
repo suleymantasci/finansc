@@ -1,34 +1,35 @@
 import Link from 'next/link';
 import { FOOTER_LINKS, SITE_NAME } from '@/lib/constants';
+import { Logo } from './Logo';
 
 function Footer() {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
+    <footer className="border-t border-border bg-background pb-20 md:pb-0">
+      <div className="mx-auto max-w-[1440px] px-4 py-14 lg:px-8">
         {/* Top */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* Brand */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-1">
-              <span className="text-lg font-extrabold text-primary">Finans</span>
-              <span className="text-lg font-extrabold text-foreground">Çözüm</span>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Piyasaların nabzı burada. Anlık veri, doğru karar.
+          <div className="space-y-4">
+            <Logo />
+            <p className="font-display max-w-xs text-2xl leading-snug text-foreground/90">
+              Daha bilinçli finansal kararlar için.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Canlı veri, bağımsız içerik, ücretsiz hesaplama araçları.
             </p>
           </div>
 
           {/* Piyasalar */}
           <div>
-            <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground">
+            <h2 className="eyebrow mb-4 text-muted-foreground">
               Piyasalar
-            </h4>
+            </h2>
             <ul className="space-y-2">
               {FOOTER_LINKS.piyasalar.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    className="text-sm text-foreground/75 transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -39,15 +40,15 @@ function Footer() {
 
           {/* Araçlar */}
           <div>
-            <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground">
+            <h2 className="eyebrow mb-4 text-muted-foreground">
               Araçlar
-            </h4>
+            </h2>
             <ul className="space-y-2">
               {FOOTER_LINKS.araclar.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    className="text-sm text-foreground/75 transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -58,32 +59,32 @@ function Footer() {
 
           {/* Kurumsal */}
           <div>
-            <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground">
+            <h2 className="eyebrow mb-4 text-muted-foreground">
               Kurumsal
-            </h4>
+            </h2>
             <ul className="space-y-2">
               {FOOTER_LINKS.kurumsal.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    className="text-sm text-foreground/75 transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link href="/editor-ekibi" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                <Link href="/editor-ekibi" className="text-sm text-foreground/75 transition-colors hover:text-primary">
                   Editör Ekibi
                 </Link>
               </li>
               <li>
-                <Link href="/kaynak-politikasi" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                <Link href="/kaynak-politikasi" className="text-sm text-foreground/75 transition-colors hover:text-primary">
                   Kaynak Politikası
                 </Link>
               </li>
               <li>
-                <Link href="/duzeltme-politikasi" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                <Link href="/duzeltme-politikasi" className="text-sm text-foreground/75 transition-colors hover:text-primary">
                   Düzeltme Politikası
                 </Link>
               </li>
