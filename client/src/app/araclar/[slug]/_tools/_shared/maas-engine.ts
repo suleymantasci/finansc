@@ -6,7 +6,7 @@
 //   3) Kalan tutar = Gelir vergisi matrahı
 //   4) Kümülatif matrah dikkate alınarak gelir vergisi dilimleri uygulanır
 //   5) Asgari ücret istisnası (varsa) gelir vergisinden düşülür
-//   6) Damga vergisi (binde 7.59) brüt üzerinden hesaplanır
+//   6) Damga vergisi (binde 7,59) brüt üzerinden hesaplanır
 //   7) Net maaş = Brüt - (SGK + İşsizlik + Gelir Vergisi + Damga)
 //   8) İşveren maliyeti = Brüt + SGK işveren + İşsizlik işveren
 //
@@ -147,7 +147,7 @@ export function bruttenNete(form: MaasFormData): MaasResult {
   const stampTax = round2(getStampTax(gross, form.employeeType, td));
   if (stampTax > 0) {
     lines.push({
-      label: 'Damga Vergisi (binde 7.59)',
+      label: 'Damga Vergisi (binde 7,59)',
       amount: stampTax,
       rate: td.stampTax,
       kind: 'deduction',

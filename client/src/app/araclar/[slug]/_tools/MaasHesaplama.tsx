@@ -380,7 +380,7 @@ function MaasHesaplamaInner() {
                 icon={<Percent className="h-5 w-5 text-red-500" />}
                 label="Kesinti Oranı"
                 sublabel="(Ortalama)"
-                value={`%${(yearlyResult.deductionRate * 100).toFixed(2)}`}
+                value={`%${(yearlyResult.deductionRate * 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
               />
               <AnalysisCard
                 icon={<Receipt className="h-5 w-5 text-purple-500" />}
@@ -462,7 +462,7 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
           Brüt maaştan çalışanın eline geçen net maaşı bulmak için sırasıyla şu kesintiler yapılır:
           SGK primi (işçi payı <strong>%14</strong>), işsizlik sigortası (işçi payı <strong>%1</strong>),
           kalan tutar üzerinden gelir vergisi (kümülatif matraha göre dilimli), brüt üzerinden damga
-          vergisi (<strong>binde 7.59</strong>) ve asgari ücret istisnası uygulanır.
+          vergisi (<strong>binde 7,59</strong>) ve asgari ücret istisnası uygulanır.
         </p>
         <p className="text-muted-foreground mt-2">
           <strong>Asgari ücret istisnası:</strong> 2022 yılından itibaren brüt asgari ücret ve altındaki
@@ -495,7 +495,7 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
                       {next ? next.limit.toLocaleString('tr-TR') : 've üzeri'}
                     </td>
                     <td className="px-4 py-2 text-right tabular-nums font-semibold">
-                      %{(b.rate * 100).toFixed(0)}
+                      %{(b.rate * 100).toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                     </td>
                   </tr>
                 );
@@ -528,7 +528,7 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
             },
             {
               q: 'Brütten Net Maaş Hesaplanırken Baz Alınan Oranlar',
-              a: `SGK primi işçi payı %14, işsizlik sigortası işçi payı %1, damga vergisi binde 7.59. Gelir vergisi kümülatif matraha göre dilimli olarak uygulanır: ${taxData.incomeTaxBrackets.map((b) => `%${(b.rate * 100).toFixed(0)}`).join(', ')}. Asgari ücret istisnası kapsamında brüt asgari ücrete kadar olan kısım gelir vergisinden muaftır.`,
+              a: `SGK primi işçi payı %14, işsizlik sigortası işçi payı %1, damga vergisi binde 7,59. Gelir vergisi kümülatif matraha göre dilimli olarak uygulanır: ${taxData.incomeTaxBrackets.map((b) => `%${(b.rate * 100).toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`).join(', ')}. Asgari ücret istisnası kapsamında brüt asgari ücrete kadar olan kısım gelir vergisinden muaftır.`,
             },
             {
               q: 'Kümülatif vergi matrahı neden önemli?',
@@ -536,11 +536,11 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
             },
             {
               q: 'Brütten Net Maaş Nasıl Hesaplanır?',
-              a: 'Brüt maaştan sırasıyla SGK primi (%14), işsizlik sigortası (%1) kesilir. Kalan tutar gelir vergisi matrahıdır. Bu matrah üzerinden kümülatif dilimlere göre gelir vergisi hesaplanır. Brüt maaş üzerinden damga vergisi (binde 7.59) uygulanır. Asgari ücret istisnası düşülür. Tüm kesintiler toplamı brütten çıkarılarak net maaş bulunur.',
+              a: 'Brüt maaştan sırasıyla SGK primi (%14), işsizlik sigortası (%1) kesilir. Kalan tutar gelir vergisi matrahıdır. Bu matrah üzerinden kümülatif dilimlere göre gelir vergisi hesaplanır. Brüt maaş üzerinden damga vergisi (binde 7,59) uygulanır. Asgari ücret istisnası düşülür. Tüm kesintiler toplamı brütten çıkarılarak net maaş bulunur.',
             },
             {
               q: 'İşveren maliyeti neleri kapsar?',
-              a: `İşveren maliyeti, brüt maaş + SGK primi işveren payı (%${(taxData.sgkEmployer * 100).toFixed(1)}) + işsizlik sigortası işveren payı (%${(taxData.unemploymentEmployer * 100).toFixed(0)}) toplamından oluşur.`,
+              a: `İşveren maliyeti, brüt maaş + SGK primi işveren payı (%${(taxData.sgkEmployer * 100).toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}) + işsizlik sigortası işveren payı (%${(taxData.unemploymentEmployer * 100).toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}) toplamından oluşur.`,
             },
             {
               q: 'Bu hesaplama yasal olarak bağlayıcı mı?',

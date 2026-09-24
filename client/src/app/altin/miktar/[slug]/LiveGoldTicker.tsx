@@ -2,8 +2,9 @@
 
 import { useMarketStore } from '@/stores/market.store';
 import { formatTL } from '@/lib/formatters';
+import { pickGold } from '@/lib/market-pick';
 import { PriceChange } from '@/components/shared/PriceChange';
-import { Activity } from 'lucide-react';
+import { sourceLabel } from '@/lib/quote';
 
 interface Props {
   grams: number;
@@ -14,10 +15,9 @@ export function LiveGoldTicker({ grams }: Props) {
 
   // İlk olarak "Gram Altın" fiyatını bul (serbest piyasa veya BIST)
   // market.store'daki GoldPrice tipinde goldType olarak gelir
-  const gramPrice = goldPrices.find(
-    (g) => g.goldType === 'Gram Altın' || g.goldType === 'GRAM ALTIN' || g.goldType === 'gram-altin'
-  );
-  const price = gramPrice?.buyPrice ?? gramPrice?.sellPrice ?? 0;
+  // Detay sayfalarıyla aynı kural: önce serbest piyasa; "kaç TL" sorusunun cevabı satış fiyatı
+  const gramPrice = pickGold(goldPrices, 'Gram Altın');
+  const price = gramPrice?.sellPrice ?? gramPrice?.buyPrice ?? 0;
   const totalValue = price * grams;
   const change = gramPrice?.changePercent ?? 0;
   const flashKey = gramPrice
@@ -25,24 +25,21 @@ export function LiveGoldTicker({ grams }: Props) {
     : 'default-gram';
 
   return (
-    <div className="rounded-2xl border border-border bg-gradient-to-br from-card to-background p-6">
+    <div className="atlas-card p-5 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Activity className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">
-            Canlı Veri
-          </span>
+          <span className="eyebrow text-primary">Güncel fiyat</span>
         </div>
         {gramPrice?.source && (
           <span className="text-xs text-muted-foreground">
-            Kaynak: {gramPrice.source}
+            Kaynak: {sourceLabel(gramPrice.source)}
           </span>
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* 1 Gram Fiyat */}
-        <div className="atlas-card/50 p-4">
+        <div className="rounded-xl border border-border bg-elevated p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
             1 Gram Altın
           </p>
@@ -74,25 +71,24 @@ export function LiveGoldTicker({ grams }: Props) {
         </div>
       </div>
 
-      {/* Ek Bilgiler */}
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+      {/* Değer eşdeğerleri: ağırlıkla değil güncel satış fiyatlarıyla (çeyrek/yarım/tam 22 ayar ve işçilikli) */}
+      <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+        {(['Çeyrek Altın', 'Yarım Altın', 'Tam Altın'] as const).map((t) => {
+          const coin = pickGold(goldPrices, t);
+          const n = coin && coin.sellPrice > 0 && totalValue > 0 ? totalValue / coin.sellPrice : null;
+          return (
+            <div key={t}>
+              <p className="text-xs text-muted-foreground">Değerce {t.split(' ')[0].toLocaleLowerCase('tr-TR')}</p>
+              <p className="num font-medium">{n == null ? '—' : `${n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} adet`}</p>
+            </div>
+          );
+        })}
         <div>
-          <p className="text-muted-foreground text-xs">Çeyrek eşdeğeri</p>
-          <p className="font-semibold">{(grams / 1.75).toFixed(2)} adet</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-xs">Yarım eşdeğeri</p>
-          <p className="font-semibold">{(grams / 3.5).toFixed(2)} adet</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-xs">Tam eşdeğeri</p>
-          <p className="font-semibold">{(grams / 7).toFixed(2)} adet</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-xs">Ons eşdeğeri</p>
-          <p className="font-semibold">{(grams / 31.1035).toFixed(4)} oz</p>
+          <p className="text-xs text-muted-foreground">Ağırlıkça ons</p>
+          <p className="num font-medium">{(grams / 31.1035).toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })} oz</p>
         </div>
       </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">Değerce karşılıklar güncel satış fiyatlarından hesaplanır; alış-satış farkı nedeniyle gerçek alım adedi farklı olabilir.</p>
     </div>
   );
 }

@@ -33,15 +33,18 @@ export class BlogController {
     @Query('status') status?: string,
     @Query('category') category?: string,
     @Query('search') search?: string,
+    @CurrentUser('role') role?: string,
   ) {
-    return this.blogService.findAll({ page, limit, status, category, search });
+    // Güvenlik: taslaklar yalnızca admin'e. Ziyaretçi için status parametresi yok sayılır.
+    const effectiveStatus = role === UserRole.ADMIN ? status : 'published';
+    return this.blogService.findAll({ page, limit, status: effectiveStatus, category, search });
   }
 
   @Public()
   @SkipThrottle()
   @Get(':slug')
-  findBySlug(@Param('slug') slug: string) {
-    return this.blogService.findBySlug(slug);
+  findBySlug(@Param('slug') slug: string, @CurrentUser('role') role?: string) {
+    return this.blogService.findBySlug(slug, role === UserRole.ADMIN);
   }
 
   @ApiBearerAuth()

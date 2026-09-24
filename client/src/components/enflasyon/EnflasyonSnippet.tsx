@@ -22,8 +22,8 @@ export function EnflasyonSnippet({ tufeLatest, ufeLatest }: Props) {
         : '';
 
   const text = period
-    ? `${period} itibarıyla ${tufePart}; ${ufePart} oranında değişti. Kaynak: TCMB.`
-    : `${tufePart}; ${ufePart}. Kaynak: TCMB.`;
+    ? `${period} itibarıyla ${tufePart}; ${ufePart} oranında değişti. Kaynak: TÜİK (TCMB üzerinden).`
+    : `${tufePart}; ${ufePart}. Kaynak: TÜİK (TCMB üzerinden).`;
 
   return (
     <p

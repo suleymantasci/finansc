@@ -237,7 +237,7 @@ function RealReturnCard() {
             height={230}
             label={
               data
-                ? `Son ${data.rows.length} ayda yıllık TÜFE ile ${meta.short} yıllık getirisi. Son ay: ${meta.short} %${data.last.asset.toFixed(1)}, enflasyon %${data.last.inflation.toFixed(1)}.`
+                ? `Son ${data.rows.length} ayda yıllık TÜFE ile ${meta.short} yıllık getirisi. Son ay: ${meta.short} %${data.last.asset.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}, enflasyon %${data.last.inflation.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}.`
                 : 'Grafik yükleniyor'
             }
           />

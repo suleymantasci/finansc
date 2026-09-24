@@ -27,10 +27,12 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const type = (searchParams.get('type') || 'default') as
     | 'hisse' | 'endeks' | 'doviz' | 'altin' | 'emtia' | 'blog' | 'arac' | 'default';
-  const title = searchParams.get('title') || SITE_NAME;
-  const subtitle = searchParams.get('subtitle') || '';
-  const category = (searchParams.get('category') || '').toUpperCase();
-  const url = searchParams.get('url') || 'finanscozum.net';
+  // Sorgu parametreleri dışarıdan gelir: uzunluk sınırı (render maliyeti / kötüye kullanım)
+  const clip = (v: string | null, n: number) => (v ?? '').slice(0, n);
+  const title = clip(searchParams.get('title'), 120) || SITE_NAME;
+  const subtitle = clip(searchParams.get('subtitle'), 160);
+  const category = clip(searchParams.get('category'), 24).toLocaleUpperCase('tr-TR');
+  const url = clip(searchParams.get('url'), 90) || 'finanscozum.net';
 
   // Type'a göre kategori badge rengi
   const badgeColors: Record<string, string> = {

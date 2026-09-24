@@ -256,8 +256,8 @@ export function ParasalDeger() {
             <ShareButton shareUrl={shareUrl} />
           </div>
           <ResultCard>
-            <ResultRow label="Başlangıç Endeksi" value={result.base.value.toFixed(2)} />
-            <ResultRow label="Hedef Endeks" value={result.target.value.toFixed(2)} />
+            <ResultRow label="Başlangıç Endeksi" value={result.base.value.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
+            <ResultRow label="Hedef Endeks" value={result.target.value.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
             <ResultRow label="Güncellenmiş Değer" value={fmtTL(result.result.value)} highlight />
             <ResultRow label="Değişim (₺)" value={fmtTL(result.result.change)} />
             <ResultRow label="Değişim Oranı" value={fmtPct(result.result.changePercent)} />

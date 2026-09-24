@@ -108,11 +108,12 @@ export function formatPeriodTr(period: string): string {
 
 export function formatPercentTr(value: number | null | undefined, digits = 2): string {
   if (value === null || value === undefined) return '—';
-  return `%${value.toFixed(digits)}`;
+  // Türkçe ondalık ayırıcı: %31,51 (nokta değil)
+  return `%${value.toLocaleString('tr-TR', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
 }
 
 export function formatChange(value: number | null | undefined): string {
   if (value === null || value === undefined) return '—';
   const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(2)}`;
+  return `${sign}${value.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }

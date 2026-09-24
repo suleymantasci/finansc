@@ -42,8 +42,8 @@ export default async function TufePage() {
   // Snippet text: latest varsa gerçek değer, yoksa generic
   const snippetText =
     tufeLatest && tufeLatest.yearlyChange !== null
-      ? `${formatPercentTr(tufeLatest.yearlyChange)} yıllık, ${formatPercentTr(tufeLatest.monthlyChange)} aylık değişim. Kaynak: TCMB / TÜİK.`
-      : 'TÜFE yıllık ve aylık değişim verileri. Kaynak: TCMB / TÜİK.';
+      ? `${formatPercentTr(tufeLatest.yearlyChange)} yıllık, ${formatPercentTr(tufeLatest.monthlyChange)} aylık değişim. Kaynak: TÜİK (TCMB üzerinden).`
+      : 'TÜFE yıllık ve aylık değişim verileri. Kaynak: TÜİK (TCMB üzerinden).';
 
   return (
     <>

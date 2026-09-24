@@ -1,6 +1,7 @@
 import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { GRAM_AMOUNTS, getGramAmount } from '@/lib/seo-data/altin-amounts';
@@ -73,7 +74,7 @@ export default async function GramAltinPage({ params }: Props) {
     },
     {
       q: `${amount.grams} gram altın ile kaç çeyrek altın alınır?`,
-      a: `Bir çeyrek altın yaklaşık 1.75 gramdır. ${amount.grams} gram altın ile yaklaşık ${(amount.grams / 1.75).toFixed(2)} adet çeyrek altın alabilirsiniz (anlık fiyatlara göre değişir).`,
+      a: `Bir çeyrek altın yaklaşık 1,75 gram ağırlığındadır ve 22 ayardır. Gram altın ise 24 ayar olduğundan ${amount.grams} gram altının kaç çeyreğe denk geldiği ağırlıkla değil güncel fiyatlarla hesaplanmalıdır; bunun için altın hesaplama aracını kullanabilirsiniz.`,
     },
   ];
 
@@ -112,17 +113,7 @@ export default async function GramAltinPage({ params }: Props) {
       <FAQSchema faqs={faqs} />
 
       <article className="mx-auto max-w-4xl px-4 py-8 lg:px-8">
-        <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted-foreground">
-          <ol className="flex items-center gap-1">
-            <li><Link href="/" className="hover:text-primary">Ana Sayfa</Link></li>
-            <li>/</li>
-            <li><Link href="/altin" className="hover:text-primary">Altın</Link></li>
-            <li>/</li>
-            <li><Link href="/altin/gram-altin" className="hover:text-primary">Gram Altın</Link></li>
-            <li>/</li>
-            <li className="text-foreground">{amount.grams} gram</li>
-          </ol>
-        </nav>
+        <Breadcrumb items={[{ label: 'Ana Sayfa', href: '/' }, { label: 'Altın', href: '/altin' }, { label: 'Gram Altın', href: '/altin/gram-altin' }, { label: `${amount.grams} gram` }]} />
 
         <header className="mb-6">
           <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">

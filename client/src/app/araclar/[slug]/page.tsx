@@ -92,7 +92,8 @@ export default async function ToolSlugPage({ params }: Props) {
 
   // Citable snippet — AI engine'lerin doğrudan cevap olarak kullanacağı 1-2 cümle.
   // Tool'un ne yaptığını ve nasıl kullanıldığını düz dille anlatır.
-  const summary = `${meta.title}, FinansÇözüm tarafından sunulan ücretsiz bir online hesaplama aracıdır. ${meta.desc} Sonuçlar anlık hesaplanır, kayıt veya üyelik gerektirmez.`;
+  const toolName = meta.title.split('|')[0].trim();
+  const summary = `${toolName}, FinansÇözüm tarafından sunulan ücretsiz bir online hesaplama aracıdır. ${meta.desc} Sonuçlar anlık hesaplanır, kayıt veya üyelik gerektirmez.`;
 
   return (
     <>

@@ -56,7 +56,7 @@ export default async function EnflasyonPage() {
         <SectionIntro
           as="page"
           title="Enflasyon Verileri"
-          description="TÜFE (Tüketici Fiyat Endeksi) ve ÜFE / Yİ-ÜFE (Yurt İçi Üretici Fiyat Endeksi) güncel aylık ve yıllık değişim oranları. Veriler Türkiye Cumhuriyet Merkez Bankası (TCMB) kaynaklıdır."
+          description="TÜFE (Tüketici Fiyat Endeksi) ve ÜFE / Yİ-ÜFE (Yurt İçi Üretici Fiyat Endeksi) güncel aylık ve yıllık değişim oranları. Veriler TÜİK tarafından açıklanır; TCMB üzerinden alınır."
         />
       </div>
 

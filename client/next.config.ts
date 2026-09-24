@@ -83,7 +83,11 @@ const nextConfig: NextConfig = {
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          // Eski XSS denetleyicisi modern tarayıcılarda yok, eskilerde yan etkili → kapalı (OWASP önerisi)
+          { key: 'X-XSS-Protection', value: '0' },
+          // Script'leri etkilemeyen, düşük riskli CSP direktifleri (GA/AdSense satır içi script'leri kırılmaz)
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'" },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],

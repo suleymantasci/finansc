@@ -203,7 +203,7 @@ export function generateMaasPdf(
   const rateLines = [
     `SGK primi (isci): ${fmtPct(taxData.sgkEmployee, 1)} | Isveren: ${fmtPct(taxData.sgkEmployer, 1)}`,
     `Issizlik sigortasi (isci): ${fmtPct(taxData.unemploymentEmployee, 1)} | Isveren: ${fmtPct(taxData.unemploymentEmployer, 1)}`,
-    `Damga vergisi: ${fmtPct(taxData.stampTax, 3)} (binde 7.59)`,
+    `Damga vergisi: ${fmtPct(taxData.stampTax, 3)} (binde 7,59)`,
     `Asgari ucret istisnasi: ${taxData.minimumWageExemption ? 'Uygulaniyor' : 'Uygulanmiyor'}`,
     `Brut asgari ucret: ${tr(fmtTL(taxData.minWageBrut, 0))} | Net: ${tr(fmtTL(taxData.minWageNet, 0))}`,
   ];

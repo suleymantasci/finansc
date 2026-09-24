@@ -124,7 +124,7 @@ function LegendRow({ color, label, amount, percent }: { color: string; label: st
       <div className="h-3 w-3 rounded-sm shrink-0" style={{ backgroundColor: color }} />
       <span className="flex-1 truncate text-muted-foreground">{label}</span>
       <span className="num font-semibold">{fmtTL(amount, 0)}</span>
-      <span className="text-muted-foreground tabular-nums w-12 text-right">{(percent * 100).toFixed(1)}%</span>
+      <span className="text-muted-foreground tabular-nums w-12 text-right">%{((percent * 100)).toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
     </div>
   );
 }

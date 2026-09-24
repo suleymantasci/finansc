@@ -268,8 +268,8 @@ export function EnflasyonHesaplama() {
             <ResultRow label="Enflasyon Oranı" value={fmtPct(inflationRate)} highlight />
             <ResultRow label="Yeni Değer" value={fmtTL(result.result.value)} />
             <ResultRow label="Fark (₺)" value={fmtTL(result.result.change)} />
-            <ResultRow label="Başlangıç Endeksi" value={result.base.value.toFixed(2)} />
-            <ResultRow label="Hedef Endeks" value={result.target.value.toFixed(2)} />
+            <ResultRow label="Başlangıç Endeksi" value={result.base.value.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
+            <ResultRow label="Hedef Endeks" value={result.target.value.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
           </ResultCard>
         </>
       )}

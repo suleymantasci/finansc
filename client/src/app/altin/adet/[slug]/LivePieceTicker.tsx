@@ -3,7 +3,9 @@
 import { useMarketStore } from '@/stores/market.store';
 import { formatTL } from '@/lib/formatters';
 import { PriceChange } from '@/components/shared/PriceChange';
-import { Activity } from 'lucide-react';
+import { sourceLabel } from '@/lib/quote';
+import { pickGold } from '@/lib/market-pick';
+import { GOLD_BY_SLUG } from '@/lib/instruments/gold';
 
 interface Props {
   count: number;
@@ -15,14 +17,11 @@ export function LivePieceTicker({ count, goldType, goldSlug }: Props) {
   const { goldPrices, flashMap } = useMarketStore();
 
   // İlgili altın türünü bul
-  const gold = goldPrices.find(
-    (g) =>
-      g.goldType === goldType ||
-      g.goldType.toLowerCase().replace(/\s+/g, '-') === goldSlug ||
-      g.goldType.toLowerCase() === goldType.toLowerCase()
-  );
+  // Önce serbest piyasa (detay sayfalarıyla tutarlı); fiyat = satış (ödenecek tutar)
+  const liveName = GOLD_BY_SLUG[goldSlug]?.liveName ?? goldType;
+  const gold = pickGold(goldPrices, liveName);
 
-  const unitPrice = gold?.buyPrice ?? gold?.sellPrice ?? 0;
+  const unitPrice = gold?.sellPrice ?? gold?.buyPrice ?? 0;
   const total = unitPrice * count;
   const change = gold?.changePercent ?? 0;
   const flashKey = gold
@@ -30,24 +29,21 @@ export function LivePieceTicker({ count, goldType, goldSlug }: Props) {
     : 'default';
 
   return (
-    <div className="rounded-2xl border border-border bg-gradient-to-br from-card to-background p-6">
+    <div className="atlas-card p-5 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Activity className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">
-            Canlı Veri
-          </span>
+          <span className="eyebrow text-primary">Güncel fiyat</span>
         </div>
         {gold?.source && (
           <span className="text-xs text-muted-foreground">
-            Kaynak: {gold.source}
+            Kaynak: {sourceLabel(gold.source)}
           </span>
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* 1 Adet */}
-        <div className="atlas-card/50 p-4">
+        <div className="rounded-xl border border-border bg-elevated p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
             1 Adet {goldType}
           </p>
@@ -66,7 +62,7 @@ export function LivePieceTicker({ count, goldType, goldSlug }: Props) {
         </div>
 
         {/* Adet */}
-        <div className="atlas-card/50 p-4">
+        <div className="rounded-xl border border-border bg-elevated p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Adet</p>
           <p className="text-3xl font-extrabold num">
             {count}

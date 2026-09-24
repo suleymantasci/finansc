@@ -9,7 +9,7 @@ const API_BASE: string =
   API_URL;
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  const q: string = req.nextUrl.searchParams.get('q')?.trim() ?? '';
+  const q: string = (req.nextUrl.searchParams.get('q')?.trim() ?? '').slice(0, 100);
   if (q.length < 2) {
     return NextResponse.json({
       blog: [] as unknown[],

@@ -40,8 +40,8 @@ export default async function UfePage() {
 
   const snippetText =
     ufeLatest && ufeLatest.yiUfeYearlyChange !== null
-      ? `Yİ-ÜFE yıllık ${formatPercentTr(ufeLatest.yiUfeYearlyChange)}, aylık ${formatPercentTr(ufeLatest.yiUfeMonthlyChange)} değişim. Kaynak: TCMB / TÜİK.`
-      : 'ÜFE / Yİ-ÜFE yıllık ve aylık değişim verileri. Kaynak: TCMB / TÜİK.';
+      ? `Yİ-ÜFE yıllık ${formatPercentTr(ufeLatest.yiUfeYearlyChange)}, aylık ${formatPercentTr(ufeLatest.yiUfeMonthlyChange)} değişim. Kaynak: TÜİK (TCMB üzerinden).`
+      : 'ÜFE / Yİ-ÜFE yıllık ve aylık değişim verileri. Kaynak: TÜİK (TCMB üzerinden).';
 
   return (
     <>

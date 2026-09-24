@@ -1,6 +1,7 @@
 import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { PIECE_AMOUNTS, getPieceAmount } from '@/lib/seo-data/altin-amounts';
@@ -111,21 +112,7 @@ export default async function PieceAltinPage({ params }: Props) {
       <FAQSchema faqs={faqs} />
 
       <article className="mx-auto max-w-4xl px-4 py-8 lg:px-8">
-        <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted-foreground">
-          <ol className="flex items-center gap-1">
-            <li><Link href="/" className="hover:text-primary">Ana Sayfa</Link></li>
-            <li>/</li>
-            <li><Link href="/altin" className="hover:text-primary">Altın</Link></li>
-            <li>/</li>
-            <li>
-              <Link href={`/altin/${item.goldSlug}`} className="hover:text-primary">
-                {item.goldName}
-              </Link>
-            </li>
-            <li>/</li>
-            <li className="text-foreground">{item.count} adet</li>
-          </ol>
-        </nav>
+        <Breadcrumb items={[{ label: 'Ana Sayfa', href: '/' }, { label: 'Altın', href: '/altin' }, { label: item.goldName, href: `/altin/${item.goldSlug}` }, { label: `${item.count} adet` }]} />
 
         <header className="mb-6">
           <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">
