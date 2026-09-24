@@ -21,7 +21,8 @@ export function Logo({ className }: { className?: string }) {
       aria-label="FinansÇözüm ana sayfa"
       className={cn('group flex items-center gap-2.5 text-foreground', className)}
     >
-      <LogoMark className="text-primary transition-transform duration-300 group-hover:-translate-y-0.5" />
+      {/* Yazı kutusu "ç" kuyruğu yüzünden aşağı uzuyor; amblem büyük harf yüksekliğine göre ortalanır */}
+      <LogoMark className="relative -top-1 text-primary transition-transform duration-300 group-hover:scale-105" />
       <span className="font-display text-[1.6rem] leading-none tracking-tight">
         Finans<span className="text-primary">Çözüm</span>
       </span>
