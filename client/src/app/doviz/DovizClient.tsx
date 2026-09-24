@@ -94,8 +94,8 @@ export function DovizClient() {
     { key: 'name', label: 'Döviz', align: 'left' },
     { key: 'buyPrice', label: 'Alış', align: 'right' },
     { key: 'sellPrice', label: 'Satış', align: 'right' },
-    { key: 'changePercent', label: 'Değişim', align: 'right' },
-    { key: 'time', label: 'Saat', align: 'right' },
+    { key: 'changePercent', label: 'Değişim', align: 'right', hide: 'sm' },
+    { key: 'time', label: 'Saat', align: 'right', hide: 'sm' },
   ];
 
   const tabs: { key: Tab; label: string }[] = [
@@ -134,8 +134,8 @@ export function DovizClient() {
       {isLoading ? (
         <SkeletonTable rows={15} cols={5} />
       ) : (
-        <div className="atlas-card overflow-x-auto md:overflow-visible">
-          <table className="w-full min-w-[560px] text-sm">
+        <div className="atlas-card overflow-clip">
+          <table className="w-full text-sm">
             <caption className="sr-only">{tab === 'serbest-piyasa' ? 'Serbest piyasa' : 'TCMB gösterge'} döviz kurları</caption>
             <thead className="sticky-thead">
               <tr className="border-b border-border text-[12px] text-muted-foreground">
@@ -144,7 +144,7 @@ export function DovizClient() {
                     key={col.key}
                     scope="col"
                     aria-sort={sort.key === col.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
-                    className={cn('whitespace-nowrap px-4 py-3 font-normal first:pl-5 last:pr-5', col.align === 'right' ? 'text-right' : 'text-left')}
+                    className={cn('whitespace-nowrap px-2 py-3 font-normal first:pl-4 last:pr-4 sm:px-4 sm:first:pl-5 sm:last:pr-5', col.align === 'right' ? 'text-right' : 'text-left', col.hide === 'sm' && 'hidden sm:table-cell', col.key === 'sellPrice' && 'max-sm:pr-4')}
                   >
                     <button type="button" onClick={() => handleSort(col.key)} className="inline-flex items-center hover:text-foreground">
                       {col.label}
@@ -176,7 +176,7 @@ export function DovizClient() {
                         flashMap[flashKey] === 'down' && 'flash-down',
                       )}
                     >
-                      <th scope="row" className="px-4 py-3 pl-5 text-left font-normal">
+                      <th scope="row" className="px-3 py-3 pl-4 text-left font-normal sm:px-4 sm:pl-5">
                         {e ? (
                           <Link href={`/doviz/${e.slug}`} className="font-medium text-foreground hover:text-primary">
                             {label}
@@ -186,12 +186,18 @@ export function DovizClient() {
                         )}
                         {e && <span className="ml-2 text-[11px] text-muted-foreground">{per100 ? `${e.tcmbUnit} ${e.code}` : e.code}</span>}
                       </th>
-                      <td className="num px-4 py-3 text-right text-foreground/85">{formatDecimal4(c.buyPrice)}</td>
-                      <td className="num px-4 py-3 text-right text-foreground">{formatDecimal4(c.sellPrice)}</td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="num px-2 py-3 text-right text-foreground/85 sm:px-4">{formatDecimal4(c.buyPrice)}</td>
+                      <td className="num px-2 py-3 pr-4 text-right text-foreground sm:px-4">
+                        {formatDecimal4(c.sellPrice)}
+                        {/* Mobilde değişim ayrı sütun yerine satışın altında */}
+                        <span className="block sm:hidden">
+                          <PriceChange value={c.changePercent} size="sm" showIcon={false} />
+                        </span>
+                      </td>
+                      <td className="hidden px-4 py-3 text-right sm:table-cell">
                         <PriceChange value={c.changePercent} size="sm" showIcon={false} />
                       </td>
-                      <td className="num px-4 py-3 pr-5 text-right text-[12px] text-muted-foreground">{c.time}</td>
+                      <td className="num hidden px-4 py-3 pr-5 text-right text-[12px] text-muted-foreground sm:table-cell">{c.time}</td>
                     </tr>
                   );
                 })

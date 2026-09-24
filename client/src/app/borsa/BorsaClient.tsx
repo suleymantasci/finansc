@@ -150,7 +150,7 @@ export function BorsaClient() {
   const stockColumns = [
     { key: 'symbol', label: 'Hisse', align: 'left' as const, cls: '' },
     { key: 'lastPrice', label: 'Son', align: 'right' as const, cls: '' },
-    { key: 'changePercent', label: 'Değişim', align: 'right' as const, cls: '' },
+    { key: 'changePercent', label: 'Değişim', align: 'right' as const, cls: 'max-sm:pr-4' },
     { key: 'low', label: 'Gün düşük', align: 'right' as const, cls: 'hidden md:table-cell' },
     { key: 'high', label: 'Gün yüksek', align: 'right' as const, cls: 'hidden md:table-cell' },
     { key: 'volume', label: 'Hacim (lot)', align: 'right' as const, cls: 'hidden xl:table-cell' },
@@ -177,7 +177,7 @@ export function BorsaClient() {
     <th
       scope="col"
       aria-sort={sort.key === col.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
-      className={cn('whitespace-nowrap px-3 py-3 font-normal first:pl-5 last:pr-5', col.align === 'right' ? 'text-right' : 'text-left', col.cls)}
+      className={cn('whitespace-nowrap px-2 py-3 font-normal first:pl-4 last:pr-5 sm:px-3 sm:first:pl-5', col.align === 'right' ? 'text-right' : 'text-left', col.cls)}
     >
       <button type="button" onClick={() => onSort(col.key)} className="inline-flex items-center hover:text-foreground">
         {col.label}
@@ -200,7 +200,7 @@ export function BorsaClient() {
             ))}
           </div>
           {mainTab === 'hisseler' && (
-            <div role="group" aria-label="Endeks" className="scroll-strip flex gap-1 border-l border-border pl-2">
+            <div role="group" aria-label="Endeks" className="scroll-strip -mx-4 flex w-[calc(100%+2rem)] gap-1 px-4 md:mx-0 md:w-auto md:border-l md:border-border md:pl-2 md:pr-0">
               {indexFilters.map((f) => (
                 <button key={f.key} type="button" aria-pressed={indexFilter === f.key} onClick={() => setIndexFilter(f.key)} className={pill(indexFilter === f.key)}>
                   {f.label}
@@ -209,7 +209,7 @@ export function BorsaClient() {
             </div>
           )}
           {mainTab === 'hisseler' && (
-            <div role="group" aria-label="Hızlı sıralama" className="scroll-strip flex gap-1 border-l border-border pl-2">
+            <div role="group" aria-label="Hızlı sıralama" className="scroll-strip -mx-4 flex w-[calc(100%+2rem)] gap-1 px-4 md:mx-0 md:w-auto md:border-l md:border-border md:pl-2 md:pr-0">
               {sortTabs.map((tab) => (
                 <button key={tab.key} type="button" aria-pressed={sortTab === tab.key} onClick={() => handleSortTab(tab.key)} className={pill(sortTab === tab.key)}>
                   {tab.label}
@@ -229,7 +229,7 @@ export function BorsaClient() {
         ) : (
           <>
             <p className="mb-2 text-[12px] text-muted-foreground">{filteredStocks.length} hisse</p>
-            <div className="atlas-card overflow-x-auto md:overflow-visible">
+            <div className="atlas-card overflow-clip">
               <table className="w-full text-sm">
                 <caption className="sr-only">Borsa İstanbul hisse senetleri</caption>
                 <thead className="sticky-thead">
@@ -258,14 +258,14 @@ export function BorsaClient() {
                             flashMap[s.symbol] === 'down' && 'flash-down',
                           )}
                         >
-                          <th scope="row" className="whitespace-nowrap px-3 py-2.5 pl-5 text-left font-normal">
+                          <th scope="row" className="whitespace-nowrap px-2 py-2.5 pl-4 text-left font-normal sm:px-3 sm:pl-5">
                             <Link href={`/borsa/hisseler/${s.symbol}`} className="group block">
                               <span className="font-medium text-foreground group-hover:text-primary">{s.symbol}</span>
-                              {name && <span className="block max-w-[22ch] truncate text-[12px] text-muted-foreground">{name}</span>}
+                              {name && <span className="block max-w-[13ch] truncate text-[12px] text-muted-foreground sm:max-w-[22ch]">{name}</span>}
                             </Link>
                           </th>
-                          <td className="num whitespace-nowrap px-3 py-2.5 text-right text-foreground">{formatDecimal(s.lastPrice)}</td>
-                          <td className="whitespace-nowrap px-3 py-2.5 text-right">
+                          <td className="num whitespace-nowrap px-2 py-2.5 text-right text-foreground sm:px-3">{formatDecimal(s.lastPrice)}</td>
+                          <td className="whitespace-nowrap px-2 py-2.5 text-right max-sm:pr-4 sm:px-3">
                             <PriceChange value={s.changePercent} size="sm" showIcon={false} />
                           </td>
                           <td className="num hidden whitespace-nowrap px-3 py-2.5 text-right text-muted-foreground md:table-cell">{formatDecimal(s.low)}</td>
@@ -287,7 +287,7 @@ export function BorsaClient() {
       ) : (
         <>
           <p className="mb-2 text-[12px] text-muted-foreground">{sortedIndices.length} endeks</p>
-          <div className="atlas-card overflow-x-auto md:overflow-visible">
+          <div className="atlas-card overflow-clip">
             <table className="w-full text-sm">
               <caption className="sr-only">Borsa İstanbul endeksleri</caption>
               <thead className="sticky-thead">

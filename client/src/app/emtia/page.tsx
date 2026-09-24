@@ -74,15 +74,15 @@ export default async function EmtiaPage() {
               <h2 id={`g-${g}`} className="font-display mb-4 text-2xl text-foreground">
                 {COMMODITY_GROUP_LABELS[g]}
               </h2>
-              <div className="atlas-card overflow-x-auto md:overflow-visible">
-                <table className="w-full min-w-[560px] text-sm">
+              <div className="atlas-card overflow-clip">
+                <table className="w-full text-sm">
                   <thead className="sticky-thead">
                     <tr className="border-b border-border text-left text-[12px] text-muted-foreground">
-                      <th scope="col" className="px-5 py-3 font-normal">Emtia</th>
+                      <th scope="col" className="px-4 py-3 font-normal sm:px-5">Emtia</th>
                       <th scope="col" className="px-3 py-3 text-right font-normal">Son kapanış</th>
-                      <th scope="col" className="px-3 py-3 font-normal">Birim</th>
+                      <th scope="col" className="hidden px-3 py-3 font-normal sm:table-cell">Birim</th>
                       <th scope="col" className="px-3 py-3 text-right font-normal">Değişim</th>
-                      <th scope="col" className="px-5 py-3 text-right font-normal">Tarih</th>
+                      <th scope="col" className="hidden px-5 py-3 text-right font-normal sm:table-cell">Tarih</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -90,17 +90,18 @@ export default async function EmtiaPage() {
                       const ch = s?.changePct ?? 0;
                       return (
                         <tr key={c.slug} className="border-b border-border/60 last:border-0 transition-colors hover:bg-surface-hover">
-                          <th scope="row" className="px-5 py-3 text-left font-normal">
+                          <th scope="row" className="px-4 py-3 text-left font-normal sm:px-5">
                             <Link href={`/emtia/${c.slug}`} className="font-medium text-foreground hover:text-primary">
                               {c.name}
                             </Link>
+                            <span className="block text-[12px] text-muted-foreground sm:hidden">{c.unit}</span>
                           </th>
                           <td className="num px-3 py-3 text-right text-foreground">{s ? formatCommodity(c, s.last) : '—'}</td>
-                          <td className="px-3 py-3 text-[13px] text-muted-foreground">{c.unit}</td>
-                          <td className={cn('num px-3 py-3 text-right', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
+                          <td className="hidden px-3 py-3 text-[13px] text-muted-foreground sm:table-cell">{c.unit}</td>
+                          <td className={cn('num px-3 py-3 pr-4 text-right sm:pr-3', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
                             {s?.changePct != null ? pctTr(ch, { signed: true }) : '—'}
                           </td>
-                          <td className="px-5 py-3 text-right text-[12px] text-muted-foreground">{s ? formatDateTr(s.date) : '—'}</td>
+                          <td className="hidden px-5 py-3 text-right text-[12px] text-muted-foreground sm:table-cell">{s ? formatDateTr(s.date) : '—'}</td>
                         </tr>
                       );
                     })}

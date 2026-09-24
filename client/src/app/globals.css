@@ -247,18 +247,15 @@
 }
 
 /* Uzun tablolarda başlık satırı sabit kalır (site başlığının hemen altında).
-   md altında tablo kendi kabında yatay kaydığı için yapışkanlık devre dışı. */
+   Tablo kapları kaydırma kabı değildir (overflow-clip köşeleri kırpar ama sticky'yi bozmaz);
+   dar ekranda az önemli sütunlar gizlenir. */
 @utility sticky-thead {
-  @media (width >= 48rem) {
-    & th {
-      position: sticky;
-      top: var(--header-h, 102px); /* şerit 36+1 + başlık 64+1 */
-      z-index: 10;
-      background: var(--color-card);
-      box-shadow: inset 0 -1px 0 var(--color-border);
-    }
-    & tr > th:first-child { border-top-left-radius: 1rem; }
-    & tr > th:last-child { border-top-right-radius: 1rem; }
+  & th {
+    position: sticky;
+    top: var(--header-h, 102px); /* şerit 36+1 + başlık 64+1 */
+    z-index: 10;
+    background: var(--color-card);
+    box-shadow: inset 0 -1px 0 var(--color-border);
   }
 }
 

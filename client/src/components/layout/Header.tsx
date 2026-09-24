@@ -61,15 +61,15 @@ function Header() {
 
       <LiveTicker />
 
-      <div className="border-b border-border bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-6 px-4 lg:px-8">
+      <div className="border-b border-border bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 px-4 sm:gap-6 lg:px-8">
           <Logo />
 
           <nav aria-label="Ana menü" className="hidden items-center gap-0.5 whitespace-nowrap lg:flex">
             <DataMenu items={NAV_ITEMS} pathname={pathname || ''} />
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <CommandPalette />
             <ThemeSwitch />
 
@@ -77,7 +77,7 @@ function Header() {
               <Link
                 href="/hesabim"
                 aria-label="Hesabım"
-                className="grid h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground"
+                className="hidden h-9 w-9 place-items-center sm:grid rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground"
               >
                 <User className="h-4 w-4" aria-hidden="true" />
               </Link>

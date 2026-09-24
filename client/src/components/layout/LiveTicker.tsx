@@ -147,7 +147,7 @@ function LiveTicker() {
             ))}
           </ul>
         ) : (
-          <ul className="ticker-track flex w-max items-center" aria-label="Piyasa özeti">
+          <ul className="ticker-track flex w-max shrink-0 items-center" aria-label="Piyasa özeti">
             {tickerItems.map((item) => renderItem(item, false))}
             {tickerItems.map((item) => renderItem(item, true))}
           </ul>

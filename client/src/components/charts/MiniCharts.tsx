@@ -138,8 +138,9 @@ export function AreaChart({
   const hx = hover != null ? (hover / (points.length - 1)) * 100 : 0;
   const hy = hi ? 100 - ((hi.c - dom[0]) / (dom[1] - dom[0])) * 100 : 0;
 
+  // Oran çizim alanına (svg) göre: sağdaki eksen etiketleri (pr-14) hesaba katılmamalı
   function onMove(e: React.PointerEvent<HTMLDivElement>) {
-    const rect = ref.current?.getBoundingClientRect();
+    const rect = ref.current?.querySelector('svg')?.getBoundingClientRect();
     if (!rect) return;
     const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
     setHover(Math.round(ratio * (points.length - 1)));

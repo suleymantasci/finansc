@@ -102,17 +102,17 @@ export function AltinClient() {
       {isLoading ? (
         <SkeletonTable rows={8} cols={5} />
       ) : (
-        <div className="atlas-card overflow-x-auto md:overflow-visible">
-          <table className="w-full min-w-[640px] text-sm">
+        <div className="atlas-card overflow-clip">
+          <table className="w-full text-sm">
             <caption className="sr-only">{GOLD_SOURCES.find((x) => x.key === activeSource)?.label} altın fiyatları</caption>
             <thead className="sticky-thead">
               <tr className="border-b border-border text-left text-[12px] text-muted-foreground">
-                <th scope="col" className="px-5 py-3 font-normal">Altın türü</th>
-                <th scope="col" className="px-3 py-3 text-right font-normal">Alış</th>
-                <th scope="col" className="px-3 py-3 text-right font-normal">Satış</th>
-                <th scope="col" className="px-3 py-3 text-right font-normal" title="Satış ile alış arasındaki fark, alışa oranla">Makas</th>
-                <th scope="col" className="px-3 py-3 text-right font-normal">Değişim</th>
-                <th scope="col" className="px-5 py-3 text-right font-normal">Saat</th>
+                <th scope="col" className="px-3 py-3 font-normal sm:px-5">Altın türü</th>
+                <th scope="col" className="px-2 py-3 text-right font-normal sm:px-3">Alış</th>
+                <th scope="col" className="px-2 py-3 pr-3 text-right font-normal sm:px-3">Satış</th>
+                <th scope="col" className="hidden px-3 py-3 text-right font-normal sm:table-cell" title="Satış ile alış arasındaki fark, alışa oranla">Makas</th>
+                <th scope="col" className="hidden px-3 py-3 text-right font-normal sm:table-cell">Değişim</th>
+                <th scope="col" className="hidden px-5 py-3 text-right font-normal sm:table-cell">Saat</th>
               </tr>
             </thead>
             <tbody>
@@ -135,7 +135,7 @@ export function AltinClient() {
                         flashMap[`${gold.source}-${gold.goldType}`] === 'down' && 'flash-down',
                       )}
                     >
-                      <th scope="row" className="px-5 py-3 text-left font-normal">
+                      <th scope="row" className="px-3 py-3 text-left font-normal sm:px-5">
                         {slug ? (
                           <Link href={`/altin/${slug}`} className="font-medium text-foreground hover:text-primary">
                             {gold.goldType}
@@ -144,13 +144,19 @@ export function AltinClient() {
                           <span className="text-foreground">{gold.goldType}</span>
                         )}
                       </th>
-                      <td className="num px-3 py-3 text-right text-foreground/85">{money(gold, gold.buyPrice)}</td>
-                      <td className="num px-3 py-3 text-right text-foreground">{money(gold, gold.sellPrice)}</td>
-                      <td className="num px-3 py-3 text-right text-muted-foreground">{spread == null ? '—' : pctTr(spread)}</td>
-                      <td className="px-3 py-3 text-right">
+                      <td className="num px-2 py-3 text-right text-foreground/85 sm:px-3">{money(gold, gold.buyPrice)}</td>
+                      <td className="num px-2 py-3 pr-3 text-right text-foreground sm:px-3">
+                        {money(gold, gold.sellPrice)}
+                        {/* Mobilde değişim ayrı sütun yerine satışın altında */}
+                        <span className="block sm:hidden">
+                          <PriceChange value={gold.changePercent} size="sm" showIcon={false} />
+                        </span>
+                      </td>
+                      <td className="num hidden px-3 py-3 text-right text-muted-foreground sm:table-cell">{spread == null ? '—' : pctTr(spread)}</td>
+                      <td className="hidden px-3 py-3 text-right sm:table-cell">
                         <PriceChange value={gold.changePercent} size="sm" showIcon={false} />
                       </td>
-                      <td className="num px-5 py-3 text-right text-[12px] text-muted-foreground">{formatDate(gold.timestamp)}</td>
+                      <td className="num hidden px-5 py-3 text-right text-[12px] text-muted-foreground sm:table-cell">{formatDate(gold.timestamp)}</td>
                     </tr>
                   );
                 })
