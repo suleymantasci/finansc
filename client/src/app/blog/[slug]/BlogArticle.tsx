@@ -67,7 +67,7 @@ export function BlogArticle({
       {post.thumbnailUrl && (
         <div className="mx-auto mt-10 max-w-5xl overflow-hidden rounded-2xl border border-border bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.thumbnailUrl} alt="" width={1600} height={900} loading="eager" fetchPriority="high" className="aspect-[16/9] w-full object-cover" />
+          <img src={post.thumbnailUrl} alt="" width={1200} height={630} loading="eager" fetchPriority="high" className="aspect-[40/21] w-full object-cover" />
         </div>
       )}
 
@@ -118,8 +118,8 @@ export function BlogArticle({
         </aside>
       </div>
 
-      <div className="mx-auto mt-16 grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-        {relatedPosts.length > 0 ? (
+      <div className={relatedPosts.length > 0 ? 'mx-auto mt-16 grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_380px]' : 'mx-auto mt-16 max-w-6xl'}>
+        {relatedPosts.length > 0 && (
           <section aria-labelledby="related-posts">
             <h2 id="related-posts" className="font-display mb-5 text-3xl text-foreground">
               İlgili yazılar
@@ -127,7 +127,7 @@ export function BlogArticle({
             <div className="grid gap-4 sm:grid-cols-3">
               {relatedPosts.map((rp) => (
                 <Link key={rp.id} href={`/blog/${rp.slug}`} className="atlas-card atlas-card-link group flex flex-col overflow-hidden">
-                  <div className="aspect-[16/10] overflow-hidden border-b border-border bg-muted">
+                  <div className="aspect-[40/21] overflow-hidden border-b border-border bg-muted">
                     {rp.thumbnailUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={rp.thumbnailUrl} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
@@ -138,13 +138,12 @@ export function BlogArticle({
               ))}
             </div>
           </section>
-        ) : (
-          <div />
         )}
         <RelatedQuotes
           title="Piyasalar"
           moreHref="/"
           moreLabel="Ana sayfa"
+          layout={relatedPosts.length > 0 ? 'list' : 'grid'}
           items={[
             { label: 'Gram Altın', href: '/altin/gram-altin', spec: { kind: 'gold', slug: 'gram-altin' } },
             { label: 'Dolar', sub: 'USD/TRY', href: '/doviz/dolar', spec: { kind: 'fx', code: 'USD' } },

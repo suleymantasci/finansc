@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { copyText } from '@/lib/clipboard';
 
 interface ShareButtonProps {
   /** Kopyalanacak absolute URL */
@@ -19,17 +20,7 @@ export function ShareButton({ shareUrl, className, label = 'Sonucu Paylaş' }: S
   const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
 
   const handleClick = async () => {
-    if (typeof navigator === 'undefined' || !navigator.clipboard) {
-      setState('failed');
-      setTimeout(() => setState('idle'), 2000);
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setState('copied');
-    } catch {
-      setState('failed');
-    }
+    setState((await copyText(shareUrl)) ? 'copied' : 'failed');
     setTimeout(() => setState('idle'), 2000);
   };
 

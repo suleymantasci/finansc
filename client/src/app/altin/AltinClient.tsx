@@ -102,10 +102,10 @@ export function AltinClient() {
       {isLoading ? (
         <SkeletonTable rows={8} cols={5} />
       ) : (
-        <div className="atlas-card overflow-x-auto">
+        <div className="atlas-card overflow-x-auto md:overflow-visible">
           <table className="w-full min-w-[640px] text-sm">
             <caption className="sr-only">{GOLD_SOURCES.find((x) => x.key === activeSource)?.label} altın fiyatları</caption>
-            <thead>
+            <thead className="sticky-thead">
               <tr className="border-b border-border text-left text-[12px] text-muted-foreground">
                 <th scope="col" className="px-5 py-3 font-normal">Altın türü</th>
                 <th scope="col" className="px-3 py-3 text-right font-normal">Alış</th>

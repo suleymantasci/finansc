@@ -109,40 +109,49 @@ function LiveTicker() {
     return items;
   }, [indices, goldPrices, serbestCurrencies]);
 
+  const renderItem = (item: TickerItem, dup: boolean) => {
+    const ch = item.change ?? 0;
+    return (
+      <li key={`${dup ? 'b' : 'a'}-${item.label}`} className="shrink-0 pr-8" aria-hidden={dup || undefined}>
+        <Link href={item.href} tabIndex={dup ? -1 : undefined} className="group flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground transition-colors group-hover:text-foreground">{item.label}</span>
+          <span
+            className={cn(
+              'num font-medium text-foreground',
+              flashMap[item.flashKey] === 'up' && 'text-flash-up',
+              flashMap[item.flashKey] === 'down' && 'text-flash-down',
+            )}
+          >
+            {item.prefix}
+            {item.value.toLocaleString('tr-TR', { minimumFractionDigits: item.decimals, maximumFractionDigits: item.decimals })}
+          </span>
+          <span className={cn('num flex items-center gap-0.5 text-[11px]', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
+            <span aria-hidden="true">{ch > 0 ? '▲' : ch < 0 ? '▼' : '•'}</span>
+            <span className="sr-only">{ch > 0 ? 'artış' : ch < 0 ? 'düşüş' : 'değişim yok'}</span>
+            %{Math.abs(ch).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        </Link>
+      </li>
+    );
+  };
+
+  // Kayan şerit: liste iki kez basılır, iz -%50 kaydırılınca dikişsiz döner.
+  // Üzerine gelince / klavye odağında durur; "azaltılmış hareket" tercihinde kaydırılabilir şerit olur.
   return (
-    <div className="border-b border-border bg-background/80">
-      <div className="mx-auto flex h-9 max-w-[1440px] items-center gap-4 px-4 lg:px-8">
-        <ul className="scroll-strip flex min-w-0 flex-1 items-center gap-7" aria-label="Piyasa özeti">
-          {tickerItems.length === 0
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <li key={i} className="skeleton-shimmer h-3 w-32 shrink-0 rounded" aria-hidden="true" />
-              ))
-            : tickerItems.map((item) => {
-                const ch = item.change ?? 0;
-                return (
-                  <li key={item.label} className="relative shrink-0">
-                    <Link href={item.href} className="group flex items-center gap-2 text-xs">
-                      <span className="text-muted-foreground transition-colors group-hover:text-foreground">{item.label}</span>
-                      <span
-                        className={cn(
-                          'num font-medium text-foreground',
-                          flashMap[item.flashKey] === 'up' && 'text-flash-up',
-                          flashMap[item.flashKey] === 'down' && 'text-flash-down',
-                        )}
-                      >
-                        {item.prefix}
-                        {item.value.toLocaleString('tr-TR', { minimumFractionDigits: item.decimals, maximumFractionDigits: item.decimals })}
-                      </span>
-                      <span className={cn('num flex items-center gap-0.5 text-[11px]', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
-                        <span aria-hidden="true">{ch > 0 ? '▲' : ch < 0 ? '▼' : '•'}</span>
-                        <span className="sr-only">{ch > 0 ? 'artış' : ch < 0 ? 'düşüş' : 'değişim yok'}</span>
-                        %{Math.abs(ch).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-        </ul>
+    <div className="border-b border-border bg-background">
+      <div className="ticker-mask mx-auto flex h-9 max-w-[1440px] items-center overflow-hidden">
+        {tickerItems.length === 0 ? (
+          <ul className="flex items-center gap-7 px-4 lg:px-8" aria-hidden="true">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <li key={i} className="skeleton-shimmer h-3 w-32 shrink-0 rounded" />
+            ))}
+          </ul>
+        ) : (
+          <ul className="ticker-track flex w-max items-center" aria-label="Piyasa özeti">
+            {tickerItems.map((item) => renderItem(item, false))}
+            {tickerItems.map((item) => renderItem(item, true))}
+          </ul>
+        )}
       </div>
     </div>
   );

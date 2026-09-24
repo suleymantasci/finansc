@@ -18,13 +18,13 @@ export interface RelatedItem {
   staticPrice?: { value: string; change: number | null };
 }
 
-function Row({ item }: { item: RelatedItem }) {
+function Row({ item, grid }: { item: RelatedItem; grid?: boolean }) {
   const q = useMarketStore(useShallow((s) => (item.spec ? selectQuote(s, item.spec) : null)));
   const price = item.staticPrice?.value ?? (q ? q.price.toLocaleString('tr-TR', { minimumFractionDigits: quoteDecimals(item.spec!), maximumFractionDigits: quoteDecimals(item.spec!) }) + (q.currency === 'USD' ? ' $' : item.spec?.kind === 'index' ? '' : ' ₺') : null);
   const ch = item.staticPrice ? item.staticPrice.change : q?.changePct ?? null;
   return (
     <li>
-      <Link href={item.href} className="group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-hover sm:px-6">
+      <Link href={item.href} className={cn('group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-hover sm:px-6', grid && 'h-full sm:py-4')}>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[15px] text-foreground group-hover:text-primary">{item.label}</span>
           {item.sub && <span className="block truncate text-[12px] text-muted-foreground">{item.sub}</span>}
@@ -41,7 +41,21 @@ function Row({ item }: { item: RelatedItem }) {
   );
 }
 
-export function RelatedQuotes({ title, items, moreHref, moreLabel }: { title: string; items: RelatedItem[]; moreHref?: string; moreLabel?: string }) {
+/** layout="grid": geniş alanda satırlar yan yana (tek başına tam genişlikte durduğunda). */
+export function RelatedQuotes({
+  title,
+  items,
+  moreHref,
+  moreLabel,
+  layout = 'list',
+}: {
+  title: string;
+  items: RelatedItem[];
+  moreHref?: string;
+  moreLabel?: string;
+  layout?: 'list' | 'grid';
+}) {
+  const grid = layout === 'grid';
   if (items.length === 0) return null;
   return (
     <section aria-label={title} className="atlas-card overflow-hidden">
@@ -49,9 +63,9 @@ export function RelatedQuotes({ title, items, moreHref, moreLabel }: { title: st
         <h2 className="font-display text-2xl text-foreground">{title}</h2>
         {moreHref && <ArrowLink href={moreHref} className="text-[13px]">{moreLabel ?? 'Tümü'}</ArrowLink>}
       </div>
-      <ul className="mt-2 divide-y divide-border/60 pb-2">
+      <ul className={cn('mt-2 pb-2', grid ? 'grid divide-y divide-border/60 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x' : 'divide-y divide-border/60')}>
         {items.map((it) => (
-          <Row key={it.href} item={it} />
+          <Row key={it.href} item={it} grid={grid} />
         ))}
       </ul>
     </section>

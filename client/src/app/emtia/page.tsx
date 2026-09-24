@@ -74,9 +74,9 @@ export default async function EmtiaPage() {
               <h2 id={`g-${g}`} className="font-display mb-4 text-2xl text-foreground">
                 {COMMODITY_GROUP_LABELS[g]}
               </h2>
-              <div className="atlas-card overflow-x-auto">
+              <div className="atlas-card overflow-x-auto md:overflow-visible">
                 <table className="w-full min-w-[560px] text-sm">
-                  <thead>
+                  <thead className="sticky-thead">
                     <tr className="border-b border-border text-left text-[12px] text-muted-foreground">
                       <th scope="col" className="px-5 py-3 font-normal">Emtia</th>
                       <th scope="col" className="px-3 py-3 text-right font-normal">Son kapanış</th>

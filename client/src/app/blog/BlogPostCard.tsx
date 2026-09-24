@@ -25,7 +25,7 @@ export function BlogPostCard({ post, size = 'default', loading = 'lazy' }: { pos
       href={`/blog/${post.slug}`}
       className={cn('atlas-card atlas-card-link group flex h-full overflow-hidden', featured ? 'flex-col md:flex-row' : 'flex-col')}
     >
-      <div className={cn('overflow-hidden border-border bg-muted', featured ? 'aspect-[16/10] w-full border-b md:w-[55%] md:border-b-0 md:border-r' : 'aspect-[16/10] w-full border-b')}>
+      <div className={cn('overflow-hidden border-border bg-muted', featured ? 'aspect-[40/21] w-full shrink-0 border-b md:w-[55%] md:self-center md:border-b-0 md:border-r' : 'aspect-[40/21] w-full border-b')}>
         {post.thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

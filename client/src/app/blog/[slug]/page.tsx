@@ -30,16 +30,28 @@ const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
   return (await res.json()) as BlogPost;
 });
 
-async function getRelated(post: BlogPost): Promise<BlogPost[]> {
+async function fetchPosts(params: Record<string, string>): Promise<BlogPost[]> {
   try {
-    const qs = new URLSearchParams({ limit: '4', status: 'published', ...(post.category ? { category: post.category } : {}) });
+    const qs = new URLSearchParams({ limit: '4', status: 'published', ...params });
     const res = await fetch(`${API_URL}/api/blogs?${qs}`, { next: { revalidate: 300, tags: ['blogs'] }, signal: AbortSignal.timeout(8000) });
     if (!res.ok) return [];
     const json = (await res.json()) as { data?: BlogPost[] };
-    return (json.data ?? []).filter((p) => p.slug !== post.slug).slice(0, 3);
+    return json.data ?? [];
   } catch {
     return [];
   }
+}
+
+/** Aynı kategoriden 3 yazı; kategori az yazılıysa son yazılarla tamamlanır. */
+async function getRelated(post: BlogPost): Promise<BlogPost[]> {
+  const same = post.category ? await fetchPosts({ category: post.category }) : [];
+  let list = same.filter((p) => p.slug !== post.slug);
+  if (list.length < 3) {
+    const seen = new Set([post.slug, ...list.map((p) => p.slug)]);
+    const latest = await fetchPosts({ limit: '6' });
+    list = [...list, ...latest.filter((p) => !seen.has(p.slug))];
+  }
+  return list.slice(0, 3);
 }
 
 function extractFAQFromContent(html: string): { question: string; answer: string }[] {

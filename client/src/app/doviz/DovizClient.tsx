@@ -134,10 +134,10 @@ export function DovizClient() {
       {isLoading ? (
         <SkeletonTable rows={15} cols={5} />
       ) : (
-        <div className="atlas-card overflow-x-auto">
+        <div className="atlas-card overflow-x-auto md:overflow-visible">
           <table className="w-full min-w-[560px] text-sm">
             <caption className="sr-only">{tab === 'serbest-piyasa' ? 'Serbest piyasa' : 'TCMB gösterge'} döviz kurları</caption>
-            <thead>
+            <thead className="sticky-thead">
               <tr className="border-b border-border text-[12px] text-muted-foreground">
                 {columns.map((col) => (
                   <th

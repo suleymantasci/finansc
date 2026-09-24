@@ -59,14 +59,14 @@ export async function LearnSection() {
           return (
             <article key={post.id} className="atlas-card atlas-card-link group overflow-hidden">
               <Link href={`/blog/${post.slug}`} className="flex h-full flex-col focus-visible:outline-none">
-                <div className="relative aspect-[16/9] overflow-hidden border-b border-border bg-muted">
+                <div className="relative aspect-[40/21] overflow-hidden border-b border-border bg-muted">
                   {post.thumbnailUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={post.thumbnailUrl}
                       alt=""
                       width={640}
-                      height={360}
+                      height={336}
                       loading="lazy"
                       decoding="async"
                       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"

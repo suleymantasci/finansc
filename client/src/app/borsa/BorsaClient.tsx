@@ -229,10 +229,10 @@ export function BorsaClient() {
         ) : (
           <>
             <p className="mb-2 text-[12px] text-muted-foreground">{filteredStocks.length} hisse</p>
-            <div className="atlas-card overflow-x-auto">
+            <div className="atlas-card overflow-x-auto md:overflow-visible">
               <table className="w-full text-sm">
                 <caption className="sr-only">Borsa İstanbul hisse senetleri</caption>
-                <thead>
+                <thead className="sticky-thead">
                   <tr className="border-b border-border text-[12px] text-muted-foreground">
                     {stockColumns.map((col) => (
                       <Th key={col.key} col={col} sort={effectiveSort} onSort={handleColumnSort} />
@@ -287,10 +287,10 @@ export function BorsaClient() {
       ) : (
         <>
           <p className="mb-2 text-[12px] text-muted-foreground">{sortedIndices.length} endeks</p>
-          <div className="atlas-card overflow-x-auto">
+          <div className="atlas-card overflow-x-auto md:overflow-visible">
             <table className="w-full text-sm">
               <caption className="sr-only">Borsa İstanbul endeksleri</caption>
-              <thead>
+              <thead className="sticky-thead">
                 <tr className="border-b border-border text-[12px] text-muted-foreground">
                   {indexColumns.map((col) => (
                     <Th key={col.key} col={col} sort={indexColumnSort} onSort={handleIndexColumnSort} />
