@@ -7,7 +7,7 @@ import { Breadcrumb, type BreadcrumbItem } from '@/components/shared/Breadcrumb'
 /**
  * Detay sayfası başlığı — referans: Gram Altın detay görseli.
  * Sol: breadcrumb, amblem + serif H1 + alt başlık. Sağ: kategori görseli
- * (public/atlas/detail-<category>.webp varsa) ve kısa slogan.
+ * (public/atlas/detail-<category>.webp varsa).
  */
 
 function artExists(file: string) {
@@ -26,7 +26,6 @@ export function DetailHeader({
   emblem,
   actions,
   category,
-  tagline,
 }: {
   crumbs: BreadcrumbItem[];
   eyebrow: string;
@@ -36,7 +35,6 @@ export function DetailHeader({
   actions?: ReactNode;
   /** altin | doviz | borsa | emtia — görsel dosya adı */
   category: string;
-  tagline?: string;
 }) {
   const art = `/atlas/detail-${category}.webp`;
   const hasArt = artExists(art);
@@ -65,12 +63,6 @@ export function DetailHeader({
           </div>
           {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
         </div>
-        {tagline && hasArt && (
-          <p className="font-display absolute right-8 top-10 hidden max-w-[16ch] text-right text-2xl leading-snug text-foreground/85 xl:block">
-            {tagline}
-            <span className="ml-auto mt-3 block h-px w-12 bg-primary" aria-hidden="true" />
-          </p>
-        )}
       </div>
     </header>
   );

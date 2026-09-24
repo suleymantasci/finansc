@@ -198,7 +198,6 @@ export default async function StockPage({ params }: Props) {
         title={hasName ? `${meta.name} (${meta.symbol})` : `${meta.symbol} hisse senedi`}
         subtitle={<>Güncel {meta.symbol} hisse fiyatı, gün içi aralık, işlem hacmi ve geçmiş grafik.</>}
         emblem={<span className="num text-base font-semibold">{meta.symbol.slice(0, 4)}</span>}
-        tagline="Piyasalar hareket eder, siz önde kalın."
         actions={<FavoriteButton type="stock" symbol={meta.symbol} label={`${meta.symbol} hissesi`} />}
       />
 

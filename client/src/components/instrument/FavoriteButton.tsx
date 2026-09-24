@@ -47,8 +47,8 @@ export function FavoriteButton({ type, symbol, label, className }: { type: Favor
       aria-label={active ? `${label} favorilerden çıkar` : `${label} favorilere ekle`}
       title={user ? undefined : 'Favorilere eklemek için giriş yapın'}
       className={cn(
-        'inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors disabled:opacity-60',
-        active ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card/60 text-foreground hover:border-primary/60',
+        'inline-flex h-10 items-center gap-2 rounded-full border bg-card/85 px-4 text-sm font-medium backdrop-blur-sm transition-colors disabled:opacity-60',
+        active ? 'border-primary text-primary' : 'border-border text-foreground hover:border-primary/60',
         className,
       )}
     >

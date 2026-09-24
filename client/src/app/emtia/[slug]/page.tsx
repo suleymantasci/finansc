@@ -107,7 +107,6 @@ export default async function CommodityPage({ params }: Props) {
         title={e.name}
         subtitle={<>Fiyat birimi: {e.unit} · son kapanış, günlük değişim ve geçmiş grafik.</>}
         emblem={<Icon className="h-7 w-7" />}
-        tagline="Hammaddeler, ekonominin nabzını tutar."
         actions={<FavoriteButton type="commodity" symbol={e.slug} label={e.name} />}
       />
 

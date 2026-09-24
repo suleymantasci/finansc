@@ -142,7 +142,6 @@ export default async function GoldTypePage({ params }: Props) {
         title={meta.name}
         subtitle={<>Güncel {meta.name.toLocaleLowerCase('tr-TR')} fiyatı, kaynaklara göre alış-satış ve geçmiş grafik.</>}
         emblem={<Coins className="h-7 w-7" />}
-        tagline="Altın, yalnızca bir yatırım değil; geleceğe duyulan güvendir."
         actions={<FavoriteButton type="gold" symbol={meta.slug} label={meta.name} />}
       />
 

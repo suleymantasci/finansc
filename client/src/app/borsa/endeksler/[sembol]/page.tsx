@@ -179,7 +179,6 @@ export default async function IndexPage({ params }: Props) {
         title={known ? `${meta.name} (${meta.symbol})` : `${meta.symbol} endeksi`}
         subtitle={known ? meta.fullName : 'Borsa İstanbul endeksi · güncel değer ve geçmiş grafik'}
         emblem={<CandlestickChart className="h-7 w-7" />}
-        tagline="Piyasalar hareket eder, siz önde kalın."
         actions={<FavoriteButton type="index" symbol={meta.symbol} label={`${meta.symbol} endeksi`} />}
       />
 

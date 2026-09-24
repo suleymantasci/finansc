@@ -98,7 +98,6 @@ export default async function CurrencyPage({ params }: Props) {
         title={`${e.name} kuru`}
         subtitle={<>{e.country} · serbest piyasa{e.tcmbName ? ' ve TCMB' : ''} kuru, geçmiş grafik ve çevirici.</>}
         emblem={<span className="num text-lg font-semibold">{e.code}</span>}
-        tagline="Kur hareketleri, fiyatların görünmeyen dilidir."
         actions={<FavoriteButton type="currency" symbol={e.code} label={`${e.name} kuru`} />}
       />
 
