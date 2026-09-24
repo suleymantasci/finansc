@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LEGAL, LEGAL_OPERATOR } from '@/lib/legal';
 
 export const metadata: Metadata = {
   title: 'Hakkımızda | FinansCozum Ekibi ve Misyon',
@@ -41,8 +42,8 @@ export default function HakkimizdaPage() {
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">Hizmetlerimiz</h2>
           <ul className="ml-6 list-disc space-y-2">
             <li>
-              <strong className="text-foreground">Anlık Piyasa Verileri:</strong> Borsa İstanbul hisse senetleri,
-              endeksler ve altın fiyatlarını canlı olarak takip edin.
+              <strong className="text-foreground">Piyasa Verileri:</strong> Altın ve döviz fiyatlarını yaklaşık 30 saniyede
+              bir güncellenen verilerle, Borsa İstanbul hisse ve endekslerini en az 15 dakika gecikmeli olarak takip edin.
             </li>
             <li>
               <strong className="text-foreground">Hesaplama Araçları:</strong> Kredi, vergi, mevduat getirisi ve
@@ -50,7 +51,7 @@ export default function HakkimizdaPage() {
             </li>
             <li>
               <strong className="text-foreground">Finans İçerikleri:</strong> Piyasa analizleri, yatırım rehberleri
-              ve güncel finans haberlerini bilgi merkezi bölümümüzden takip edin.
+              ve finans rehberlerini bilgi merkezi bölümümüzden okuyun. Yazılar yapay zekâ araçları desteğiyle hazırlanır.
             </li>
           </ul>
         </section>
@@ -59,9 +60,35 @@ export default function HakkimizdaPage() {
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">Yasal Uyarı</h2>
           <p>
             FinansCozum&apos;da sunulan bilgiler yalnızca genel bilgilendirme amaçlıdır ve yatırım tavsiyesi
-            niteliği taşımaz. Yatırım kararlarınızı vermeden önce mutlaka profesyonel bir finansal danışmana
-            başvurmanızı öneririz.
+            niteliği taşımaz. Yatırım kararlarınızı vermeden önce Sermaye Piyasası Kurulu&apos;ndan yetkili bir
+            yatırım danışmanına başvurmanızı öneririz.
           </p>
+        </section>
+
+        <section>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">Künye</h2>
+          <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[max-content_1fr]">
+            <dt className="text-foreground">İşleten</dt>
+            <dd>{LEGAL_OPERATOR}</dd>
+            {LEGAL.address && (
+              <>
+                <dt className="text-foreground">Adres</dt>
+                <dd>{LEGAL.address}</dd>
+              </>
+            )}
+            {LEGAL.registry && (
+              <>
+                <dt className="text-foreground">Sicil / vergi</dt>
+                <dd>{LEGAL.registry}</dd>
+              </>
+            )}
+            <dt className="text-foreground">E-posta</dt>
+            <dd>
+              <a href={`mailto:${LEGAL.email}`} className="text-primary hover:underline">
+                {LEGAL.email}
+              </a>
+            </dd>
+          </dl>
         </section>
       </div>
     </div>

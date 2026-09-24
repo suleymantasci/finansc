@@ -1,103 +1,136 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { LEGAL, LEGAL_OPERATOR } from '@/lib/legal';
 
 export const metadata: Metadata = {
   title: 'Kullanım Şartları',
-  description: 'FinansCozum kullanım şartları ve koşulları. Platformumuzu kullanmadan önce lütfen okuyunuz.',
+  description: 'FinansÇözüm kullanım şartları: hizmetin kapsamı, yatırım tavsiyesi olmadığı, veri doğruluğu, üyelik, fikri haklar ve sorumluluk.',
+  alternates: { canonical: 'https://finanscozum.net/kullanim-sartlari' },
 };
+
+const H2 = 'font-display mb-3 text-2xl text-foreground sm:text-3xl';
 
 export default function KullanimSartlariPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
-      <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl mb-2">Kullanım Şartları</h1>
-      <p className="mb-8 text-sm text-muted-foreground">Son güncelleme: 31 Mayıs 2026</p>
+      <h1 className="font-display mb-2 text-balance text-4xl text-foreground sm:text-5xl">Kullanım Şartları</h1>
+      <p className="mb-8 text-sm text-muted-foreground">Son güncelleme: 24 Eylül 2026</p>
 
-      <div className="space-y-8 text-muted-foreground leading-relaxed">
+      <div className="space-y-8 leading-relaxed text-muted-foreground">
         <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">1. Genel Hükümler</h2>
+          <h2 className={H2}>1. Taraflar ve kapsam</h2>
           <p>
-            Bu kullanım şartları, FinansCozum platformunu (&quot;Platform&quot;) kullanımınıza ilişkin koşulları
-            düzenlemektedir. Platformu kullanarak bu şartları kabul etmiş sayılırsınız.
+            Bu şartlar, finanscozum.net (&quot;Site&quot;) ile Site&apos;yi ziyaret eden veya üye olan kullanıcılar
+            arasındaki ilişkiyi düzenler. Site <strong className="text-foreground">{LEGAL_OPERATOR}</strong>
+            {LEGAL.address && <> ({LEGAL.address})</>} tarafından işletilir. Site&apos;yi kullanmak ücretsizdir; üye
+            olurken bu şartları kabul edersiniz, üye olmadan kullanırken de bu şartlar geçerlidir.
           </p>
         </section>
 
         <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">2. Hizmet Tanımı</h2>
+          <h2 className={H2}>2. Hizmetin niteliği</h2>
           <p>
-            FinansCozum, kullanıcılarına anlık piyasa verileri, finansal hesaplama araçları ve finans
-            içerikleri sunan bir bilgi platformudur. Sunulan tüm bilgiler yalnızca bilgilendirme amaçlıdır.
+            Site; altın, döviz, borsa ve emtia fiyatlarını, finansal hesaplama araçlarını ve genel bilgilendirme
+            amaçlı içerikleri sunan bir bilgi platformudur. Site bir aracı kurum, banka, portföy yöneticisi veya
+            yatırım danışmanı değildir; alım-satım emri almaz, para veya varlık kabul etmez.
           </p>
         </section>
 
         <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">3. Yatırım Tavsiyesi Değildir</h2>
+          <h2 className={H2}>3. Yatırım tavsiyesi değildir</h2>
           <p>
-            Platformda yer alan hiçbir bilgi, analiz veya veri yatırım tavsiyesi niteliği taşımaz. Yatırım
-            kararlarınız tamamen kendi sorumluluğunuzdadır. Yatırım yapmadan önce mutlaka lisanslı bir yatırım
-            danışmanına başvurmanız önerilir.
+            Site&apos;deki fiyatlar, grafikler, hesaplama sonuçları ve yazılar yatırım danışmanlığı kapsamında değildir;
+            hiçbir menkul kıymet, döviz, altın veya emtianın alınması ya da satılması yönünde öneri içermez. Yatırım
+            danışmanlığı hizmeti, Sermaye Piyasası Kurulu&apos;ndan yetki almış kuruluşlarca kişinin risk ve getiri
+            tercihleri dikkate alınarak sunulur. Bu bilgilere dayanarak verdiğiniz kararlar kendi sorumluluğunuzdadır.
           </p>
         </section>
 
         <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">4. Veri Doğruluğu</h2>
+          <h2 className={H2}>4. Verilerin kaynağı ve doğruluğu</h2>
           <p>
-            Platformdaki piyasa verileri üçüncü taraf kaynaklardan alınmaktadır. Verilerin doğruluğu,
-            eksiksizliği veya güncelliği konusunda garanti verilmez. Gecikmeler veya hatalar oluşabilir.
+            Piyasa verileri kamuya açık üçüncü taraf kaynaklardan otomatik olarak derlenir; Borsa İstanbul verileri en
+            az 15 dakika gecikmelidir. Veriler gecikmeli, eksik veya hatalı olabilir ve resmî fiyat yerine geçmez. Alım,
+            satım veya sözleşme işlemlerinde ilgili kurumun (banka, aracı kurum, kuyumcu, TCMB) ilan ettiği fiyatı esas
+            alınız. Ayrıntı: <Link href="/kaynak-politikasi" className="text-primary hover:underline">Kaynak Politikası</Link>.
+            Hesaplama araçları genel varsayımlarla sonuç üretir; vergi, faiz ve masraf gibi kalemler kurumdan kuruma
+            değişebilir.
           </p>
         </section>
 
         <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">5. Hesap Güvenliği</h2>
-          <p>
-            Hesap oluşturduğunuzda, hesap bilgilerinizin gizliliğini korumak sizin sorumluluğunuzdadır.
-            Hesabınız üzerinden gerçekleştirilen tüm işlemlerden siz sorumlusunuz.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">6. Kabul Edilemez Kullanım</h2>
-          <p className="mb-3">Aşağıdaki davranışlar kesinlikle yasaktır:</p>
+          <h2 className={H2}>5. Üyelik</h2>
           <ul className="ml-6 list-disc space-y-2">
-            <li>Platformun güvenliğini tehlikeye atacak girişimlerde bulunmak</li>
-            <li>Otomatik araçlarla aşırı miktarda istek göndermek</li>
-            <li>Platform içeriklerini izinsiz kopyalamak veya dağıtmak</li>
-            <li>Diğer kullanıcıların deneyimini olumsuz etkileyecek davranışlarda bulunmak</li>
+            <li>Üyelik için doğru bilgi vermeniz ve şifrenizi gizli tutmanız gerekir. Hesabınızın yetkisiz kullanıldığını fark ederseniz bize bildiriniz.</li>
+            <li>Üyeliğinizi dilediğiniz zaman {LEGAL.email} adresine yazarak sonlandırabilirsiniz; verileriniz Gizlilik Politikası&apos;ndaki sürelerle silinir.</li>
+            <li>Bu şartlara aykırı kullanım hâlinde hesap, önceden bildirimle (acil güvenlik durumlarında bildirimsiz) askıya alınabilir veya kapatılabilir.</li>
           </ul>
         </section>
 
         <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">7. Fikri Mülkiyet</h2>
+          <h2 className={H2}>6. Yasak kullanımlar</h2>
+          <ul className="ml-6 list-disc space-y-2">
+            <li>Site&apos;nin güvenliğini tehlikeye atmak, yetkisiz erişim denemek veya zararlı yazılım yaymak,</li>
+            <li>Site&apos;ye olağan kullanımı aşan yükte otomatik istek göndermek veya içeriği toplu hâlde kopyalamak,</li>
+            <li>Site içeriğini, kaynak göstermeden veya ticari amaçla izinsiz çoğaltmak ve yaymak,</li>
+            <li>Başkalarının haklarını ihlal eden veya hukuka aykırı içerik iletmek.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className={H2}>7. Fikri haklar</h2>
           <p>
-            Platformdaki tüm içerikler, tasarımlar, logolar ve yazılımlar FinansCozum&apos;a aittir ve telif
-            hakkı ile korunmaktadır. İzinsiz kullanım, çoğaltma veya dağıtım yasaktır.
+            Site&apos;nin tasarımı, yazılımı, logosu ve Site için hazırlanan yazılar Site işletmecisine aittir.
+            Piyasa verileri ve bunlara ilişkin haklar ilgili kaynaklara ve borsalara aittir; üçüncü kişilere ait marka
+            ve kurum adları yalnızca fiyatın ait olduğu piyasayı belirtmek için kullanılır ve bu kişilerle bir ortaklık
+            anlamına gelmez. Yazılardan kısa alıntılar, bağlantı verilerek ve kaynak gösterilerek yapılabilir.
           </p>
         </section>
 
         <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">8. Sorumluluk Sınırı</h2>
+          <h2 className={H2}>8. Sorumluluk</h2>
           <p>
-            FinansCozum, platformun kullanımından doğabilecek doğrudan veya dolaylı zararlardan sorumlu
-            tutulamaz. Platform &quot;olduğu gibi&quot; sunulmakta olup, kesintisiz veya hatasız çalışacağına dair
-            garanti verilmez.
+            Site ücretsiz ve &quot;olduğu gibi&quot; sunulur; kesintisiz veya hatasız çalışacağı garanti edilmez. Verilerin
+            gecikmesi, hatası veya Site&apos;nin kullanılamaması nedeniyle doğabilecek zararlardan, mevzuatın izin
+            verdiği ölçüde sorumluluk kabul edilmez. Bu sınırlama; kast veya ağır ihmalden doğan zararlarla, tüketici
+            mevzuatı gereği sınırlanamayan haklarınızı kapsamaz.
           </p>
         </section>
 
         <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">9. Değişiklikler</h2>
+          <h2 className={H2}>9. Dış bağlantılar</h2>
           <p>
-            Bu kullanım şartları önceden bildirimde bulunmaksızın güncellenebilir. Güncel şartlar her zaman bu
-            sayfada yayınlanacaktır. Platformu kullanmaya devam etmeniz, güncellenmiş şartları kabul ettiğiniz
-            anlamına gelir.
+            Site&apos;de üçüncü kişilere ait sitelere bağlantılar bulunabilir. Bu sitelerin içeriği ve gizlilik
+            uygulamalarından ilgili site sahipleri sorumludur.
           </p>
         </section>
 
         <section>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">10. İletişim</h2>
+          <h2 className={H2}>10. Değişiklikler</h2>
           <p>
-            Kullanım şartları hakkında sorularınız için{' '}
-            <a href="mailto:info@finanscozum.net" className="text-primary hover:underline">
-              info@finanscozum.net
+            Bu şartlar güncellenebilir; güncel sürüm her zaman bu sayfadadır. Üyeleri etkileyen esaslı değişiklikler,
+            yürürlüğe girmeden önce kayıtlı e-posta adresine bildirilir. Değişikliği kabul etmiyorsanız üyeliğinizi
+            sonlandırabilirsiniz.
+          </p>
+        </section>
+
+        <section>
+          <h2 className={H2}>11. Uygulanacak hukuk ve uyuşmazlıklar</h2>
+          <p>
+            Bu şartlara Türkiye Cumhuriyeti hukuku uygulanır. Tüketici sıfatıyla doğacak uyuşmazlıklarda, parasal
+            sınırlar dâhilinde yerleşim yerinizdeki veya işlemin yapıldığı yerdeki Tüketici Hakem Heyetleri ile
+            Tüketici Mahkemeleri yetkilidir.
+          </p>
+        </section>
+
+        <section>
+          <h2 className={H2}>12. İletişim</h2>
+          <p>
+            Sorularınız için{' '}
+            <a href={`mailto:${LEGAL.email}`} className="text-primary hover:underline">
+              {LEGAL.email}
             </a>{' '}
-            adresinden bize ulaşabilirsiniz.
+            adresine yazabilirsiniz.
           </p>
         </section>
       </div>

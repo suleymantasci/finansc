@@ -51,16 +51,17 @@ function turnoverFmt(v: number) {
   return new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 1 }).format(v);
 }
 
-function MoversTable({ rows, start, caption, flashMap }: { rows: Stock[]; start: number; caption: string; flashMap: Record<string, 'up' | 'down'> }) {
+/** continued: ikinci yarı (6–10) — alt alta dizildiğinde başlığı tekrarlanmaz */
+function MoversTable({ rows, start, caption, flashMap, continued }: { rows: Stock[]; start: number; caption: string; flashMap: Record<string, 'up' | 'down'>; continued?: boolean }) {
   return (
-    <table className="w-full border-collapse text-sm">
+    <table className={cn('w-full border-collapse text-sm', continued && 'max-lg:border-t max-lg:border-border/60')}>
       <caption className="sr-only">{caption}</caption>
-      <thead>
+      <thead className={continued ? 'max-lg:sr-only' : undefined}>
         <tr className="border-b border-border text-left text-[11px] text-muted-foreground">
           <th scope="col" className="w-8 py-2.5 font-normal">#</th>
           <th scope="col" className="py-2.5 font-normal">Hisse</th>
           <th scope="col" className="py-2.5 text-right font-normal">Fiyat</th>
-          <th scope="col" className="py-2.5 pl-3 text-right font-normal">Değişim</th>
+          <th scope="col" className="w-[5.5rem] py-2.5 pl-3 text-right font-normal">Değişim</th>
           <th scope="col" className="hidden w-28 py-2.5 pl-6 font-normal sm:table-cell">Gün aralığı</th>
           <th scope="col" className="hidden py-2.5 text-right font-normal xl:table-cell">Hacim</th>
         </tr>
@@ -78,7 +79,7 @@ function MoversTable({ rows, start, caption, flashMap }: { rows: Stock[]; start:
                 flashMap[s.symbol] === 'down' && 'flash-down',
               )}
             >
-              <td className="num py-2.5 text-[12px] text-muted-foreground">{start + i}</td>
+              <td className="num w-8 py-2.5 text-[12px] text-muted-foreground">{start + i}</td>
               <td className="py-2.5">
                 <Link href={`/borsa/hisseler/${s.symbol}`} className="flex items-center gap-3">
                   <Monogram symbol={s.symbol} />
@@ -89,7 +90,7 @@ function MoversTable({ rows, start, caption, flashMap }: { rows: Stock[]; start:
                 </Link>
               </td>
               <td className="num py-2.5 text-right text-foreground">{fmt(s.lastPrice)} ₺</td>
-              <td className={cn('num py-2.5 pl-3 text-right font-medium', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
+              <td className={cn('num w-[5.5rem] py-2.5 pl-3 text-right font-medium', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
                 {pctTr(ch, { signed: true })}
               </td>
               <td className="hidden py-2.5 pl-6 sm:table-cell">
@@ -164,7 +165,7 @@ export function MoversSection() {
           ) : (
             <div className="grid gap-x-10 lg:grid-cols-2">
               <MoversTable rows={rows.slice(0, 5)} start={1} caption={caption} flashMap={flashMap} />
-              <MoversTable rows={rows.slice(5, 10)} start={6} caption={`${caption} (6–10)`} flashMap={flashMap} />
+              <MoversTable rows={rows.slice(5, 10)} start={6} caption={`${caption} (6–10)`} flashMap={flashMap} continued />
             </div>
           )}
         </div>

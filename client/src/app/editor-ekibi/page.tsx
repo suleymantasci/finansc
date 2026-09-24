@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Editör Ekibi ve Uzman Kadromuz',
+  title: 'Editör Ekibi ve Yayın İlkeleri',
   description:
-    'FinansÇözüm editör ekibi: Finansal içerik üreticilerimiz, veri analistlerimiz ve editörlerimiz hakkında bilgi.',
+    'FinansÇözüm içeriklerinin ve verilerinin nasıl hazırlandığı, yapay zekâ kullanımı ve yayın ilkeleri.',
   alternates: { canonical: `${SITE_URL}/editor-ekibi` },
   openGraph: {
     title: 'Editör Ekibi | FinansÇözüm',
-    description: 'İçerik üreticilerimiz ve uzman kadromuz',
+    description: 'İçerik hazırlama süreci ve yayın ilkeleri',
     url: `${SITE_URL}/editor-ekibi`,
     type: 'article',
     locale: 'tr_TR',
@@ -31,21 +31,21 @@ const EDITORS: Editor[] = [
     name: 'Finansal İçerik Ekibi',
     role: 'İçerik Yönetimi',
     initials: 'Fİ',
-    bio: 'Türkiye finans piyasalarını yakından takip eden, makroekonomik gelişmeleri ve piyasa trendlerini düzenli olarak analiz eden editör ekibimiz. TCMB kararları, enflasyon verileri ve borsa gelişmelerini kullanıcılarımıza anlaşılır şekilde aktarır.',
+    bio: 'Bilgi merkezi yazılarının konularını belirler ve yapay zekâ araçları desteğiyle hazırlanan metinlerin yayın sürecini yönetir. Yazılar TCMB kararları, enflasyon verileri ve mevzuat gibi konuları anlaşılır biçimde aktarmayı amaçlar.',
     expertise: ['Makroekonomi', 'Borsa Analizi', 'Altın Piyasası', 'Döviz Piyasası'],
   },
   {
     name: 'Veri ve Analiz Ekibi',
     role: 'Veri Mühendisliği',
     initials: 'VA',
-    bio: 'Canlı piyasa verilerinin toplanması, doğrulanması ve platforma entegrasyonundan sorumlu ekibimiz. Birden fazla kaynaktan gelen verileri karşılaştırarak kullanıcılarımıza en doğru ve güncel bilgiyi sunmak için çalışır.',
+    bio: 'Piyasa verilerinin kamuya açık kaynaklardan otomatik olarak derlenmesi, sayfalara iletilmesi ve geçmiş fiyat serilerinin oluşturulması. Kaynaklar ve güncelleme sıklıkları Kaynak Politikası sayfasında açıklanır.',
     expertise: ['Veri Doğrulama', 'API Entegrasyonu', 'Piyasa Verisi', 'Kalite Kontrol'],
   },
   {
     name: 'İçerik Editörleri',
     role: 'Editoryal',
     initials: 'İE',
-    bio: 'Blog yazılarımızı, hesaplama araçlarımızı ve rehberlerimizi hazırlayan editörlerimiz. Her içerik yayınlanmadan önce editöryal incelemeden geçer; finansal doğruluk, dil kalitesi ve SEO uyumluluğu kontrol edilir.',
+    bio: 'Hesaplama araçlarının formülleri ve rehber içerikler. Araçlar yürürlükteki oran ve kurallara göre güncellenir; bildirilen hatalar Düzeltme Politikası’na göre düzeltilir.',
     expertise: ['Finansal Yazarlık', 'SEO', 'Editöryal Süreç', 'İçerik Stratejisi'],
   },
 ];
@@ -55,7 +55,7 @@ export default function EditorEkibiPage() {
     '@context': 'https://schema.org',
     '@type': 'AboutPage',
     name: 'Editör Ekibi',
-    description: 'FinansÇözüm editör ekibi ve uzman kadrosu',
+    description: 'FinansÇözüm içerik hazırlama süreci ve yayın ilkeleri',
     inLanguage: 'tr-TR',
     isPartOf: { '@id': 'https://finanscozum.net/#website' },
     publisher: { '@id': 'https://finanscozum.net/#organization' },
@@ -85,15 +85,15 @@ export default function EditorEkibiPage() {
             <Users className="h-8 w-8 text-primary" />
             <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Editör Ekibimiz</h1>
           </div>
-          <p className="text-sm text-muted-foreground">Son güncelleme: 2 Haziran 2026</p>
+          <p className="text-sm text-muted-foreground">Son güncelleme: 24 Eylül 2026</p>
         </header>
 
         <section className="prose prose-slate dark:prose-invert max-w-none">
           <p className="lead text-lg text-muted-foreground">
-            <strong className="text-foreground">{SITE_NAME}</strong>, Türkiye\'nin finansal bilgi
-            ihtiyacını karşılamak için bir araya gelen, kendi alanlarında uzmanlaşmış bir ekip
-            tarafından yönetilmektedir. Aşağıda ekibimizin genel yapısı ve uzmanlık alanları
-            hakkında bilgi bulabilirsiniz.
+            <strong className="text-foreground">{SITE_NAME}</strong> bağımsız bir finans bilgi
+            platformudur. Aşağıda içeriklerin ve verilerin hangi süreçle hazırlandığını açıklıyoruz.
+            Bilgi merkezi yazıları <strong className="text-foreground">yapay zekâ araçları desteğiyle</strong>{' '}
+            hazırlanır; yazılar yatırım tavsiyesi değildir ve hata içerebilir.
           </p>
 
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">Ekibimiz</h2>
@@ -138,7 +138,7 @@ export default function EditorEkibiPage() {
               {
                 icon: BookOpen,
                 title: 'Doğruluk ve Güncellik',
-                desc: 'Her içerik yayınlanmadan önce birden fazla bağımsız kaynaktan doğrulanır. Eskiyen bilgiler güncellenir ve "son güncelleme" tarihi açıkça belirtilir.',
+                desc: 'İçerikler mümkün olduğunca resmî ve birincil kaynaklara dayandırılır. Eskiyen bilgiler güncellenir ve "son güncelleme" tarihi belirtilir. Hata bildirimleri dikkate alınır.',
               },
               {
                 icon: Shield,

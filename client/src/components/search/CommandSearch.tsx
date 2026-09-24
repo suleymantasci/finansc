@@ -304,7 +304,7 @@ export function CommandPalette({ className }: { className?: string }) {
         aria-label="Site içi aramayı aç (Ctrl+K)"
         aria-keyshortcuts="Control+K Meta+K"
         className={cn(
-          'flex h-9 items-center gap-2 rounded-full border border-border bg-card/60 pl-3 pr-1.5 text-sm text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground',
+          'flex h-9 w-9 items-center justify-center gap-2 rounded-full border border-border bg-card/60 text-sm lg:w-auto lg:justify-start lg:pl-3 lg:pr-1.5 text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground',
           className,
         )}
       >

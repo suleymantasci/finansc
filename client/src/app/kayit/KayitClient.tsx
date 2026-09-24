@@ -77,11 +77,16 @@ export function KayitClient() {
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" {...register('terms')} className="mt-0.5 rounded border-border" />
             <span className="text-muted-foreground">
-              <Link href="/kullanim-sartlari" className="text-primary hover:underline">Kullanım şartlarını</Link> ve{' '}
-              <Link href="/gizlilik" className="text-primary hover:underline">gizlilik politikasını</Link> okudum ve kabul ediyorum.
+              <Link href="/kullanim-sartlari" className="text-primary hover:underline">Kullanım Şartları</Link>&apos;nı okudum ve kabul ediyorum.
             </span>
           </label>
           {errors.terms && <p className="text-xs text-down">{errors.terms.message}</p>}
+          {/* KVKK: aydınlatma bir bilgilendirmedir, onaya bağlanmaz; üyelik verisi sözleşmenin ifası için işlenir */}
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Kişisel verileriniz üyeliğinizin sağlanması amacıyla{' '}
+            <Link href="/gizlilik" className="text-primary hover:underline">Gizlilik Politikası ve KVKK Aydınlatma Metni</Link>{' '}
+            kapsamında işlenir.
+          </p>
 
           <Button type="submit" className="w-full" loading={loading}>Kayıt Ol</Button>
         </form>

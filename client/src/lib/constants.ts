@@ -52,7 +52,8 @@ export const FOOTER_LINKS = {
   kurumsal: [
     { label: 'Hakkımızda', href: '/hakkimizda' },
     { label: 'İletişim', href: '/iletisim' },
-    { label: 'Gizlilik Politikası', href: '/gizlilik' },
+    { label: 'Gizlilik ve KVKK Aydınlatma', href: '/gizlilik' },
+    { label: 'Çerez Politikası', href: '/cerez-politikasi' },
     { label: 'Kullanım Şartları', href: '/kullanim-sartlari' },
   ],
 } as const;

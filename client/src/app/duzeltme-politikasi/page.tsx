@@ -34,7 +34,7 @@ export default function DuzeltmePolitikasiPage() {
             <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Düzeltme Politikası</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Son güncelleme: 2 Haziran 2026
+            Son güncelleme: 24 Eylül 2026
           </p>
         </header>
 
@@ -50,8 +50,8 @@ export default function DuzeltmePolitikasiPage() {
           <ul className="space-y-2 mt-3">
             <li>
               <CheckCircle2 className="inline h-4 w-4 mr-1.5 text-emerald-500" />
-              <strong>Otomatik monitoring:</strong> Kaynak API'lerden gelen veriler çapraz kontrol
-              edilir; uyuşmazlık olursa alarm tetiklenir
+              <strong>Otomatik kayıt:</strong> Veri toplama hataları sistem kayıtlarına yazılır; bir kaynağa
+              ulaşılamazsa son bilinen değer, ait olduğu saatle birlikte gösterilir
             </li>
             <li>
               <CheckCircle2 className="inline h-4 w-4 mr-1.5 text-emerald-500" />
@@ -61,7 +61,7 @@ export default function DuzeltmePolitikasiPage() {
             </li>
             <li>
               <CheckCircle2 className="inline h-4 w-4 mr-1.5 text-emerald-500" />
-              <strong>İç denetim:</strong> Editör ekibinin rutin içerik gözden geçirmeleri
+              <strong>Gözden geçirme:</strong> Eskiyen oran, tutar ve mevzuat bilgilerinin güncellenmesi
             </li>
             <li>
               <CheckCircle2 className="inline h-4 w-4 mr-1.5 text-emerald-500" />
@@ -74,26 +74,26 @@ export default function DuzeltmePolitikasiPage() {
             {[
               {
                 step: 'Aşama 1 — Doğrulama',
-                desc: 'Bildirilen hata editör ekibi tarafından bağımsız kaynaklardan doğrulanır. Hata teyit edilmezse bildirim yapan kişiye geri dönüş yapılır.',
-                time: '2-4 saat',
+                desc: 'Bildirilen hata, verinin kaynağı ve ilgili resmî yayınla karşılaştırılarak kontrol edilir. Hata teyit edilmezse bildirim yapan kişiye gerekçesiyle dönüş yapılır.',
+                time: 'Hedef: 2 iş günü',
                 icon: AlertCircle,
               },
               {
                 step: 'Aşama 2 — Düzeltme',
                 desc: 'Veri kaynağındaki sorun tespit edilir ve düzeltilir. Kod tarafında otomatik düzeltme yapılamıyorsa manuel müdahale uygulanır.',
-                time: '4-12 saat',
+                time: 'Hedef: 5 iş günü',
                 icon: FileEdit,
               },
               {
                 step: 'Aşama 3 — Yayın ve Bildirim',
                 desc: 'Düzeltme yapıldıktan sonra etkilenen sayfa/sayfalar güncellenir, son güncelleme tarihi notu eklenir ve kullanıcıya geri bildirim verilir.',
-                time: '12-24 saat',
+                time: 'Düzeltmeyle birlikte',
                 icon: CheckCircle2,
               },
               {
                 step: 'Aşama 4 — Kök Neden Analizi',
                 desc: 'Hatanın tekrarlamaması için kök neden analizi yapılır; monitoring veya kaynak entegrasyonunda iyileştirmeler uygulanır.',
-                time: '1-7 gün',
+                time: 'Gerektiğinde',
                 icon: Clock,
               },
             ].map(({ step, desc, time, icon: Icon }) => (
@@ -120,17 +120,15 @@ export default function DuzeltmePolitikasiPage() {
             süren sapma, kaynak erişim kesintisi) durumunda:
           </p>
           <ul className="space-y-1.5 mt-3">
-            <li>Etkilenen sayfalarda görünür "Düzeltme notu" gösterilir</li>
-            <li>İlgili blog yazılarında güncelleme tarihi notu eklenir</li>
-            <li>Ana sayfada durum bildirimi yayınlanır (kritik durumlarda)</li>
-            <li>Kullanıcıya (bildirim yaptıysa) e-posta ile geri dönüş yapılır</li>
+            <li>Hata düzeltilir; gerekiyorsa ilgili yazıya düzeltme notu eklenir</li>
+            <li>İlgili yazının "güncellendi" tarihi yenilenir</li>
+            <li>Bildirimi yapan kişiye (iletişim bilgisi varsa) e-posta ile dönüş yapılır</li>
           </ul>
 
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">4. İçerik Güncellemeleri</h2>
           <p>
-            Blog yazıları ve rehberler için: güncellenen bölümler içeriğin sonunda "Güncelleme
-            geçmişi" bölümünde belirtilir. Maddeyi değiştiren editör, tarih ve değişiklik açıklaması
-            görünür şekilde paylaşılır.
+            Blog yazıları ve rehberler güncellendiğinde yazının başındaki "güncellendi" tarihi yenilenir.
+            Anlamı değiştiren önemli düzeltmelerde yazıya kısa bir düzeltme notu eklenir.
           </p>
         </section>
       </div>

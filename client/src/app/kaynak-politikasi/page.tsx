@@ -18,65 +18,42 @@ export const metadata: Metadata = {
   },
 };
 
+// Kaynak açıklamaları ve sıklıklar gerçek toplama yöntemini yansıtmalı (tasci-api ayarları).
+// Lisans, ortaklık veya "resmî veri" iddiası içermemeli — bkz. docs/hukuk/RAPOR.md
 const SOURCES = [
   {
-    name: 'Harem Altın',
-    category: 'Altın Fiyatları',
+    name: 'Altın fiyatları',
+    category: 'Serbest piyasa, Kapalıçarşı, Harem Altın, Altınkaynak, Garanti BBVA, Akbank',
     description:
-      'İstanbul Kuyumcular Odası verilerine dayalı, Türkiye\'nin önde gelen altın fiyat sağlayıcılarından biri. Serbest piyasa alış-satış fiyatları referans alınır.',
-    updateFrequency: '1-3 saniye (canlı)',
+      'Bu piyasaların kamuya açık fiyat yayınlarından otomatik olarak derlenir. Kurum adları yalnızca fiyatın ait olduğu piyasayı belirtir; bu kurumlarla bir ortaklığımız yoktur.',
+    updateFrequency: 'Gündüz ~30 sn, gece ~60 sn',
   },
   {
-    name: 'Altınkaynak',
-    category: 'Altın Fiyatları',
-    description:
-      'Türkiye genelinde birçok kuyumcudan derlenen altın fiyat verileri. Karşılaştırma için ek kaynak olarak kullanılır.',
-    updateFrequency: '30 saniye',
-  },
-  {
-    name: 'Kapalıçarşı',
-    category: 'Altın Fiyatları',
-    description: 'Kapalıçarşı serbest piyasa altın fiyatları referans değerleri.',
-    updateFrequency: '1 dakika',
-  },
-  {
-    name: 'Garanti BBVA',
-    category: 'Banka Altın Kurları',
-    description: 'Garanti BBVA bankası altın alış-satış kurları (karşılaştırma için).',
-    updateFrequency: '15 dakika',
-  },
-  {
-    name: 'Akbank',
-    category: 'Banka Altın Kurları',
-    description: 'Akbank bankası altın alış-satış kurları (karşılaştırma için).',
-    updateFrequency: '15 dakika',
-  },
-  {
-    name: 'Borsa İstanbul (BIST)',
-    category: 'Hisse Senetleri ve Endeksler',
-    description:
-      'BIST\'te işlem gören tüm hisse senetleri, XU100, XU030, XU050 endeksleri canlı verileri.',
-    updateFrequency: 'Anlık (SSE/WebSocket)',
+    name: 'Serbest piyasa döviz kurları',
+    category: 'Döviz',
+    description: 'Kamuya açık serbest piyasa kur yayınlarından otomatik olarak derlenir; banka ve döviz bürolarının işlem kurlarından farklı olabilir.',
+    updateFrequency: '~30 saniye',
   },
   {
     name: 'Türkiye Cumhuriyet Merkez Bankası (TCMB)',
-    category: 'Döviz Kurları',
+    category: 'Gösterge döviz kurları, enflasyon (TÜFE/ÜFE)',
     description:
-      'TCMB tarafından yayınlanan resmi döviz kurları. Merkez Bankası kuru referans olarak gösterilir.',
-    updateFrequency: 'Günde 5 yayın (saat 10:30, 11:30, 12:30, 13:30, 14:30)',
+      'TCMB’nin ilan ettiği gösterge niteliğindeki kurlar ve TCMB’nin yayımladığı, TÜİK kaynaklı enflasyon tabloları. TCMB kurları her iş günü saat 15.30’da ilan edilir.',
+    updateFrequency: 'Kur: saatlik kontrol · Enflasyon: aylık',
   },
   {
-    name: 'Serbest Piyasa',
-    category: 'Döviz Kurları',
-    description: 'Bankalar ve döviz bürolarının oluşturduğu serbest piyasa kurları.',
-    updateFrequency: '1-3 saniye (canlı)',
+    name: 'Borsa İstanbul hisse ve endeksleri',
+    category: 'Borsa',
+    description:
+      'Kamuya açık, gecikmeli fiyat yayınlarından otomatik olarak derlenir. Veriler en az 15 dakika gecikmelidir; FinansÇözüm, Borsa İstanbul A.Ş. ile bağlantılı değildir.',
+    updateFrequency: 'Seans içinde ~30 sn (15+ dk gecikmeli)',
   },
   {
-    name: 'TÜİK (Türkiye İstatistik Kurumu)',
-    category: 'Enflasyon ve Makro Veriler',
+    name: 'Geçmiş fiyat grafikleri ve emtia',
+    category: 'Grafikler',
     description:
-      'TÜFE, ÜFE, işsizlik oranı ve diğer makroekonomik göstergeler için TÜİK resmi verileri kullanılır.',
-    updateFrequency: 'Aylık',
+      'Günlük kapanış serileri kamuya açık piyasa veri yayınlarından derlenir; uluslararası ons altın/gümüş geçmişi için LBMA referans fiyatları kullanılır.',
+    updateFrequency: 'Günlük',
   },
 ];
 
@@ -104,7 +81,7 @@ export default function KaynakPolitikasiPage() {
             <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Kaynak Politikası</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Son güncelleme: 2 Haziran 2026
+            Son güncelleme: 24 Eylül 2026
           </p>
         </header>
 
@@ -118,8 +95,8 @@ export default function KaynakPolitikasiPage() {
 
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">Veri Kaynaklarımız</h2>
           <p>
-            Platformumuzdaki tüm finansal veriler, aşağıdaki güvenilir kaynaklardan elde edilir. Her kaynak
-            kendi kategorisinde Türkiye\'nin önde gelen veri sağlayıcıları arasında yer alır.
+            Sitedeki piyasa verileri aşağıdaki kaynaklardan otomatik olarak derlenir. Resmî kurum verisi (TCMB)
+            dışındaki fiyatlar bilgi amaçlıdır; gecikmeli, eksik veya hatalı olabilir ve resmî fiyat yerine geçmez.
           </p>
 
           <div className="not-prose mt-6 space-y-4">
@@ -144,21 +121,20 @@ export default function KaynakPolitikasiPage() {
 
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">Veri Doğrulama Süreci</h2>
           <p>
-            Platformumuzdaki her veri türü için aşağıdaki doğrulama adımları uygulanır:
+            Veriler yayınlanmadan önce aşağıdaki otomatik kontrollerden geçer:
           </p>
           <ol className="space-y-2 mt-4">
             <li>
-              <strong>Birincil kaynak tercihi:</strong> Resmi kurumların yayınladığı veriler (TCMB, TÜİK,
-              BIST) her zaman öncelikli referans olarak alınır.
+              <strong>Resmî kaynak:</strong> Gösterge kurlar ve enflasyon gibi resmî kurumca ilan edilen verilerde
+              TCMB yayını esas alınır.
             </li>
             <li>
-              <strong>Çapraz kontrol:</strong> Altın ve döviz fiyatları birden fazla bağımsız kaynaktan
-              karşılaştırılır; anomali durumunda kaynak değiştirilir veya uyarı gösterilir.
+              <strong>Kaynak karşılaştırma:</strong> Altın fiyatları birden fazla piyasa için ayrı ayrı gösterilir;
+              kullanıcı kaynaklar arasındaki farkı sekmelerden karşılaştırabilir.
             </li>
             <li>
-              <strong>Canlı yayın doğrulama:</strong> BIST ve döviz verileri Server-Sent Events (SSE)
-              ile gerçek zamanlı yayınlanır; gecikme veya kesinti durumunda otomatik yeniden bağlantı
-              sağlanır.
+              <strong>Yayın:</strong> Güncellenen fiyatlar sayfaya otomatik iletilir; bağlantı koparsa otomatik
+              olarak yeniden kurulur. Borsa verileri bu yolla da en az 15 dakika gecikmeli gelir.
             </li>
             <li>
               <strong>Gecikmiş veri işaretleme:</strong> Piyasa kapalıyken son bilinen fiyat gösterilir ve
@@ -168,14 +144,14 @@ export default function KaynakPolitikasiPage() {
 
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">İçerik Kaynakları</h2>
           <p>
-            Blog yazılarımız ve bilgi merkezi içeriklerimiz aşağıdaki kaynaklara dayanır:
+            Bilgi merkezi yazıları yapay zekâ araçları desteğiyle hazırlanır ve mümkün olduğunca aşağıdaki
+            türden birincil kaynaklara dayandırılır. Yazılarda hata görürseniz lütfen bildirin:
           </p>
           <ul className="space-y-1 mt-2">
             <li>TCMB politika metinleri ve faiz kararları</li>
             <li>TÜİK resmi istatistik yayınları</li>
-            <li>BIST şirket açıklamaları ve KAP bildirimleri</li>
-            <li>Uluslararası finans kuruluşlarının raporları (IMF, Dünya Bankası, BIS)</li>
-            <li>Akademik finansal literatür</li>
+            <li>Yürürlükteki mevzuat (Resmî Gazete) ve kamu kurumlarının duyuruları</li>
+            <li>KAP bildirimleri</li>
           </ul>
 
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">Yasal Uyarı</h2>

@@ -112,6 +112,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/duzeltme-politikasi`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${BASE_URL}/gizlilik`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
     { url: `${BASE_URL}/kullanim-sartlari`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${BASE_URL}/cerez-politikasi`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
     { url: `${BASE_URL}/enflasyon`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/enflasyon/tuketici-fiyatlari`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/enflasyon/uretici-fiyatlari`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },

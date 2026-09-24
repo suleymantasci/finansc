@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { Mail, MapPin, Clock, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 import { api } from '@/lib/api';
+import { LEGAL } from '@/lib/legal';
 
-const CONTACT_EMAIL = 'info@finanscozum.net';
+const CONTACT_EMAIL = LEGAL.email;
 
 interface FormData {
   name: string;
@@ -92,7 +94,7 @@ export default function IletisimPage() {
           </div>
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-2">Adres</h2>
           <p className="text-sm text-muted-foreground">
-            İstanbul, Türkiye
+            {LEGAL.address || 'İstanbul, Türkiye'}
           </p>
         </div>
 
@@ -100,9 +102,9 @@ export default function IletisimPage() {
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
             <Clock className="h-6 w-6 text-primary" />
           </div>
-          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-2">Çalışma Saatleri</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-2">Yanıt</h2>
           <p className="text-sm text-muted-foreground">
-            Pazartesi – Cuma<br />09:00 – 18:00
+            Mesajlara iş günlerinde<br />e-posta ile dönüş yapılır
           </p>
         </div>
       </div>
@@ -201,6 +203,10 @@ export default function IletisimPage() {
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {loading ? 'Gönderiliyor...' : 'Gönder'}
           </button>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Formda paylaştığınız ad, e-posta ve mesaj yalnızca talebinizi yanıtlamak için işlenir ve saklanır. Ayrıntı:{' '}
+            <Link href="/gizlilik" className="text-primary hover:underline">Gizlilik Politikası ve KVKK Aydınlatma Metni</Link>.
+          </p>
         </form>
       </div>
     </div>

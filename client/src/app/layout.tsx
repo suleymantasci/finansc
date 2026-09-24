@@ -1,5 +1,6 @@
 import { safeJsonLd } from '@/lib/json-ld';
 import { Analytics } from '@/components/analytics/GoogleAnalytics';
+import { CookieConsent } from '@/components/consent/CookieConsent';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Newsreader } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
@@ -83,7 +84,7 @@ export const metadata: Metadata = {
     locale: 'tr_TR',
     siteName: SITE_NAME,
     title: `${SITE_NAME} - Canlı Altın, Borsa, Döviz ve Finansal Araçlar`,
-    description: 'Türkiye\'nin en kapsamlı finans platformu. Anlık altın, borsa, döviz verileri, hesaplama araçları ve güncel finans içerikleri.',
+    description: 'Bağımsız finans bilgi platformu: güncel altın ve döviz fiyatları, gecikmeli borsa verileri, hesaplama araçları ve finans rehberleri.',
     url: 'https://finanscozum.net',
     images: [
       {
@@ -138,16 +139,6 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable}`}
     >
-      <head>
-        {/* ── Performance: third-party DNS+TLS warmup ──
-            Google Tag Manager ve Analytics için preconnect — DNS lookup
-            + TLS handshake'i (~100-300ms) parse sırasında hazır olur.
-            LCP (Largest Contentful Paint) mobilde 200ms+ iyileşme. */}
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://www.google-analytics.com" />
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-      </head>
       <body
         className="atlas-grain flex min-h-screen flex-col"
       >
@@ -161,6 +152,7 @@ export default function RootLayout({
           <Footer />
           <MobileNav />
           <Analytics />
+          <CookieConsent />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
