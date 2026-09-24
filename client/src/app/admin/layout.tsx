@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
+    <div className="mx-auto max-w-[1440px] px-4 py-6 lg:px-8 pb-24 md:pb-12">
       <div className="mb-4">
         <Link href="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Siteye Dön
@@ -26,7 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
       <div className="flex flex-col gap-6 lg:flex-row">
         <aside className="w-full lg:w-52 shrink-0">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Admin Panel</p>
+          <p className="mb-3 text-[12px] font-medium text-muted-foreground">Admin Panel</p>
           <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
             {NAV.map((item) => {
               const Icon = item.icon;

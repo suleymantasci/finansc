@@ -57,12 +57,12 @@ export function KayitClient() {
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 lg:p-8">
-        <h1 className="text-center text-2xl font-bold">Kayıt Ol</h1>
+      <div className="w-full max-w-md atlas-card p-6 lg:p-8">
+        <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl text-center">Kayıt Ol</h1>
         <p className="mt-1 text-center text-sm text-muted-foreground">Ücretsiz hesap oluşturun</p>
 
         {error && (
-          <div className="mt-4 rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div>
+          <div className="mt-4 rounded-lg bg-down/10 px-4 py-3 text-sm text-down">{error}</div>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
@@ -78,10 +78,10 @@ export function KayitClient() {
             <input type="checkbox" {...register('terms')} className="mt-0.5 rounded border-border" />
             <span className="text-muted-foreground">
               <Link href="/kullanim-sartlari" className="text-primary hover:underline">Kullanım şartlarını</Link> ve{' '}
-              <Link href="/gizlilik-politikasi" className="text-primary hover:underline">gizlilik politikasını</Link> okudum ve kabul ediyorum.
+              <Link href="/gizlilik" className="text-primary hover:underline">gizlilik politikasını</Link> okudum ve kabul ediyorum.
             </span>
           </label>
-          {errors.terms && <p className="text-xs text-danger">{errors.terms.message}</p>}
+          {errors.terms && <p className="text-xs text-down">{errors.terms.message}</p>}
 
           <Button type="submit" className="w-full" loading={loading}>Kayıt Ol</Button>
         </form>

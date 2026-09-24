@@ -28,7 +28,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Dashboard</h1>
       <p className="mt-1 text-sm text-muted-foreground">Genel site istatistikleri</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

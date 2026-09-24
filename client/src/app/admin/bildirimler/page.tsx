@@ -57,7 +57,7 @@ export default function AdminReportsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Hata Bildirimleri</h1>
+        <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Hata Bildirimleri</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Kullanıcılardan gelen hata bildirimleri
           {pendingCount > 0 && (
@@ -80,7 +80,7 @@ export default function AdminReportsPage() {
             return (
               <div
                 key={report.id}
-                className="rounded-xl border border-border bg-card p-4 transition-colors"
+                className="atlas-card p-4 transition-colors"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">

@@ -67,7 +67,7 @@ export function YearlyMaasTable({
       </div>
 
       {/* Tablo — her ekranda aynı, sadece yatay scroll */}
-      <div className="overflow-x-auto rounded-xl border border-border bg-card">
+      <div className="overflow-x-auto atlas-card">
         <table className="w-full text-xs sm:text-sm min-w-[720px]">
           <thead className="bg-muted">
             <tr>

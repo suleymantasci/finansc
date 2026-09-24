@@ -101,7 +101,7 @@ export default function KaynakPolitikasiPage() {
         <header className="mb-10">
           <div className="flex items-center gap-3 mb-3">
             <Shield className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Kaynak Politikası</h1>
+            <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Kaynak Politikası</h1>
           </div>
           <p className="text-sm text-muted-foreground">
             Son güncelleme: 2 Haziran 2026
@@ -116,7 +116,7 @@ export default function KaynakPolitikasiPage() {
             hazırlanmıştır.
           </p>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">Veri Kaynaklarımız</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">Veri Kaynaklarımız</h2>
           <p>
             Platformumuzdaki tüm finansal veriler, aşağıdaki güvenilir kaynaklardan elde edilir. Her kaynak
             kendi kategorisinde Türkiye\'nin önde gelen veri sağlayıcıları arasında yer alır.
@@ -124,7 +124,7 @@ export default function KaynakPolitikasiPage() {
 
           <div className="not-prose mt-6 space-y-4">
             {SOURCES.map((source) => (
-              <div key={source.name} className="rounded-lg border border-border bg-card p-4">
+              <div key={source.name} className="atlas-card p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <h3 className="font-semibold text-base">{source.name}</h3>
@@ -142,7 +142,7 @@ export default function KaynakPolitikasiPage() {
             ))}
           </div>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">Veri Doğrulama Süreci</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">Veri Doğrulama Süreci</h2>
           <p>
             Platformumuzdaki her veri türü için aşağıdaki doğrulama adımları uygulanır:
           </p>
@@ -166,7 +166,7 @@ export default function KaynakPolitikasiPage() {
             </li>
           </ol>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">İçerik Kaynakları</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">İçerik Kaynakları</h2>
           <p>
             Blog yazılarımız ve bilgi merkezi içeriklerimiz aşağıdaki kaynaklara dayanır:
           </p>
@@ -178,7 +178,7 @@ export default function KaynakPolitikasiPage() {
             <li>Akademik finansal literatür</li>
           </ul>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">Yasal Uyarı</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">Yasal Uyarı</h2>
           <div className="not-prose rounded-lg border-l-4 border-amber-500 bg-amber-500/5 p-4 text-sm">
             <div className="flex items-start gap-2">
               <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -192,28 +192,28 @@ export default function KaynakPolitikasiPage() {
             </div>
           </div>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">Veri Hatası Bildirimi</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">Veri Hatası Bildirimi</h2>
           <p>
             Herhangi bir veride hata, gecikme veya tutarsızlık tespit ederseniz lütfen bize bildirin:
           </p>
           <div className="not-prose mt-4 flex flex-col sm:flex-row gap-3">
             <a
-              href="mailto:editor@finanscozum.com?subject=Veri%20Hatası%20Bildirimi"
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium hover:border-primary/30 transition-colors"
+              href="mailto:info@finanscozum.net?subject=Veri%20Hatası%20Bildirimi"
+              className="inline-flex items-center gap-2 atlas-card px-4 py-2.5 text-sm font-medium hover:border-primary/30 transition-colors"
             >
               <Mail className="h-4 w-4" />
-              editor@finanscozum.com
+              info@finanscozum.net
             </a>
             <Link
               href="/iletisim"
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium hover:border-primary/30 transition-colors"
+              className="inline-flex items-center gap-2 atlas-card px-4 py-2.5 text-sm font-medium hover:border-primary/30 transition-colors"
             >
               <Globe className="h-4 w-4" />
               İletişim formu
             </Link>
           </div>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">İlgili Sayfalar</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">İlgili Sayfalar</h2>
           <ul>
             <li>
               <Link href="/duzeltme-politikasi">Düzeltme Politikası</Link> — Hata düzeltme sürecimiz

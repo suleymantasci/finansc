@@ -109,22 +109,22 @@ export function MoversSection() {
   const [tab, setTab] = useState<Tab>('gainers');
 
   const rows = useMemo(() => {
-    const liquid = [...stocks]
-      .filter((s) => s.lastPrice > 0 && s.turnover > 0)
-      .sort((a, b) => b.turnover - a.turnover)
-      .slice(0, LIQUID_UNIVERSE);
+    // Evren: BIST 100 bileşenleri (kaynak veride endeks üyeliği var); yoksa hacme göre ilk N
+    const traded = [...stocks].filter((s) => s.lastPrice > 0 && s.turnover > 0);
+    const bist100 = traded.filter((s) => s.indices?.includes('BIST100'));
+    const liquid = (bist100.length >= 50 ? bist100 : traded).sort((a, b) => b.turnover - a.turnover).slice(0, LIQUID_UNIVERSE);
     if (tab === 'active') return liquid.slice(0, 10);
     const sorted = liquid.sort((a, b) => (b.changePercent ?? 0) - (a.changePercent ?? 0));
     return tab === 'gainers' ? sorted.slice(0, 10) : sorted.slice(-10).reverse();
   }, [stocks, tab]);
 
-  const caption = `${TABS.find((t) => t.id === tab)!.label} — Borsa İstanbul, işlem hacmi en yüksek ${LIQUID_UNIVERSE} hisse içinden`;
+  const caption = `${TABS.find((t) => t.id === tab)!.label} — BIST 100 hisseleri`;
 
   return (
     <section aria-labelledby="movers-title" className="mx-auto max-w-[1440px] px-4 lg:px-8">
       <div className="atlas-card p-5 sm:p-7">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <SectionHead id="movers-title" eyebrow="Borsa İstanbul" title="Hareket edenler" />
+          <SectionHead id="movers-title" eyebrow="BIST 100" title="Hareket edenler" />
           <div className="-mt-2 mb-6 flex items-center gap-3 sm:mt-0">
             <div role="tablist" aria-label="Liste türü" className="flex rounded-full border border-border bg-elevated p-1">
               {TABS.map((t) => (

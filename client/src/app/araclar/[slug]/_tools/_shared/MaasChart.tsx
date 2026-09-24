@@ -50,7 +50,7 @@ export function MaasChart({ result, showEmployer }: { result: MaasResult; showEm
   return (
     <div className="w-full space-y-6">
       {/* Donut Chart — Kesinti Dağılımı */}
-      <div className="rounded-xl border border-border bg-card p-4">
+      <div className="atlas-card p-4">
         <h3 className="text-sm font-semibold mb-3">Net Maaş Dağılımı</h3>
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
@@ -99,7 +99,7 @@ export function MaasChart({ result, showEmployer }: { result: MaasResult; showEm
       </div>
 
       {/* Bar Chart — Brüt / Net / İşveren Karşılaştırma */}
-      <div className="rounded-xl border border-border bg-card p-4">
+      <div className="atlas-card p-4">
         <h3 className="text-sm font-semibold mb-3">Brüt / Net / İşveren Karşılaştırması</h3>
         <div className="space-y-2.5">
           <BarRow label="Brüt Maaş" amount={result.gross} max={showEmployer ? result.totalEmployerCost : result.gross} color="#3b82f6" />

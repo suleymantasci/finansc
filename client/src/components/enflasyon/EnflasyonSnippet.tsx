@@ -28,7 +28,7 @@ export function EnflasyonSnippet({ tufeLatest, ufeLatest }: Props) {
   return (
     <p
       id="enflasyon-summary"
-      className="mb-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 text-sm leading-relaxed"
+      className="mb-8 max-w-3xl border-l-2 border-primary pl-5 text-[15px] leading-relaxed text-foreground/85"
     >
       {text}
     </p>

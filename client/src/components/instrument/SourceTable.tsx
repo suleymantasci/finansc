@@ -5,32 +5,44 @@ import { useMarketStore } from '@/stores/market.store';
 import { GOLD_BY_SLUG } from '@/lib/instruments/gold';
 import { CURRENCY_BY_CODE } from '@/lib/instruments/currencies';
 import { sourceLabel } from '@/lib/quote';
-import { API_URL, GOLD_SOURCES } from '@/lib/constants';
+import { API_URL } from '@/lib/constants';
 import { pctTr } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
-import type { GoldStreamData } from '@/stores/market.store';
+import type { GoldPrice } from '@/types';
 
 /**
  * Kaynaklara göre fiyatlar. Altında tüm kuyumcu/banka kaynakları, dövizde
  * serbest piyasa + TCMB. "Hangi kaynak ne diyor" sorusuna tek tabloda cevap.
  */
 
+/**
+ * Tüm altın kaynakları: 6 ayrı SSE yerine 20 sn'de bir tek REST isteği.
+ * Tarayıcılar HTTP/1.1'de aynı sunucuya en fazla 6 bağlantı açar; şeritteki akışlarla
+ * birlikte 9+ kalıcı bağlantı sayfa geçişlerini kilitliyordu. Sekme gizliyken durur.
+ */
 function useAllGoldSources(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
-    const list = GOLD_SOURCES.map((src) => {
-      const es = new EventSource(`${API_URL}/api/market/gold/stream/${src.key}`);
-      es.onmessage = (e) => {
-        try {
-          const d = JSON.parse(e.data) as GoldStreamData;
-          if (d.type === 'prices') useMarketStore.getState().updateFromGoldStream(d);
-        } catch {
-          /* bozuk paket */
-        }
-      };
-      return es;
-    });
-    return () => list.forEach((es) => es.close());
+    let stop = false;
+    const load = async () => {
+      if (document.hidden) return;
+      try {
+        const res = await fetch(`${API_URL}/api/market/gold`);
+        if (!res.ok || stop) return;
+        const list = (await res.json()) as GoldPrice[];
+        const bySource = new Map<string, GoldPrice[]>();
+        for (const g of list) bySource.set(g.source, [...(bySource.get(g.source) ?? []), g]);
+        for (const [source, prices] of bySource) useMarketStore.getState().updateFromGoldStream({ type: 'prices', source, prices });
+      } catch {
+        /* bir sonraki turda yeniden denenir */
+      }
+    };
+    load();
+    const t = setInterval(load, 20000);
+    return () => {
+      stop = true;
+      clearInterval(t);
+    };
   }, [enabled]);
 }
 

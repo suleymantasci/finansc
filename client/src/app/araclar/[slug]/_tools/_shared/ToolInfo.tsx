@@ -8,8 +8,8 @@ interface FAQ { q: string; a: string }
 export function ToolInfo({ title, description, faqs }: { title: string; description: string; faqs: FAQ[] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="mt-8 rounded-xl border border-border bg-card p-5">
-      <h2 className="text-lg font-bold mb-2">{title}</h2>
+    <div className="mt-8 atlas-card p-5">
+      <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-2">{title}</h2>
       <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
       {faqs.length > 0 && (
         <>
@@ -41,7 +41,7 @@ export function ResultRow({ label, value, highlight }: { label: string; value: s
   return (
     <div className="flex justify-between items-center">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className={`font-bold ${highlight ? 'text-danger' : ''}`}>{value}</span>
+      <span className={`font-bold ${highlight ? 'text-down' : ''}`}>{value}</span>
     </div>
   );
 }
@@ -49,7 +49,7 @@ export function ResultRow({ label, value, highlight }: { label: string; value: s
 /** Result card wrapper */
 export function ResultCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-6 space-y-3 rounded-xl border border-border bg-card p-5">
+    <div className="mt-6 space-y-3 atlas-card p-5">
       {children}
     </div>
   );

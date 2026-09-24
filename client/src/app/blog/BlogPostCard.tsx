@@ -1,102 +1,56 @@
 import Link from 'next/link';
-import { Calendar, Newspaper, TrendingUp, BarChart3, Coins, Landmark, CreditCard, PiggyBank, Wallet } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
+import { categoryLabel } from '@/lib/blog-categories';
 import { cn } from '@/lib/utils';
 import type { BlogPost } from '@/types';
 
-const CATEGORY_ICONS: Record<string, typeof Newspaper> = {
-  borsa: TrendingUp,
-  hisse: BarChart3,
-  altin: Coins,
-  doviz: Landmark,
-  kredi: CreditCard,
-  tasarruf: PiggyBank,
-  emeklilik: Wallet,
-  yatirim: TrendingUp,
-};
-
-function BlogPlaceholder({ category, title }: { category?: string | null; title: string }) {
-  const Icon = (category && CATEGORY_ICONS[category]) || Newspaper;
-  return (
-    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-      <Icon className="h-12 w-12 text-muted-foreground/30" aria-hidden />
-    </div>
-  );
-}
-
 function formatDate(d?: string | null): string {
   if (!d) return '';
-  return new Date(d).toLocaleDateString('tr-TR');
+  return new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/Istanbul' });
 }
 
-interface BlogPostCardProps {
-  post: BlogPost;
-  size?: 'featured' | 'default';
-  loading?: 'eager' | 'lazy';
+function readingMinutes(html?: string | null): number | null {
+  if (!html) return null;
+  return Math.max(1, Math.round(html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length / 200));
 }
 
-/**
- * Server-renderable blog post card.
- * Used by both server (initial page render) and client (pagination/filter).
- * Pure presentational — no hooks, no client APIs.
- */
-export function BlogPostCard({ post, size = 'default', loading = 'lazy' }: BlogPostCardProps) {
-  const isFeatured = size === 'featured';
+/** Sunucuda render edilebilen yazı kartı (hook yok). */
+export function BlogPostCard({ post, size = 'default', loading = 'lazy' }: { post: BlogPost; size?: 'featured' | 'default'; loading?: 'eager' | 'lazy' }) {
+  const featured = size === 'featured';
+  const cat = categoryLabel(post.category);
+  const mins = readingMinutes(post.content);
+  const date = post.publishedAt || post.createdAt;
 
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className={cn(
-        'group flex overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/30',
-        isFeatured ? 'h-full flex-col md:flex-row' : 'h-full flex-col',
-      )}
+      className={cn('atlas-card atlas-card-link group flex h-full overflow-hidden', featured ? 'flex-col md:flex-row' : 'flex-col')}
     >
-      <div
-        className={cn(
-          'overflow-hidden bg-muted',
-          isFeatured ? 'aspect-video w-full md:w-1/2' : 'aspect-video w-full',
-        )}
-      >
+      <div className={cn('overflow-hidden border-border bg-muted', featured ? 'aspect-[16/10] w-full border-b md:w-[55%] md:border-b-0 md:border-r' : 'aspect-[16/10] w-full border-b')}>
         {post.thumbnailUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={post.thumbnailUrl}
-            alt={post.title}
+            alt=""
             loading={loading}
             fetchPriority={loading === 'eager' ? 'high' : undefined}
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
           />
         ) : (
-          <BlogPlaceholder category={post.category} title={post.title} />
+          <div className="h-full w-full bg-[radial-gradient(circle_at_30%_30%,color-mix(in_srgb,var(--color-primary)_22%,transparent),transparent_60%)]" aria-hidden="true" />
         )}
       </div>
-      <div className={cn('flex flex-1 flex-col', isFeatured ? 'justify-center p-5 lg:p-8' : 'p-4')}>
-        {post.category && (
-          <Badge variant={isFeatured ? 'default' : 'outline'} className="mb-2 self-start">
-            {post.category}
-          </Badge>
+      <div className={cn('flex flex-1 flex-col', featured ? 'justify-center p-6 lg:p-10' : 'p-5')}>
+        {cat && <p className="eyebrow text-primary">{cat}</p>}
+        {featured ? (
+          <h2 className="font-display mt-3 text-balance text-3xl leading-tight text-foreground group-hover:text-primary lg:text-4xl">{post.title}</h2>
+        ) : (
+          <h3 className="font-display mt-2 line-clamp-3 text-[1.35rem] leading-snug text-foreground group-hover:text-primary">{post.title}</h3>
         )}
-        <h3
-          className={cn(
-            'font-semibold line-clamp-2',
-            isFeatured ? 'text-xl lg:text-2xl font-bold' : 'text-sm lg:text-base',
-          )}
-        >
-          {post.title}
-        </h3>
-        {post.excerpt && (
-          <p
-            className={cn(
-              'mt-1 text-muted-foreground line-clamp-2',
-              isFeatured ? 'mt-2 text-sm' : 'text-xs',
-            )}
-          >
-            {post.excerpt}
-          </p>
-        )}
-        <div className="mt-auto flex items-center gap-1 pt-3 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          {formatDate(post.publishedAt || post.createdAt)}
-        </div>
+        {post.excerpt && <p className={cn('mt-2 text-pretty text-muted-foreground', featured ? 'line-clamp-3 text-[15px]' : 'line-clamp-2 text-sm')}>{post.excerpt}</p>}
+        <p className="mt-auto pt-4 text-[12px] text-muted-foreground">
+          <time dateTime={date}>{formatDate(date)}</time>
+          {mins && <> · {mins} dk okuma</>}
+        </p>
       </div>
     </Link>
   );

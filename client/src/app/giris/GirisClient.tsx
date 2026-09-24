@@ -71,12 +71,12 @@ export function GirisClient() {
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 lg:p-8">
-        <h1 className="text-center text-2xl font-bold">Giriş Yap</h1>
+      <div className="w-full max-w-md atlas-card p-6 lg:p-8">
+        <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl text-center">Giriş Yap</h1>
         <p className="mt-1 text-center text-sm text-muted-foreground">Hesabınıza giriş yapın</p>
 
         {error && (
-          <div className="mt-4 rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div>
+          <div className="mt-4 rounded-lg bg-down/10 px-4 py-3 text-sm text-down">{error}</div>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">

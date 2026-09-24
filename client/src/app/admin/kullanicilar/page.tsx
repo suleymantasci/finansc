@@ -19,7 +19,7 @@ export default function AdminKullanicilarPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Kullanıcılar</h1>
+      <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Kullanıcılar</h1>
       <p className="mt-1 text-sm text-muted-foreground">Kayıtlı kullanıcıların listesi (salt okunur)</p>
 
       <div className="mt-6">
@@ -29,7 +29,7 @@ export default function AdminKullanicilarPage() {
           <div className="overflow-x-auto rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border bg-elevated">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Ad Soyad</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">E-posta</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Rol</th>

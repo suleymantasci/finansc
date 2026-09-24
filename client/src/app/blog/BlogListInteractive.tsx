@@ -1,62 +1,34 @@
-'use client';
-
-import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { categoryLabel } from '@/lib/blog-categories';
 import { cn } from '@/lib/utils';
 
-interface CategoryFilterProps {
-  /** Initial category list, computed server-side from latest posts. */
-  categories: string[];
-  /** Currently active category from URL (already known at server render). */
-  activeCategory: string | null;
-}
-
 /**
- * Category filter (client island). Only renders after hydration if the
- * user wants to switch category — initial render is server-rendered
- * pagination so Googlebot sees the links.
+ * Kategori filtresi — gerçek bağlantılar (JS gerekmez, arama motoru tarar).
+ * categories: [ham değer, yazı sayısı] — büyük/küçük harf varyantları birleştirilmiş.
  */
-export function BlogListInteractive({ categories, activeCategory }: CategoryFilterProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
+export function BlogListInteractive({ categories, activeCategory }: { categories: [string, number][]; activeCategory: string | null }) {
   if (categories.length === 0) return null;
-
-  const navigate = (newCategory: string | null) => {
-    const page = Number(searchParams.get('sayfa')) || 1;
-    const params = new URLSearchParams();
-    if (page > 1) params.set('sayfa', String(page));
-    if (newCategory) params.set('kategori', newCategory);
-    const qs = params.toString();
-    router.push(`/blog${qs ? `?${qs}` : ''}`, { scroll: false });
-  };
-
+  const chip = (active: boolean) =>
+    cn(
+      'inline-flex h-9 shrink-0 items-center rounded-full px-4 text-[13px] transition-colors',
+      active ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:text-foreground',
+    );
   return (
-    <div className="mb-6 flex flex-wrap gap-2">
-      <button
-        onClick={() => navigate(null)}
-        className={cn(
-          'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-          !activeCategory
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-muted-foreground hover:bg-surface-hover',
-        )}
-      >
+    <nav aria-label="Kategoriler" className="scroll-strip -mx-4 mb-8 flex gap-2 px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+      <Link href="/blog" className={chip(!activeCategory)} aria-current={!activeCategory ? 'page' : undefined}>
         Tümü
-      </button>
-      {categories.map((cat) => (
-        <button
+      </Link>
+      {categories.map(([cat, n]) => (
+        <Link
           key={cat}
-          onClick={() => navigate(cat)}
-          className={cn(
-            'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-            activeCategory === cat
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-muted-foreground hover:bg-surface-hover',
-          )}
+          href={`/blog?kategori=${encodeURIComponent(cat)}`}
+          className={chip(activeCategory?.toLocaleLowerCase('tr-TR') === cat.toLocaleLowerCase('tr-TR'))}
+          aria-current={activeCategory === cat ? 'page' : undefined}
         >
-          {cat}
-        </button>
+          {categoryLabel(cat)}
+          <span className="num ml-2 text-[11px] opacity-70">{n}</span>
+        </Link>
       ))}
-    </div>
+    </nav>
   );
 }

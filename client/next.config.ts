@@ -88,6 +88,11 @@ const nextConfig: NextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
+      // Hesap/oturum sayfaları arama sonuçlarında görünmesin (client sayfalar metadata veremiyor)
+      ...['/admin/:path*', '/hesabim/:path*', '/giris', '/kayit', '/sifremi-unuttum', '/sifre-sifirla'].map((source) => ({
+        source,
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      })),
       {
         source: '/blog/:slug+',
         headers: [

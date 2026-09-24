@@ -8,23 +8,6 @@ import { selectQuote, quoteDecimals, type QuoteSpec } from '@/lib/quote';
 import { pctTr } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
-/** TCMB kurlarını gerektiren sayfalarda akışı açar (tek sefer) */
-function useTcmbStream(enabled: boolean) {
-  useEffect(() => {
-    if (!enabled) return;
-    const base = process.env.NEXT_PUBLIC_API_URL || '';
-    const es = new EventSource(`${base}/api/market/currency/merkez-bankasi/stream`);
-    es.onmessage = (e) => {
-      try {
-        useMarketStore.getState().updateFromCurrencyStream('merkez-bankasi', JSON.parse(e.data));
-      } catch {
-        /* bozuk paket */
-      }
-    };
-    return () => es.close();
-  }, [enabled]);
-}
-
 function fmtTime(t?: string) {
   if (!t) return null;
   if (/^\d{1,2}:\d{2}/.test(t)) return t.slice(0, 5);
@@ -35,7 +18,6 @@ function fmtTime(t?: string) {
 const nf = (v: number, d: number) => v.toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d });
 
 export function LiveQuote({ spec, label }: { spec: QuoteSpec; label: string }) {
-  useTcmbStream(spec.kind === 'fx');
   // useShallow: selectQuote her çağrıda yeni nesne döndürür; sığ karşılaştırma döngüyü önler
   const quote = useMarketStore(useShallow((s) => selectQuote(s, spec)));
   const [waited, setWaited] = useState(false);

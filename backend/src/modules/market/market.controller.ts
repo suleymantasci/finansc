@@ -1,7 +1,7 @@
 import { SkipThrottle } from '@nestjs/throttler';
 import { Controller, Get, Param, Query, Sse, BadRequestException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Observable, map } from 'rxjs';
+import { merge, Observable, map } from 'rxjs';
 import { MarketService } from './market.service';
 import { type BorsaStock, type BorsaIndex } from './market.types';
 import { Public } from '../../common/decorators';
@@ -46,6 +46,35 @@ export class MarketController {
   async searchIndices(@Query('q') q?: string): Promise<{ success: boolean; data: BorsaIndex[]; count: number }> {
     const results = await this.marketService.searchIndices(q);
     return { success: true, data: results, count: results.length };
+  }
+
+  /**
+   * Birleşik piyasa akışı: borsa + altın + serbest piyasa + TCMB döviz tek bağlantıda.
+   * Her mesaj { channel, payload } biçimindedir. Ayrı akışlar sayfa başına 3-4 kalıcı
+   * bağlantı açıyordu; HTTP/1.1'de tarayıcının 6 bağlantı sınırı sayfa geçişlerini kilitliyordu.
+   * Eski uçlar geriye dönük uyumluluk için duruyor.
+   */
+  @Public()
+  @Sse('stream')
+  combinedStream(): Observable<{ data: string }> {
+    const tag = (channel: string) => (event: MessageEvent) => {
+      const raw = event.data as unknown;
+      let payload: unknown = raw;
+      if (typeof raw === 'string') {
+        try {
+          payload = JSON.parse(raw);
+        } catch {
+          payload = raw;
+        }
+      }
+      return { data: JSON.stringify({ channel, payload }) };
+    };
+    return merge(
+      this.marketService.getBorsaStream().pipe(map(tag('borsa'))),
+      this.marketService.getGoldStream().pipe(map(tag('gold'))),
+      this.marketService.getCurrencyStream('serbest-piyasa').pipe(map(tag('currency:serbest-piyasa'))),
+      this.marketService.getCurrencyStream('merkez-bankasi').pipe(map(tag('currency:merkez-bankasi'))),
+    );
   }
 
   @Public()

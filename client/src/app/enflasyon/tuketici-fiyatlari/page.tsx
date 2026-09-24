@@ -14,13 +14,13 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: 'TÜFE — Tüketici Fiyat Endeksi Verileri (Tarihsel)',
   description:
-    'TÜFE (Tüketici Fiyat Endeksi) yıllık ve aylık değişim verileri. 2003 yılından bugüne TCMB kaynaklı resmi enflasyon verileri, sıralanabilir tablo.',
+    'TÜFE (Tüketici Fiyat Endeksi) yıllık ve aylık değişim verileri. 2005’ten bugüne aylık veriler, sıralanabilir tablo. TÜİK verileri, TCMB üzerinden.',
   keywords: ['tüfe', 'tüketici fiyat endeksi', 'enflasyon', 'aylık enflasyon', 'yıllık enflasyon', 'tüfe tarihsel'],
   alternates: { canonical: `${SITE_URL}/enflasyon/tuketici-fiyatlari` },
   openGraph: {
     type: 'website',
     title: 'TÜFE — Tüketici Fiyat Endeksi Verileri',
-    description: 'TÜFE yıllık ve aylık değişim verileri. 2003 yılından bugüne TCMB kaynaklı.',
+    description: 'TÜFE yıllık ve aylık değişim verileri. 2005’ten bugüne. TÜİK verileri, TCMB üzerinden.',
     url: `${SITE_URL}/enflasyon/tuketici-fiyatlari`,
     siteName: SITE_NAME,
     locale: 'tr_TR',
@@ -64,7 +64,7 @@ export default async function TufePage() {
         }}
       />
 
-      <div className="mx-auto max-w-7xl px-4 pt-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 pt-6 lg:px-8">
         <EnflasyonBreadcrumb
           items={[
             { label: 'Enflasyon Verileri', href: '/enflasyon' },
@@ -78,7 +78,7 @@ export default async function TufePage() {
         />
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 lg:px-8">
         <p
           id="tufe-summary"
           className="mb-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 text-sm leading-relaxed"
@@ -87,7 +87,7 @@ export default async function TufePage() {
         </p>
 
         {tufeLatest && tufePrevious && (
-          <div className="mb-6 grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-2">
+          <div className="mb-6 grid gap-3 atlas-card p-4 sm:grid-cols-2">
             <div>
               <div className="text-xs uppercase tracking-wide text-muted-foreground">Son Dönem</div>
               <div className="mt-1 num text-2xl font-bold tabular-nums text-primary">
@@ -109,11 +109,11 @@ export default async function TufePage() {
           </div>
         )}
 
-        <h2 className="mb-3 mt-8 text-xl font-bold tracking-tight">Tarihsel Veriler</h2>
+        <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3 mt-8">Tarihsel Veriler</h2>
         {rows.length > 0 ? (
           <TufeClient rows={rows} />
         ) : (
-          <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
+          <div className="atlas-card p-6 text-sm text-muted-foreground">
             Tarihsel tablo yüklenemedi.
           </div>
         )}

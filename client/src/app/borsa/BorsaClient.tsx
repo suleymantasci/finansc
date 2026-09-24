@@ -5,17 +5,19 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMarketStore } from '@/stores/market.store';
 import { PriceChange } from '@/components/shared/PriceChange';
-import { MarketStatus } from '@/components/shared/MarketStatus';
 import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { SkeletonTable } from '@/components/ui/Skeleton';
-import { formatDecimal, formatInteger, formatTL } from '@/lib/formatters';
+import { formatDecimal, formatInteger, formatVolume } from '@/lib/formatters';
+import { STOCK_META } from '@/lib/seo-data/stocks';
+import { INDEX_META } from '@/lib/seo-data/indices';
 import { cn } from '@/lib/utils';
 
 type MainTab = 'hisseler' | 'endeksler';
 type SortTab = 'yukselenler' | 'dusenler' | 'hacim';
+// Endeks üyeliği kaynak veriden gelir (tasci-api: BIST30 / BIST50 / BIST100)
 type IndexFilter = 'tumu' | 'BIST30' | 'BIST50' | 'BIST100';
 type SortDir = 'asc' | 'desc';
 
@@ -33,7 +35,7 @@ const SORT_TAB_MAP: Record<SortTab, SortState> = {
 };
 
 export function BorsaClient() {
-  const { indices, stocks, indicesLoading, stocksLoading, flashMap, borsaStreamStatus: status } = useMarketStore();
+  const { indices, stocks, indicesLoading, stocksLoading, flashMap } = useMarketStore();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -67,9 +69,9 @@ export function BorsaClient() {
   ];
 
   const sortTabs: { key: SortTab; label: string }[] = [
-    { key: 'yukselenler', label: 'En Çok Yükselen' },
-    { key: 'dusenler', label: 'En Çok Düşen' },
-    { key: 'hacim', label: 'En Çok İşlem Gören' },
+    { key: 'yukselenler', label: 'Yükselenler' },
+    { key: 'dusenler', label: 'Düşenler' },
+    { key: 'hacim', label: 'En çok işlem' },
   ];
 
   // Effective sort: sortTab overrides column sort
@@ -146,196 +148,160 @@ export function BorsaClient() {
   );
 
   const stockColumns = [
-    { key: 'symbol', label: 'Sembol', align: 'left' as const },
-    { key: 'lastPrice', label: 'Son', align: 'right' as const },
-    { key: 'buyPrice', label: 'Alış', align: 'right' as const },
-    { key: 'sellPrice', label: 'Satış', align: 'right' as const },
-    { key: 'low', label: 'En Düşük', align: 'right' as const },
-    { key: 'high', label: 'En Yüksek', align: 'right' as const },
-    { key: 'changePercent', label: 'Değişim', align: 'right' as const },
-    { key: 'volume', label: 'Hacim (Lot)', align: 'right' as const },
-    { key: 'turnover', label: 'Hacim (TL)', align: 'right' as const },
-    { key: 'time', label: 'Son İşlem', align: 'right' as const },
+    { key: 'symbol', label: 'Hisse', align: 'left' as const, cls: '' },
+    { key: 'lastPrice', label: 'Son', align: 'right' as const, cls: '' },
+    { key: 'changePercent', label: 'Değişim', align: 'right' as const, cls: '' },
+    { key: 'low', label: 'Gün düşük', align: 'right' as const, cls: 'hidden md:table-cell' },
+    { key: 'high', label: 'Gün yüksek', align: 'right' as const, cls: 'hidden md:table-cell' },
+    { key: 'volume', label: 'Hacim (lot)', align: 'right' as const, cls: 'hidden xl:table-cell' },
+    { key: 'turnover', label: 'Hacim (₺)', align: 'right' as const, cls: 'hidden sm:table-cell' },
+    { key: 'time', label: 'Saat', align: 'right' as const, cls: 'hidden lg:table-cell' },
   ];
 
   const indexColumns = [
-    { key: 'symbol', label: 'Endeks', align: 'left' as const },
-    { key: 'value', label: 'Değer', align: 'right' as const },
-    { key: 'changePercent', label: 'Değişim', align: 'right' as const },
-    { key: 'low', label: 'En Düşük', align: 'right' as const },
-    { key: 'high', label: 'En Yüksek', align: 'right' as const },
-    { key: 'time', label: 'Saat', align: 'right' as const },
+    { key: 'symbol', label: 'Endeks', align: 'left' as const, cls: '' },
+    { key: 'value', label: 'Değer', align: 'right' as const, cls: '' },
+    { key: 'changePercent', label: 'Değişim', align: 'right' as const, cls: '' },
+    { key: 'low', label: 'Gün düşük', align: 'right' as const, cls: 'hidden sm:table-cell' },
+    { key: 'high', label: 'Gün yüksek', align: 'right' as const, cls: 'hidden sm:table-cell' },
+    { key: 'time', label: 'Saat', align: 'right' as const, cls: 'hidden md:table-cell' },
   ];
 
+  const pill = (active: boolean) =>
+    cn(
+      'h-9 shrink-0 rounded-full px-4 text-[13px] transition-colors',
+      active ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:text-foreground',
+    );
+
+  const Th = ({ col, sort, onSort }: { col: { key: string; label: string; align: 'left' | 'right'; cls: string }; sort: SortState; onSort: (k: string) => void }) => (
+    <th
+      scope="col"
+      aria-sort={sort.key === col.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
+      className={cn('whitespace-nowrap px-3 py-3 font-normal first:pl-5 last:pr-5', col.align === 'right' ? 'text-right' : 'text-left', col.cls)}
+    >
+      <button type="button" onClick={() => onSort(col.key)} className="inline-flex items-center hover:text-foreground">
+        {col.label}
+        <SortIcon active={sort.key === col.key} dir={sort.dir} />
+      </button>
+    </th>
+  );
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-      <div className="mb-6 flex items-center justify-end">
-        <MarketStatus status={status} />
-      </div>
-
-      <DataDisclaimer variant="borsa" />
-
+    <div className="mx-auto max-w-[1440px] px-4 pb-24 lg:px-8 md:pb-12">
       <AdBanner page="borsa" position="top" />
 
-      {/* Main Tabs — underline style */}
-      <div className="border-b border-border mb-6">
-        <nav className="flex gap-8">
-          {mainTabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setMainTab(tab.key)}
-              className={cn(
-                'pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px',
-                mainTab === tab.key
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {mainTab === 'hisseler' ? (
-        <>
-          {/* Filters row — index filters left, sort tabs right */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <div className="flex flex-wrap items-center gap-2">
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <div role="group" aria-label="Liste" className="flex gap-1">
+            {mainTabs.map((tab) => (
+              <button key={tab.key} type="button" aria-pressed={mainTab === tab.key} onClick={() => setMainTab(tab.key)} className={pill(mainTab === tab.key)}>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {mainTab === 'hisseler' && (
+            <div role="group" aria-label="Endeks" className="scroll-strip flex gap-1 border-l border-border pl-2">
               {indexFilters.map((f) => (
-                <button
-                  key={f.key}
-                  onClick={() => setIndexFilter(f.key)}
-                  className={cn(
-                    'rounded-full px-4 py-1.5 text-xs font-medium transition-colors border',
-                    indexFilter === f.key
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-muted text-muted-foreground hover:bg-surface-hover',
-                  )}
-                >
+                <button key={f.key} type="button" aria-pressed={indexFilter === f.key} onClick={() => setIndexFilter(f.key)} className={pill(indexFilter === f.key)}>
                   {f.label}
                 </button>
               ))}
             </div>
-
-            <div className="flex flex-wrap items-center gap-2">
+          )}
+          {mainTab === 'hisseler' && (
+            <div role="group" aria-label="Hızlı sıralama" className="scroll-strip flex gap-1 border-l border-border pl-2">
               {sortTabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => handleSortTab(tab.key)}
-                  className={cn(
-                    'rounded-full px-4 py-1.5 text-xs font-medium transition-colors border',
-                    sortTab === tab.key
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border bg-muted text-muted-foreground hover:bg-surface-hover',
-                  )}
-                >
+                <button key={tab.key} type="button" aria-pressed={sortTab === tab.key} onClick={() => handleSortTab(tab.key)} className={pill(sortTab === tab.key)}>
                   {tab.label}
                 </button>
               ))}
             </div>
-          </div>
+          )}
+        </div>
+        {mainTab === 'hisseler' && (
+          <SearchBar placeholder="Hisse ara (THYAO, ASELS)…" value={search} onChange={setSearch} className="w-full lg:max-w-xs" />
+        )}
+      </div>
 
-          <SearchBar
-            placeholder="Hisse ara... (THYAO, ASELS)"
-            value={search}
-            onChange={setSearch}
-            className="mb-4 max-w-md"
-          />
-
-          {stocksLoading ? (
-            <SkeletonTable rows={15} cols={10} />
-          ) : (
-            <div className="overflow-x-auto rounded-xl border border-border">
+      {mainTab === 'hisseler' ? (
+        stocksLoading && stocks.length === 0 ? (
+          <SkeletonTable rows={15} cols={8} />
+        ) : (
+          <>
+            <p className="mb-2 text-[12px] text-muted-foreground">{filteredStocks.length} hisse</p>
+            <div className="atlas-card overflow-x-auto">
               <table className="w-full text-sm">
+                <caption className="sr-only">Borsa İstanbul hisse senetleri</caption>
                 <thead>
-                  <tr className="border-b border-border bg-muted">
+                  <tr className="border-b border-border text-[12px] text-muted-foreground">
                     {stockColumns.map((col) => (
-                      <th
-                        key={col.key}
-                        onClick={() => handleColumnSort(col.key)}
-                        className={cn(
-                          'px-2 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap',
-                          col.align === 'right' ? 'text-right' : 'text-left',
-                        )}
-                      >
-                        {col.label}
-                        <SortIcon active={effectiveSort.key === col.key} dir={effectiveSort.dir} />
-                      </th>
+                      <Th key={col.key} col={col} sort={effectiveSort} onSort={handleColumnSort} />
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {filteredStocks.length === 0 ? (
                     <tr>
-                      <td colSpan={stockColumns.length} className="px-2 py-8 text-center text-muted-foreground">
-                        Veri bulunamadı
+                      <td colSpan={stockColumns.length} className="px-5 py-10 text-center text-muted-foreground">
+                        {search ? `“${search}” ile eşleşen hisse yok.` : 'Veri bulunamadı.'}
                       </td>
                     </tr>
                   ) : (
-                    filteredStocks.map((s) => (
-                      <tr
-                        key={s.symbol}
-                        className={cn(
-                          'border-b border-border last:border-0 transition-colors hover:bg-surface-hover',
-                          flashMap[s.symbol] === 'up' && 'flash-up',
-                          flashMap[s.symbol] === 'down' && 'flash-down',
-                        )}
-                      >
-                        <td className="px-2 py-3 font-medium whitespace-nowrap">
-                          <Link
-                            href={`/borsa/hisseler/${s.symbol}`}
-                            className="text-primary hover:underline"
-                          >
-                            {s.symbol}
-                          </Link>
-                        </td>
-                        <td className="px-2 py-3 text-right num whitespace-nowrap">{formatDecimal(s.lastPrice)}</td>
-                        <td className="px-2 py-3 text-right num whitespace-nowrap">{formatDecimal(s.buyPrice)}</td>
-                        <td className="px-2 py-3 text-right num whitespace-nowrap">{formatDecimal(s.sellPrice)}</td>
-                        <td className="px-2 py-3 text-right num text-muted-foreground whitespace-nowrap">{formatDecimal(s.low)}</td>
-                        <td className="px-2 py-3 text-right num text-muted-foreground whitespace-nowrap">{formatDecimal(s.high)}</td>
-                        <td className="px-2 py-3 text-right"><PriceChange value={s.changePercent} size="sm" /></td>
-                        <td className="px-2 py-3 text-right num text-muted-foreground whitespace-nowrap">{formatInteger(s.volume)}</td>
-                        <td className="px-2 py-3 text-right num text-muted-foreground whitespace-nowrap">{formatTL(s.turnover)}</td>
-                        <td className="px-2 py-3 text-right text-xs text-muted-foreground whitespace-nowrap">{s.time ?? '—'}</td>
-                      </tr>
-                    ))
+                    filteredStocks.map((s) => {
+                      const name = STOCK_META[s.symbol]?.name;
+                      return (
+                        <tr
+                          key={s.symbol}
+                          className={cn(
+                            'border-b border-border/60 last:border-0 transition-colors hover:bg-surface-hover',
+                            flashMap[s.symbol] === 'up' && 'flash-up',
+                            flashMap[s.symbol] === 'down' && 'flash-down',
+                          )}
+                        >
+                          <th scope="row" className="whitespace-nowrap px-3 py-2.5 pl-5 text-left font-normal">
+                            <Link href={`/borsa/hisseler/${s.symbol}`} className="group block">
+                              <span className="font-medium text-foreground group-hover:text-primary">{s.symbol}</span>
+                              {name && <span className="block max-w-[22ch] truncate text-[12px] text-muted-foreground">{name}</span>}
+                            </Link>
+                          </th>
+                          <td className="num whitespace-nowrap px-3 py-2.5 text-right text-foreground">{formatDecimal(s.lastPrice)}</td>
+                          <td className="whitespace-nowrap px-3 py-2.5 text-right">
+                            <PriceChange value={s.changePercent} size="sm" showIcon={false} />
+                          </td>
+                          <td className="num hidden whitespace-nowrap px-3 py-2.5 text-right text-muted-foreground md:table-cell">{formatDecimal(s.low)}</td>
+                          <td className="num hidden whitespace-nowrap px-3 py-2.5 text-right text-muted-foreground md:table-cell">{formatDecimal(s.high)}</td>
+                          <td className="num hidden whitespace-nowrap px-3 py-2.5 text-right text-muted-foreground xl:table-cell">{formatInteger(s.volume)}</td>
+                          <td className="num hidden whitespace-nowrap px-3 py-2.5 text-right text-muted-foreground sm:table-cell">{formatVolume(s.turnover)}</td>
+                          <td className="num hidden whitespace-nowrap px-3 py-2.5 pr-5 text-right text-[12px] text-muted-foreground lg:table-cell">{s.time ?? '—'}</td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
             </div>
-          )}
-        </>
+          </>
+        )
+      ) : indicesLoading && indices.length === 0 ? (
+        <SkeletonTable rows={8} cols={6} />
       ) : (
-        /* Endeksler Tab */
-        indicesLoading ? (
-          <SkeletonTable rows={8} cols={6} />
-        ) : (
-          <div className="overflow-x-auto rounded-xl border border-border">
+        <>
+          <p className="mb-2 text-[12px] text-muted-foreground">{sortedIndices.length} endeks</p>
+          <div className="atlas-card overflow-x-auto">
             <table className="w-full text-sm">
+              <caption className="sr-only">Borsa İstanbul endeksleri</caption>
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border text-[12px] text-muted-foreground">
                   {indexColumns.map((col) => (
-                    <th
-                      key={col.key}
-                      onClick={() => handleIndexColumnSort(col.key)}
-                      className={cn(
-                        'px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap',
-                        col.align === 'right' ? 'text-right' : 'text-left',
-                      )}
-                    >
-                      {col.label}
-                      <SortIcon active={indexColumnSort.key === col.key} dir={indexColumnSort.dir} />
-                    </th>
+                    <Th key={col.key} col={col} sort={indexColumnSort} onSort={handleIndexColumnSort} />
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {sortedIndices.length === 0 ? (
                   <tr>
-                    <td colSpan={indexColumns.length} className="px-4 py-8 text-center text-muted-foreground">
-                      Veri bulunamadı
+                    <td colSpan={indexColumns.length} className="px-5 py-10 text-center text-muted-foreground">
+                      Veri bulunamadı.
                     </td>
                   </tr>
                 ) : (
@@ -343,33 +309,36 @@ export function BorsaClient() {
                     <tr
                       key={idx.symbol}
                       className={cn(
-                        'border-b border-border last:border-0 transition-colors hover:bg-surface-hover',
+                        'border-b border-border/60 last:border-0 transition-colors hover:bg-surface-hover',
                         flashMap[idx.symbol] === 'up' && 'flash-up',
                         flashMap[idx.symbol] === 'down' && 'flash-down',
                       )}
                     >
-                      <td className="px-4 py-3 font-medium">
-                        <Link
-                          href={`/borsa/endeksler/${idx.symbol}`}
-                          className="text-primary hover:underline"
-                        >
-                          {idx.symbol}
+                      <th scope="row" className="px-3 py-2.5 pl-5 text-left font-normal">
+                        <Link href={`/borsa/endeksler/${idx.symbol}`} className="group block">
+                          <span className="font-medium text-foreground group-hover:text-primary">{idx.symbol}</span>
+                          {INDEX_META[idx.symbol] && <span className="block text-[12px] text-muted-foreground">{INDEX_META[idx.symbol].name}</span>}
                         </Link>
+                      </th>
+                      <td className="num px-3 py-2.5 text-right text-foreground">{formatDecimal(idx.value)}</td>
+                      <td className="px-3 py-2.5 text-right">
+                        <PriceChange value={idx.changePercent} size="sm" showIcon={false} />
                       </td>
-                      <td className="px-4 py-3 text-right num">{formatDecimal(idx.value)}</td>
-                      <td className="px-4 py-3 text-right"><PriceChange value={idx.changePercent} size="sm" /></td>
-                      <td className="px-4 py-3 text-right num text-muted-foreground">{formatDecimal(idx.low)}</td>
-                      <td className="px-4 py-3 text-right num text-muted-foreground">{formatDecimal(idx.high)}</td>
-                      <td className="px-4 py-3 text-right text-xs text-muted-foreground">{idx.time}</td>
+                      <td className="num hidden px-3 py-2.5 text-right text-muted-foreground sm:table-cell">{formatDecimal(idx.low)}</td>
+                      <td className="num hidden px-3 py-2.5 text-right text-muted-foreground sm:table-cell">{formatDecimal(idx.high)}</td>
+                      <td className="num hidden px-3 py-2.5 pr-5 text-right text-[12px] text-muted-foreground md:table-cell">{idx.time}</td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
-        )
+        </>
       )}
 
+      <div className="mt-4">
+        <DataDisclaimer variant="borsa" />
+      </div>
       <AdBanner page="borsa" position="bottom" slotIndex={2} />
     </div>
   );

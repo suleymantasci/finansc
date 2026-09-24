@@ -20,7 +20,7 @@ function AdInFeed({ page, slotIndex = 1, className }: AdInFeedProps) {
   return (
     <div
       className={cn(
-        'rounded-xl border border-border bg-card p-4',
+        'atlas-card p-4',
         className,
       )}
     >

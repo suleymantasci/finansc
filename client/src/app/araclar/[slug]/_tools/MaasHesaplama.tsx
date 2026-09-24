@@ -360,7 +360,7 @@ function MaasHesaplamaInner() {
 
           {/* Maaş Analizi */}
           <div className="space-y-4">
-            <h2 className="text-lg font-bold">Maaş Analizi</h2>
+            <h2 className="font-display text-2xl text-foreground sm:text-3xl">Maaş Analizi</h2>
 
             {/* Özet Kartlar */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -441,7 +441,7 @@ function AnalysisCard({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center text-center gap-2">
+    <div className="atlas-card p-4 flex flex-col items-center text-center gap-2">
       <div className="rounded-full bg-muted p-2">{icon}</div>
       <div>
         <p className="text-xs text-muted-foreground">{label}</p>
@@ -457,7 +457,7 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
     <div className="mt-10 space-y-8 text-sm leading-relaxed">
       {/* Brütten Nete Nasıl Hesaplanır */}
       <section>
-        <h2 className="text-xl font-bold mb-3">Brütten Nete Nasıl Hesaplanır?</h2>
+        <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">Brütten Nete Nasıl Hesaplanır?</h2>
         <p className="text-muted-foreground">
           Brüt maaştan çalışanın eline geçen net maaşı bulmak için sırasıyla şu kesintiler yapılır:
           SGK primi (işçi payı <strong>%14</strong>), işsizlik sigortası (işçi payı <strong>%1</strong>),
@@ -473,7 +473,7 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
 
       {/* Gelir Vergisi Dilimleri */}
       <section>
-        <h2 className="text-xl font-bold mb-3">{taxData.year} Yılı Gelir Vergisi Dilimleri (Ücretli)</h2>
+        <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">{taxData.year} Yılı Gelir Vergisi Dilimleri (Ücretli)</h2>
         <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted">
@@ -511,7 +511,7 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
 
       {/* FAQ */}
       <section>
-        <h2 className="text-xl font-bold mb-3">Brütten Nete Maaş Hesaplama Hakkında Merak Edilenler</h2>
+        <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">Brütten Nete Maaş Hesaplama Hakkında Merak Edilenler</h2>
         <div className="space-y-3">
           {[
             {
@@ -547,7 +547,7 @@ function MaasSeoContent({ taxData }: { taxData: ReturnType<typeof getTaxData> })
               a: 'Hayır. Aracımız bilgi amaçlıdır ve yatırım tavsiyesi niteliği taşımaz. Bordro hesaplamaları için işvereninizden veya mali müşavirinizden doğrulama almanız önerilir.',
             },
           ].map((f, i) => (
-            <details key={i} className="group rounded-lg border border-border bg-card p-3">
+            <details key={i} className="group atlas-card p-3">
               <summary className="cursor-pointer text-sm font-semibold flex items-center justify-between">
                 {f.q}
                 <span className="text-xs text-muted-foreground group-open:rotate-180 transition-transform">▼</span>

@@ -123,7 +123,7 @@ export function SearchResultItem({ href, type, title, desc }: SearchResultItemPr
   return (
     <Link
       href={href}
-      className="block rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-primary/5"
+      className="block atlas-card p-4 transition-colors hover:border-primary/40 hover:bg-primary/5"
     >
       <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
         {type}

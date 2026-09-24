@@ -16,17 +16,10 @@ export function CitableSnippet({ children, label = 'Özet', id = 'snippet-summar
     <aside
       id={id}
       aria-label={label}
-      className="my-6 rounded-lg border-l-4 border-primary bg-gradient-to-br from-primary/5 to-primary/10 p-4"
+      className="my-8 max-w-3xl border-l-2 border-primary pl-5"
     >
-      <div className="flex items-center gap-2 mb-2">
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold">
-          ℹ
-        </span>
-        <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-          {label}
-        </span>
-      </div>
-      <div className="text-sm leading-relaxed text-foreground">{children}</div>
+      <p className="eyebrow mb-2 text-primary">{label}</p>
+      <div className="text-[15px] leading-relaxed text-foreground/85">{children}</div>
     </aside>
   );
 }

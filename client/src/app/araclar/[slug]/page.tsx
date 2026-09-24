@@ -4,7 +4,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { TOOL_META } from '@/lib/seo-data/tools';
-import { Breadcrumb } from '@/components/shared/Breadcrumb';
+import { Breadcrumb, shortToolName } from '@/components/shared/Breadcrumb';
+import { FavoriteButton } from '@/components/instrument/FavoriteButton';
 import { ToolClient } from './ToolClient';
 
 interface Props {
@@ -55,7 +56,7 @@ export default async function ToolSlugPage({ params }: Props) {
   const canonical = `${SITE_URL}/araclar/${slug}`;
 
   // Paylaşımlı sayfa düzeni: MaasHesaplama gibi geniş tablolu/analizli
-  // araçlar tam genişlik (max-w-7xl), diğerleri kompakt (max-w-2xl).
+  // araçlar tam genişlik (max-w-[1440px]), diğerleri kompakt (max-w-2xl).
   const isWide = slug === 'maas-hesaplama';
 
   // JSON-LD: WebPage + SoftwareApplication + BreadcrumbList + SpeakableSpecification
@@ -100,27 +101,25 @@ export default async function ToolSlugPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
-      {/* Breadcrumb (sayfanın en üstünde) */}
-      <div className={`mx-auto ${isWide ? 'max-w-7xl' : 'max-w-2xl'} px-4 pt-6 lg:px-8`}>
+      <div className={`mx-auto ${isWide ? 'max-w-[1440px]' : 'max-w-3xl'} px-4 pt-6 lg:px-8`}>
         <Breadcrumb
           items={[
-            { label: 'Ana sayfa', href: '/' },
+            { label: 'Ana Sayfa', href: '/' },
             { label: 'Araçlar', href: '/araclar' },
-            { label: 'Araç Detayı' },
+            { label: shortToolName(meta.title.split('|')[0].trim()) },
           ]}
         />
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">{meta.title}</h1>
-      </div>
-
-      {/* Citable snippet (server-rendered, GEO için — AI engine'ler buradan cevap üretir) */}
-      <div className={`mx-auto ${isWide ? 'max-w-7xl' : 'max-w-2xl'} px-4 lg:px-8`}>
-        <aside
-          id="tool-summary"
-          aria-label="Araç özeti"
-          className="my-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 text-sm leading-relaxed text-foreground"
-        >
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="eyebrow text-primary">Hesaplama aracı</p>
+            <h1 className="font-display mt-2 text-balance text-4xl text-foreground sm:text-5xl">{meta.title.split('|')[0].trim()}</h1>
+          </div>
+          <FavoriteButton type="tool" symbol={slug} label={meta.title.split('|')[0].trim()} />
+        </div>
+        {/* Alıntılanabilir özet (GEO) — sunucuda render */}
+        <p id="tool-summary" className="mt-4 max-w-2xl text-pretty text-[15px] leading-relaxed text-muted-foreground">
           {summary}
-        </aside>
+        </p>
       </div>
 
       <ToolClient slug={slug} title={meta.title} hideTitle />

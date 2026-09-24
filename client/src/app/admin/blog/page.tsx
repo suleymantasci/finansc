@@ -39,7 +39,7 @@ export default function AdminBlogPage() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Bilgi Merkezi Yönetimi</h1>
+          <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Bilgi Merkezi Yönetimi</h1>
           <p className="mt-1 text-sm text-muted-foreground">Bilgi merkezi yazılarını oluşturun, düzenleyin ve yönetin</p>
         </div>
         <Button onClick={openNew} size="sm"><Plus className="mr-1 h-4 w-4" /> Yeni Yazı</Button>
@@ -52,7 +52,7 @@ export default function AdminBlogPage() {
           <div className="overflow-x-auto rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border bg-elevated">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Başlık</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Kategori</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Durum</th>
@@ -76,7 +76,7 @@ export default function AdminBlogPage() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => openEdit(post)} className="text-muted-foreground hover:text-foreground"><Pencil className="h-4 w-4" /></button>
-                        <button onClick={() => handleDelete(post.id)} className="text-muted-foreground hover:text-danger"><Trash2 className="h-4 w-4" /></button>
+                        <button onClick={() => handleDelete(post.id)} className="text-muted-foreground hover:text-down"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </td>
                   </tr>

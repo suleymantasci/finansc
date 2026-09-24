@@ -65,7 +65,7 @@ export default function IletisimPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
-      <h1 className="mb-6 text-3xl font-bold">İletişim</h1>
+      <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl mb-6">İletişim</h1>
 
       <p className="mb-8 text-muted-foreground leading-relaxed">
         Soru, öneri veya geri bildirimleriniz için bizimle iletişime geçebilirsiniz. Size en kısa sürede
@@ -73,11 +73,11 @@ export default function IletisimPage() {
       </p>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <div className="flex flex-col items-center rounded-xl border border-border bg-card p-6 text-center">
+        <div className="flex flex-col items-center atlas-card p-6 text-center">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
             <Mail className="h-6 w-6 text-primary" />
           </div>
-          <h2 className="mb-2 font-semibold">E-posta</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-2">E-posta</h2>
           <a
             href={`mailto:${CONTACT_EMAIL}`}
             className="text-sm text-primary hover:underline break-all"
@@ -86,29 +86,29 @@ export default function IletisimPage() {
           </a>
         </div>
 
-        <div className="flex flex-col items-center rounded-xl border border-border bg-card p-6 text-center">
+        <div className="flex flex-col items-center atlas-card p-6 text-center">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
             <MapPin className="h-6 w-6 text-primary" />
           </div>
-          <h2 className="mb-2 font-semibold">Adres</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-2">Adres</h2>
           <p className="text-sm text-muted-foreground">
             İstanbul, Türkiye
           </p>
         </div>
 
-        <div className="flex flex-col items-center rounded-xl border border-border bg-card p-6 text-center">
+        <div className="flex flex-col items-center atlas-card p-6 text-center">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
             <Clock className="h-6 w-6 text-primary" />
           </div>
-          <h2 className="mb-2 font-semibold">Çalışma Saatleri</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-2">Çalışma Saatleri</h2>
           <p className="text-sm text-muted-foreground">
             Pazartesi – Cuma<br />09:00 – 18:00
           </p>
         </div>
       </div>
 
-      <div className="mt-10 rounded-xl border border-border bg-card p-6">
-        <h2 className="mb-4 text-xl font-semibold">Bize Yazın</h2>
+      <div className="mt-10 atlas-card p-6">
+        <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-4">Bize Yazın</h2>
 
         {status === 'success' && (
           <div className="mb-4 flex items-start gap-2 rounded-lg bg-up/10 px-4 py-3 text-sm text-up">

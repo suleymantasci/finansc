@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function AltinLoading() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8">
+    <div className="mx-auto max-w-[1440px] px-4 py-6 lg:px-8">
       <Skeleton className="mb-2 h-8 w-48" />
       <Skeleton className="mb-6 h-5 w-80" />
       <div className="mb-4 flex gap-2">

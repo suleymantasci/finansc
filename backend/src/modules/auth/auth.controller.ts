@@ -11,13 +11,35 @@ import {
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
+import { PasswordResetService } from './password-reset.service';
+import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
 import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto, ChangePasswordDto } from './dto';
 import { Public, CurrentUser } from '../../common/decorators';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly passwordReset: PasswordResetService,
+  ) {}
+
+  /** Her durumda aynı yanıt — hesabın varlığı sızdırılmaz */
+  @Public()
+  @Throttle({ default: { limit: 3, ttl: 900000 } })
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.passwordReset.requestReset(dto.email);
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.passwordReset.resetPassword(dto.token, dto.newPassword);
+  }
 
   @Public()
   // Kayıt spam'i: IP başına 10 dakikada 5

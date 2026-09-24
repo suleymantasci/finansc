@@ -45,12 +45,12 @@ export function PaginationLinks({ currentPage, totalPages, category }: Paginatio
   const pages = getPageNumbers(currentPage, totalPages);
 
   const navButtonClass = cn(
-    'flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-surface-hover',
+    'flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground',
     'aria-disabled:opacity-30 aria-disabled:pointer-events-none',
   );
 
   return (
-    <nav className="mt-8 flex items-center justify-center gap-1" aria-label="Sayfalama">
+    <nav className="mt-12 flex flex-wrap items-center justify-center gap-1.5" aria-label="Sayfalama">
       {/* First */}
       <Link
         href={buildHref(1, category)}
@@ -84,10 +84,10 @@ export function PaginationLinks({ currentPage, totalPages, category }: Paginatio
             key={p}
             href={buildHref(p as number, category)}
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium transition-colors',
+              'num flex size-10 items-center justify-center rounded-full text-[13px] font-medium transition-colors',
               p === currentPage
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-surface-hover',
+                : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground',
             )}
             aria-current={p === currentPage ? 'page' : undefined}
           >

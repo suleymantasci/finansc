@@ -62,13 +62,13 @@ export default function EditorEkibiPage() {
     mainEntity: {
       '@type': 'Organization',
       '@id': 'https://finanscozum.net/#organization',
-      employee: EDITORS.map((e) => ({
-        '@type': 'Person',
+      // Kişi değil ekip: Person yerine departman (yanıltıcı yapılandırılmış veri olmasın)
+      department: EDITORS.map((e) => ({
+        '@type': 'Organization',
         name: e.name,
-        jobTitle: e.role,
         description: e.bio,
         knowsAbout: e.expertise,
-        worksFor: { '@id': 'https://finanscozum.net/#organization' },
+        parentOrganization: { '@id': 'https://finanscozum.net/#organization' },
       })),
     },
   };
@@ -83,7 +83,7 @@ export default function EditorEkibiPage() {
         <header className="mb-10">
           <div className="flex items-center gap-3 mb-3">
             <Users className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Editör Ekibimiz</h1>
+            <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Editör Ekibimiz</h1>
           </div>
           <p className="text-sm text-muted-foreground">Son güncelleme: 2 Haziran 2026</p>
         </header>
@@ -96,14 +96,14 @@ export default function EditorEkibiPage() {
             hakkında bilgi bulabilirsiniz.
           </p>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">Ekibimiz</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">Ekibimiz</h2>
         </section>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {EDITORS.map((editor) => (
             <article
               key={editor.name}
-              className="rounded-xl border border-border bg-card p-5"
+              className="atlas-card p-5"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold">
@@ -132,7 +132,7 @@ export default function EditorEkibiPage() {
         </div>
 
         <section className="prose prose-slate dark:prose-invert max-w-none">
-          <h2 className="text-2xl font-semibold mt-12 mb-4">Editöryal İlkelerimiz</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-12 mb-4">Editöryal İlkelerimiz</h2>
           <div className="not-prose space-y-3">
             {[
               {
@@ -151,7 +151,7 @@ export default function EditorEkibiPage() {
                 desc: 'Veri kaynaklarımız, güncelleme sıklığımız ve olası hatalarda izlediğimiz düzeltme süreci hakkında kullanıcılarımızı bilgilendiririz.',
               },
             ].map((p) => (
-              <div key={p.title} className="rounded-lg border border-border bg-card p-4 flex gap-3">
+              <div key={p.title} className="atlas-card p-4 flex gap-3">
                 <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <p.icon className="h-4 w-4 text-primary" />
                 </div>
@@ -163,7 +163,7 @@ export default function EditorEkibiPage() {
             ))}
           </div>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">İletişim</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">İletişim</h2>
           <p>
             Editör ekibimizle iletişime geçmek, içerik önerisi sunmak veya bir hatayı bildirmek için:
           </p>

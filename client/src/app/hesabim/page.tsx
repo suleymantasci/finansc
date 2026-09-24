@@ -10,7 +10,7 @@ export default function HesabimPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Hoş Geldiniz{user ? `, ${user.firstName}` : ''} 👋</h1>
+      <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Hoş geldiniz{user ? `, ${user.firstName}` : ''}</h1>
       <p className="mt-1 text-sm text-muted-foreground">Hesap özetinize göz atın</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -18,12 +18,12 @@ export default function HesabimPage() {
           <Card className="cursor-pointer transition-colors hover:border-primary/30">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-danger" />
+                <Heart className="h-5 w-5 text-down" />
                 <CardTitle>Favorilerim</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Favori hisse ve altınlarınızı takip edin</p>
+              <p className="text-sm text-muted-foreground">Altın, döviz, hisse, endeks, emtia ve araç favorileriniz</p>
             </CardContent>
           </Card>
         </Link>

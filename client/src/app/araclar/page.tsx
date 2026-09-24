@@ -2,6 +2,8 @@ import { API_URL } from '@/lib/constants';
 import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Breadcrumb } from '@/components/shared/Breadcrumb';
+import { SectionIntro } from '@/components/shared/SectionIntro';
 import {
   Calculator, PiggyBank, ArrowLeftRight, Coins, CreditCard, BarChart3,
   Home, Car, Building2, FileText, Clock, AlertTriangle, Plus, DollarSign,
@@ -12,8 +14,8 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Hesaplama Araçları',
-  description: 'Kredi, vergi, mevduat, döviz ve daha birçok finansal hesaplama aracı.',
+  title: 'Finansal Hesaplama Araçları | Kredi, Maaş, Faiz, Enflasyon',
+  description: 'Kredi taksiti, maaş (brüt-net), vadeli mevduat, faiz, reel getiri, enflasyon ve yatırım hesaplamaları için 40’tan fazla ücretsiz araç.',
   keywords: ['kredi hesaplama', 'faiz hesaplama', 'döviz hesaplama', 'altın hesaplama', 'vadeli mevduat', 'maaş hesaplama', 'brütten nete'],
   alternates: { canonical: 'https://finanscozum.net/araclar' },
 };
@@ -124,90 +126,60 @@ export default async function AraclarPage() {
   const finansFiltered = activeSlugs ? FINANS_TOOLS.filter((t) => activeSlugs!.has(t.slug)) : FINANS_TOOLS;
   const maasFiltered = activeSlugs ? MAAS_TOOLS.filter((t) => activeSlugs!.has(t.slug)) : MAAS_TOOLS;
 
+  const groups = [
+    { id: 'maas', title: 'Maaş ve bordro', tools: maasFiltered },
+    { id: 'kredi', title: 'Kredi ve kredi kartı', tools: krediFiltered },
+    { id: 'finans', title: 'Yatırım, faiz ve enflasyon', tools: finansFiltered },
+  ].filter((g) => g.tools.length > 0);
+  const total = groups.reduce((n, g) => n + g.tools.length, 0);
+
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
-      />
-      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
-      <h1 className="text-2xl font-bold lg:text-3xl">Hesaplama Araçları</h1>
-      <p className="mt-2 text-sm text-muted-foreground lg:text-base">
-        Finansal kararlarınızı kolaylaştıran ücretsiz araçlar
-      </p>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }} />
+      <div className="mx-auto max-w-[1440px] px-4 py-6 pb-24 lg:px-8 md:pb-12">
+        <Breadcrumb items={[{ label: 'Ana Sayfa', href: '/' }, { label: 'Hesaplama araçları' }]} />
+        <SectionIntro
+          as="page"
+          eyebrow={`${total} ücretsiz araç`}
+          title="Hesaplama araçları"
+          description="Kredi, maaş, mevduat, faiz, enflasyon ve yatırım hesaplamaları. Üyelik gerekmez; aradığınız aracı bulmak için Ctrl+K ile arayabilirsiniz."
+        />
 
-      {maasFiltered.length > 0 && (
-        <>
-          <h2 className="mt-8 text-lg font-semibold">Maaş & Bordro</h2>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4">
-            {maasFiltered.map((tool) => {
-              const Icon = tool.icon;
-              return (
-                <Link
-                  key={tool.slug}
-                  href={`/araclar/${tool.slug}`}
-                  className="group flex flex-col rounded-xl border border-border bg-card p-4 sm:p-5 transition-colors hover:border-primary/30 hover:bg-surface-hover"
-                >
-                  <div className="mb-2 sm:mb-3 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-primary/10">
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
-                  <h3 className="text-sm sm:text-base font-semibold">{tool.title}</h3>
-                  <p className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.desc}</p>
-                </Link>
-              );
-            })}
-          </div>
-        </>
-      )}
+        <nav aria-label="Araç kategorileri" className="mb-10 flex flex-wrap gap-2">
+          {groups.map((g) => (
+            <a key={g.id} href={`#${g.id}`} className="inline-flex h-9 items-center rounded-full border border-border px-4 text-[13px] text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground">
+              {g.title}
+              <span className="num ml-2 text-[11px] text-muted-foreground">{g.tools.length}</span>
+            </a>
+          ))}
+        </nav>
 
-      {krediFiltered.length > 0 && (
-        <>
-          <h2 className="mt-10 text-lg font-semibold">Kredi Hesaplamaları</h2>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4">
-            {krediFiltered.map((tool) => {
-              const Icon = tool.icon;
-              return (
-                <Link
-                  key={tool.slug}
-                  href={`/araclar/${tool.slug}`}
-                  className="group flex flex-col rounded-xl border border-border bg-card p-4 sm:p-5 transition-colors hover:border-primary/30 hover:bg-surface-hover"
-                >
-                  <div className="mb-2 sm:mb-3 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-primary/10">
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
-                  <h3 className="text-sm sm:text-base font-semibold">{tool.title}</h3>
-                  <p className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.desc}</p>
-                </Link>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {finansFiltered.length > 0 && (
-        <>
-          <h2 className="mt-10 text-lg font-semibold">Finansal Hesaplamalar</h2>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4">
-            {finansFiltered.map((tool) => {
-              const Icon = tool.icon;
-              return (
-                <Link
-                  key={tool.slug}
-                  href={`/araclar/${tool.slug}`}
-                  className="group flex flex-col rounded-xl border border-border bg-card p-4 sm:p-5 transition-colors hover:border-primary/30 hover:bg-surface-hover"
-                >
-                  <div className="mb-2 sm:mb-3 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-primary/10">
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
-                  <h3 className="text-sm sm:text-base font-semibold">{tool.title}</h3>
-                  <p className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2">{tool.desc}</p>
-                </Link>
-              );
-            })}
-          </div>
-        </>
-      )}
-    </div>
+        <div className="space-y-14">
+          {groups.map((g) => (
+            <section key={g.id} id={g.id} aria-labelledby={`${g.id}-t`} className="scroll-mt-32">
+              <h2 id={`${g.id}-t`} className="font-display mb-5 text-3xl text-foreground">
+                {g.title}
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {g.tools.map((tool) => {
+                  const Icon = tool.icon;
+                  return (
+                    <Link key={tool.slug} href={`/araclar/${tool.slug}`} className="atlas-card atlas-card-link group flex items-start gap-4 p-4 sm:p-5">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-elevated text-primary" aria-hidden="true">
+                        <Icon className="h-[18px] w-[18px]" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[15px] font-medium text-foreground group-hover:text-primary">{tool.title}</span>
+                        <span className="mt-0.5 block text-[13px] leading-snug text-muted-foreground">{tool.desc}</span>
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
     </>
   );
 }

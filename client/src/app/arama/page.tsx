@@ -190,7 +190,7 @@ export default async function AramaPage({ searchParams }: Props) {
         dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8 pb-20 md:pb-8">
+      <div className="mx-auto max-w-[1440px] px-4 py-6 lg:px-8 pb-24 md:pb-12">
         <Breadcrumb
           items={[
             { label: 'Ana sayfa', href: '/' },
@@ -199,7 +199,7 @@ export default async function AramaPage({ searchParams }: Props) {
         />
 
         <header className="mb-6">
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+          <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">
             {query
               ? '"' + query + '" için arama sonuçları'
               : 'Site içi arama'}

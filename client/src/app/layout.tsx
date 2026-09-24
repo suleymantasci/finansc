@@ -185,13 +185,13 @@ export default function RootLayout({
                   {
                     '@type': 'ContactPoint',
                     contactType: 'customer support',
-                    email: 'destek@finanscozum.com',
+                    email: 'info@finanscozum.net',
                     availableLanguage: ['Turkish'],
                   },
                   {
                     '@type': 'ContactPoint',
                     contactType: 'editorial',
-                    email: 'editor@finanscozum.com',
+                    email: 'info@finanscozum.net',
                     availableLanguage: ['Turkish'],
                     description: 'Editör ekibi, içerik düzeltme ve öneri için',
                   },
@@ -199,7 +199,6 @@ export default function RootLayout({
                 sameAs: [
                   'https://twitter.com/finanscozum',
                   'https://www.facebook.com/finanscozum',
-                  'https://www.linkedin.com/company/finanscozum',
                   'https://www.instagram.com/finanscozum',
                 ],
                 knowsAbout: [
@@ -232,7 +231,7 @@ export default function RootLayout({
                 inLanguage: 'tr-TR',
                 potentialAction: {
                   '@type': 'SearchAction',
-                  target: 'https://finanscozum.net/borsa/hisseler?q={search_term_string}',
+                  target: 'https://finanscozum.net/arama?q={search_term_string}',
                   'query-input': 'required name=search_term_string',
                 },
               }),

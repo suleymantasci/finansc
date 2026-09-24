@@ -31,7 +31,7 @@ export default function DuzeltmePolitikasiPage() {
         <header className="mb-10">
           <div className="flex items-center gap-3 mb-3">
             <FileEdit className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Düzeltme Politikası</h1>
+            <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Düzeltme Politikası</h1>
           </div>
           <p className="text-sm text-muted-foreground">
             Son güncelleme: 2 Haziran 2026
@@ -45,7 +45,7 @@ export default function DuzeltmePolitikasiPage() {
             aşağıdadır.
           </p>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">1. Hata Tespiti</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">1. Hata Tespiti</h2>
           <p>Hatalar aşağıdaki kanallardan tespit edilir:</p>
           <ul className="space-y-2 mt-3">
             <li>
@@ -56,7 +56,7 @@ export default function DuzeltmePolitikasiPage() {
             <li>
               <CheckCircle2 className="inline h-4 w-4 mr-1.5 text-emerald-500" />
               <strong>Kullanıcı bildirimi:</strong> Ziyaretçilerimizin{' '}
-              <a href="mailto:editor@finanscozum.com">editor@finanscozum.com</a> üzerinden
+              <a href="mailto:info@finanscozum.net">info@finanscozum.net</a> üzerinden
               bildirdiği hatalar
             </li>
             <li>
@@ -69,7 +69,7 @@ export default function DuzeltmePolitikasiPage() {
             </li>
           </ul>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">2. Düzeltme Süreci</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">2. Düzeltme Süreci</h2>
           <div className="not-prose space-y-3 mt-4">
             {[
               {
@@ -97,7 +97,7 @@ export default function DuzeltmePolitikasiPage() {
                 icon: Clock,
               },
             ].map(({ step, desc, time, icon: Icon }) => (
-              <div key={step} className="rounded-lg border border-border bg-card p-4">
+              <div key={step} className="atlas-card p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
                     <Icon className="h-4 w-4 text-primary" />
@@ -114,7 +114,7 @@ export default function DuzeltmePolitikasiPage() {
             ))}
           </div>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">3. Şeffaflık Taahhüdü</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">3. Şeffaflık Taahhüdü</h2>
           <p>
             Önemli veri hataları (örneğin bir endeksin yanlış gösterilmesi, döviz kurunda saatlerce
             süren sapma, kaynak erişim kesintisi) durumunda:
@@ -126,7 +126,7 @@ export default function DuzeltmePolitikasiPage() {
             <li>Kullanıcıya (bildirim yaptıysa) e-posta ile geri dönüş yapılır</li>
           </ul>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-4">4. İçerik Güncellemeleri</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mt-10 mb-4">4. İçerik Güncellemeleri</h2>
           <p>
             Blog yazıları ve rehberler için: güncellenen bölümler içeriğin sonunda "Güncelleme
             geçmişi" bölümünde belirtilir. Maddeyi değiştiren editör, tarih ve değişiklik açıklaması

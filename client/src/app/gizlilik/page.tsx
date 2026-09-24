@@ -8,12 +8,12 @@ export const metadata: Metadata = {
 export default function GizlilikPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
-      <h1 className="mb-2 text-3xl font-bold">Gizlilik Politikası</h1>
+      <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl mb-2">Gizlilik Politikası</h1>
       <p className="mb-8 text-sm text-muted-foreground">Son güncelleme: 31 Mayıs 2026</p>
 
       <div className="space-y-8 text-muted-foreground leading-relaxed">
         <section>
-          <h2 className="mb-3 text-xl font-semibold text-foreground">1. Genel Bakış</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">1. Genel Bakış</h2>
           <p>
             FinansCozum (&quot;biz&quot;, &quot;Platform&quot;) olarak kullanıcılarımızın gizliliğine büyük önem
             veriyoruz. Bu gizlilik politikası, kişisel verilerinizin nasıl toplandığını, kullanıldığını ve
@@ -22,7 +22,7 @@ export default function GizlilikPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-xl font-semibold text-foreground">2. Toplanan Veriler</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">2. Toplanan Veriler</h2>
           <p className="mb-3">Platformumuzu kullandığınızda aşağıdaki veriler toplanabilir:</p>
           <ul className="ml-6 list-disc space-y-2">
             <li>
@@ -41,7 +41,7 @@ export default function GizlilikPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-xl font-semibold text-foreground">3. Verilerin Kullanım Amacı</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">3. Verilerin Kullanım Amacı</h2>
           <p className="mb-3">Toplanan veriler aşağıdaki amaçlarla kullanılmaktadır:</p>
           <ul className="ml-6 list-disc space-y-2">
             <li>Platformun işleyişini sağlamak ve iyileştirmek</li>
@@ -52,7 +52,7 @@ export default function GizlilikPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-xl font-semibold text-foreground">4. Çerezler</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">4. Çerezler</h2>
           <p>
             Platformumuz, kullanıcı deneyimini iyileştirmek için çerezler kullanmaktadır. Çerezler,
             tarayıcınız tarafından cihazınıza kaydedilen küçük metin dosyalarıdır. Tarayıcı ayarlarınızdan
@@ -61,7 +61,7 @@ export default function GizlilikPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-xl font-semibold text-foreground">5. Verilerin Paylaşımı</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">5. Verilerin Paylaşımı</h2>
           <p>
             Kişisel verileriniz, yasal zorunluluklar dışında üçüncü taraflarla paylaşılmaz. Anonim ve
             toplu kullanım istatistikleri, hizmet kalitemizi artırmak için analiz amaçlı kullanılabilir.
@@ -69,7 +69,7 @@ export default function GizlilikPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-xl font-semibold text-foreground">6. Veri Güvenliği</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">6. Veri Güvenliği</h2>
           <p>
             Verilerinizi korumak için endüstri standardı güvenlik önlemleri (SSL şifreleme, güvenli sunucular)
             uygulanmaktadır. Ancak internet üzerinden hiçbir veri aktarımının %100 güvenli olduğu garanti
@@ -78,7 +78,7 @@ export default function GizlilikPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-xl font-semibold text-foreground">7. Haklarınız</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">7. Haklarınız</h2>
           <p className="mb-3">KVKK kapsamında aşağıdaki haklara sahipsiniz:</p>
           <ul className="ml-6 list-disc space-y-2">
             <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
@@ -89,11 +89,11 @@ export default function GizlilikPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 text-xl font-semibold text-foreground">8. İletişim</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">8. İletişim</h2>
           <p>
             Gizlilik politikamız hakkında sorularınız için{' '}
-            <a href="mailto:info@finanscozum.com" className="text-primary hover:underline">
-              info@finanscozum.com
+            <a href="mailto:info@finanscozum.net" className="text-primary hover:underline">
+              info@finanscozum.net
             </a>{' '}
             adresinden bize ulaşabilirsiniz.
           </p>

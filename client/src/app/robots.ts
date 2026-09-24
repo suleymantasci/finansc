@@ -3,7 +3,10 @@ import type { MetadataRoute } from 'next';
 // robots.txt — iki user-agent'ta aynı disallow listesi tutarlı olmalı.
 // Önceki sürümde Googlebot için /giris, /kayit, /sifremi-unuttum
 // eksikti (Pit 25 benzeri tutarsızlık). Şimdi her iki kural aynı.
-const DISALLOW = ['/admin/', '/hesabim/', '/api/', '/giris', '/kayit', '/sifremi-unuttum'];
+const DISALLOW = ['/admin/', '/hesabim/', '/api/', '/giris', '/kayit', '/sifremi-unuttum', '/sifre-sifirla', '/arama'];
+// /api/og paylaşım görselleridir: X/Facebook tarayıcıları robots.txt'ye uyar;
+// engellenirse link önizlemelerinde görsel çıkmaz.
+const ALLOW = ['/', '/api/og'];
 
 // 2026: AI engine'lerden trafik ChatGPT/Perplexity/Claude/Gemini üzerinden geliyor.
 // Explicit allow sinyali crawl oranını artırır. llms.txt zaten ayrıca yayınlanacak.
@@ -29,18 +32,18 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        allow: ALLOW,
         disallow: DISALLOW,
       },
       {
         userAgent: 'Googlebot',
-        allow: '/',
+        allow: ALLOW,
         disallow: DISALLOW,
       },
       // AI engines — explicit allow so they don't get filtered by default rules
       ...AI_BOTS.map((bot) => ({
         userAgent: bot,
-        allow: '/',
+        allow: ALLOW,
         disallow: DISALLOW,
       })),
     ],

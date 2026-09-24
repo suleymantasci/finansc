@@ -49,7 +49,7 @@ export default function AdminReklamlarPage() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Reklam Yönetimi</h1>
+          <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Reklam Yönetimi</h1>
           <p className="mt-1 text-sm text-muted-foreground">Sayfa bazlı reklam slotlarını yönetin</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)} size="sm">
@@ -58,7 +58,7 @@ export default function AdminReklamlarPage() {
       </div>
 
       {showForm && (
-        <div className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-card p-4">
+        <div className="mt-4 flex flex-wrap items-end gap-3 atlas-card p-4">
           <div>
             <label className="mb-1 block text-xs font-medium text-muted-foreground">Sayfa</label>
             <select value={newPage} onChange={(e) => setNewPage(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
@@ -84,7 +84,7 @@ export default function AdminReklamlarPage() {
           <div className="overflow-x-auto rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border bg-elevated">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Sayfa</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Pozisyon</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Durum</th>
@@ -106,7 +106,7 @@ export default function AdminReklamlarPage() {
                         <button onClick={() => toggleSlot(slot)} className="text-sm text-primary hover:underline">
                           {slot.isActive ? 'Kapat' : 'Aç'}
                         </button>
-                        <button onClick={() => deleteSlot(slot.id)} className="text-muted-foreground hover:text-danger">
+                        <button onClick={() => deleteSlot(slot.id)} className="text-muted-foreground hover:text-down">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>

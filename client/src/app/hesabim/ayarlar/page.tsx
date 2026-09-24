@@ -94,14 +94,14 @@ export default function AyarlarPage() {
     <div className="space-y-8">
       {/* Profile */}
       <section>
-        <h1 className="text-2xl font-bold">Ayarlar</h1>
+        <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Ayarlar</h1>
         <p className="mt-1 text-sm text-muted-foreground">Profil bilgilerinizi ve güvenlik ayarlarınızı yönetin</p>
 
-        <div className="mt-6 rounded-xl border border-border bg-card p-5">
-          <h2 className="text-lg font-semibold">Profil Bilgileri</h2>
+        <div className="mt-6 atlas-card p-5">
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl">Profil Bilgileri</h2>
 
           {profileSuccess && <div className="mt-3 rounded-lg bg-success/10 px-4 py-3 text-sm text-success">Profil güncellendi</div>}
-          {profileError && <div className="mt-3 rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">{profileError}</div>}
+          {profileError && <div className="mt-3 rounded-lg bg-down/10 px-4 py-3 text-sm text-down">{profileError}</div>}
 
           <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="mt-4 space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -126,11 +126,11 @@ export default function AyarlarPage() {
       </section>
 
       {/* Password */}
-      <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">Şifre Değiştir</h2>
+      <section className="atlas-card p-5">
+        <h2 className="font-display text-2xl text-foreground sm:text-3xl">Şifre Değiştir</h2>
 
         {passwordSuccess && <div className="mt-3 rounded-lg bg-success/10 px-4 py-3 text-sm text-success">Şifre değiştirildi</div>}
-        {passwordError && <div className="mt-3 rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">{passwordError}</div>}
+        {passwordError && <div className="mt-3 rounded-lg bg-down/10 px-4 py-3 text-sm text-down">{passwordError}</div>}
 
         <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="mt-4 space-y-4">
           <Input label="Mevcut Şifre" type="password" {...passwordForm.register('currentPassword')} error={passwordForm.formState.errors.currentPassword?.message} />

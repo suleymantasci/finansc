@@ -7,6 +7,7 @@ import { GRAM_AMOUNTS, getGramAmount } from '@/lib/seo-data/altin-amounts';
 import { LiveGoldTicker } from './LiveGoldTicker';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { AdBanner } from '@/components/ads/AdBanner';
+import { PriceChart } from '@/components/charts/PriceChart';
 import { Calculator, Info, TrendingUp, ArrowRight } from 'lucide-react';
 
 export const revalidate = 3600;
@@ -124,22 +125,26 @@ export default async function GramAltinPage({ params }: Props) {
         </nav>
 
         <header className="mb-6">
-          <h1 className="text-2xl font-extrabold tracking-tight lg:text-4xl">
+          <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">
             {amount.grams} Gram Altın Kaç TL?
           </h1>
           <p id="gold-summary" className="mt-3 text-base text-muted-foreground lg:text-lg">
             <strong>{amount.grams} gram altın</strong> güncel Türk Lirası fiyatı bu sayfada canlı
-            olarak gösterilir. Veriler anlık olarak güncellenir; alış-satış fiyatları, son 24
-            saatlik değişim ve aylık performansı takip edebilirsiniz.
+            olarak gösterilir. Kaynaklara göre alış-satış fiyatını, günlük değişimi ve gram altının
+            son bir aylık grafiğini bu sayfada görebilirsiniz.
           </p>
         </header>
 
         <LiveGoldTicker grams={amount.grams} />
 
+        <div className="mt-8">
+          <PriceChart instrument="gold:serbest-piyasa:gram-altin" defaultRange="1m" />
+        </div>
+
         <AdBanner page={`altin-miktar-${amount.slug}`} position="in-article" className="my-8" />
 
         <section className="prose prose-slate dark:prose-invert mt-8 max-w-none">
-          <h2 className="text-xl font-semibold mb-3">{amount.grams} Gram Altın Hakkında</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">{amount.grams} Gram Altın Hakkında</h2>
           <p>
             {amount.grams} gram altın, Türkiye&apos;deki yatırımcılar için önemli bir referans
             noktasıdır. Özellikle küçük birikimlerini değerlendirmek isteyenler tarafından
@@ -158,9 +163,10 @@ export default async function GramAltinPage({ params }: Props) {
 
           <h3 className="text-lg font-semibold mt-6 mb-2">{amount.grams} Gram = Kaç Çeyrek?</h3>
           <p>
-            Standart çeyrek altın 1.75 gramdır. Buna göre <strong>{amount.grams} gram altın</strong>
-            {' '}ile yaklaşık <strong>{(amount.grams / 1.75).toFixed(2)} adet çeyrek altın</strong>
-            {' '}alınabilir (alış-satış makası hariç).
+            Ağırlık olarak bir çeyrek altın yaklaşık 1,75 gramdır; buna göre {amount.grams} gram, ağırlıkça
+            yaklaşık <strong>{(amount.grams / 1.75).toLocaleString('tr-TR', { maximumFractionDigits: 2 })} çeyreğe</strong> denk gelir.
+            Ancak çeyrek altın 22 ayar olup işçilik içerdiğinden fiyat karşılaştırması ağırlıkla değil güncel
+            fiyatlarla yapılmalıdır; güncel oranı <Link href="/araclar/altin-hesaplama">altın hesaplama aracında</Link> görebilirsiniz.
           </p>
 
           <h3 className="text-lg font-semibold mt-6 mb-2">Neden {amount.grams} Gram Altın Tercih Edilir?</h3>
@@ -169,7 +175,6 @@ export default async function GramAltinPage({ params }: Props) {
             <li>Likit ve kolay alınıp satılabilir</li>
             <li>Enflasyona karşı korunma aracı olarak portföy çeşitlendirmesi sağlar</li>
             <li>Düğün, nişan, sünnet gibi özel günlerde hediye olarak verilebilir</li>
-            <li>Vergi avantajı (ziynet altını için KDV muafiyeti söz konusudur)</li>
           </ul>
 
           <h3 className="text-lg font-semibold mt-6 mb-2">Almadan Önce Dikkat Edilmesi Gerekenler</h3>
@@ -183,12 +188,12 @@ export default async function GramAltinPage({ params }: Props) {
 
         {/* FAQ */}
         <section className="mt-10">
-          <h2 className="text-xl font-semibold mb-4">Sıkça Sorulan Sorular</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-4">Sıkça Sorulan Sorular</h2>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
               <details
                 key={i}
-                className="group rounded-lg border border-border bg-card p-4"
+                className="group atlas-card p-4"
               >
                 <summary className="flex cursor-pointer items-center justify-between font-medium">
                   {faq.q}
@@ -202,42 +207,42 @@ export default async function GramAltinPage({ params }: Props) {
 
         {/* Related Links */}
         <section className="mt-10 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6">
-          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3 flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
             İlgili Altın Sayfaları
           </h2>
           <div className="grid gap-2 sm:grid-cols-2">
             <Link
               href="/altin/gram-altin"
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:border-primary/50"
+              className="flex items-center justify-between atlas-card p-3 hover:border-primary/50"
             >
               <span className="text-sm font-medium">Gram Altın (1 gr)</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </Link>
             <Link
               href="/altin/ceyrek-altin"
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:border-primary/50"
+              className="flex items-center justify-between atlas-card p-3 hover:border-primary/50"
             >
               <span className="text-sm font-medium">Çeyrek Altın</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </Link>
             <Link
               href="/altin/tam-altin"
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:border-primary/50"
+              className="flex items-center justify-between atlas-card p-3 hover:border-primary/50"
             >
               <span className="text-sm font-medium">Tam Altın</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </Link>
             <Link
               href="/altin/ons-altin"
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:border-primary/50"
+              className="flex items-center justify-between atlas-card p-3 hover:border-primary/50"
             >
               <span className="text-sm font-medium">Ons Altın (XAU/USD)</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </Link>
             <Link
               href="/araclar/altin-hesaplama"
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:border-primary/50 sm:col-span-2"
+              className="flex items-center justify-between atlas-card p-3 hover:border-primary/50 sm:col-span-2"
             >
               <span className="text-sm font-medium flex items-center gap-2">
                 <Calculator className="h-4 w-4 text-primary" />

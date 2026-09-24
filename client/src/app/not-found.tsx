@@ -28,7 +28,7 @@ export default function NotFound() {
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
       <div className="max-w-2xl w-full text-center">
         <p className="text-7xl font-extrabold text-primary mb-2">404</p>
-        <h1 className="text-2xl sm:text-3xl font-bold mb-3">Sayfa Bulunamadı</h1>
+        <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl mb-3">Sayfa Bulunamadı</h1>
         <p className="text-muted-foreground mb-8">
           Aradığınız sayfa burada yok ama <strong>{SITE_NAME}</strong>'da Türkiye'nin en
           kapsamlı finans verileri sizleri bekliyor. Aşağıdaki bölümlere göz atabilirsiniz.
@@ -37,7 +37,7 @@ export default function NotFound() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left">
           <Link
             href="/"
-            className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+            className="flex items-center gap-3 atlas-card p-4 transition-colors hover:border-primary"
           >
             <Home className="h-5 w-5 text-primary" />
             <div>
@@ -48,7 +48,7 @@ export default function NotFound() {
           </Link>
           <Link
             href="/borsa"
-            className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+            className="flex items-center gap-3 atlas-card p-4 transition-colors hover:border-primary"
           >
             <TrendingUp className="h-5 w-5 text-primary" />
             <div>
@@ -59,7 +59,7 @@ export default function NotFound() {
           </Link>
           <Link
             href="/altin"
-            className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+            className="flex items-center gap-3 atlas-card p-4 transition-colors hover:border-primary"
           >
             <span className="text-primary text-lg">₺</span>
             <div>
@@ -70,7 +70,7 @@ export default function NotFound() {
           </Link>
           <Link
             href="/doviz"
-            className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+            className="flex items-center gap-3 atlas-card p-4 transition-colors hover:border-primary"
           >
             <span className="text-primary text-lg">$</span>
             <div>
@@ -81,7 +81,7 @@ export default function NotFound() {
           </Link>
           <Link
             href="/araclar"
-            className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+            className="flex items-center gap-3 atlas-card p-4 transition-colors hover:border-primary"
           >
             <Calculator className="h-5 w-5 text-primary" />
             <div>
@@ -92,7 +92,7 @@ export default function NotFound() {
           </Link>
           <Link
             href="/blog"
-            className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+            className="flex items-center gap-3 atlas-card p-4 transition-colors hover:border-primary"
           >
             <BookOpen className="h-5 w-5 text-primary" />
             <div>
@@ -114,7 +114,7 @@ export default function NotFound() {
               type="search"
               name="q"
               placeholder="Blog yazılarında ara..."
-              className="w-full pl-10 pr-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:border-primary"
+              className="w-full pl-10 pr-3 py-2 atlas-card text-sm focus:outline-none focus:border-primary"
             />
           </div>
           <button

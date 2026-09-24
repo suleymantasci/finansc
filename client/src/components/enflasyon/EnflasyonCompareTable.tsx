@@ -21,7 +21,7 @@ interface Row {
 export function EnflasyonCompareTable({ tufe, ufe, months = 12 }: Props) {
   if (!tufe && !ufe) {
     return (
-      <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
+      <div className="atlas-card p-6 text-sm text-muted-foreground">
         Karşılaştırma tablosu için veri yüklenemedi.
       </div>
     );
@@ -55,9 +55,9 @@ export function EnflasyonCompareTable({ tufe, ufe, months = 12 }: Props) {
   }));
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-card">
+    <div className="overflow-x-auto atlas-card">
       <table className="w-full text-sm">
-        <thead className="border-b border-border bg-muted/50">
+        <thead className="border-b border-border bg-elevated/50">
           <tr>
             <th className="px-3 py-2.5 text-left font-semibold text-foreground">Dönem</th>
             <th colSpan={2} className="px-3 py-2.5 text-center font-semibold text-primary border-l border-border">
@@ -67,7 +67,7 @@ export function EnflasyonCompareTable({ tufe, ufe, months = 12 }: Props) {
               Yİ-ÜFE
             </th>
           </tr>
-          <tr className="border-b border-border bg-muted/30 text-xs text-muted-foreground">
+          <tr className="border-b border-border bg-elevated/30 text-xs text-muted-foreground">
             <th className="px-3 py-1.5"></th>
             <th className="px-3 py-1.5 text-right font-medium border-l border-border">Yıllık</th>
             <th className="px-3 py-1.5 text-right font-medium">Aylık</th>

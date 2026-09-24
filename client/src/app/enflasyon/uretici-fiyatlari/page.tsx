@@ -13,13 +13,13 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: 'ÜFE / Yİ-ÜFE — Yurt İçi Üretici Fiyat Endeksi (Tarihsel)',
   description:
-    'ÜFE ve Yİ-ÜFE (Yurt İçi Üretici Fiyat Endeksi) yıllık ve aylık değişim verileri. TCMB kaynaklı resmi üretici fiyat endeksi verileri, sıralanabilir tablo.',
+    'ÜFE ve Yİ-ÜFE (Yurt İçi Üretici Fiyat Endeksi) yıllık ve aylık değişim verileri. 2003’ten bugüne aylık veriler, sıralanabilir tablo. TÜİK verileri, TCMB üzerinden.',
   keywords: ['üfe', 'yi-üfe', 'yurt içi üretici fiyat endeksi', 'üretici enflasyonu', 'üretici fiyat endeksi'],
   alternates: { canonical: `${SITE_URL}/enflasyon/uretici-fiyatlari` },
   openGraph: {
     type: 'website',
     title: 'ÜFE / Yİ-ÜFE — Yurt İçi Üretici Fiyat Endeksi',
-    description: 'ÜFE ve Yİ-ÜFE yıllık ve aylık değişim verileri. TCMB kaynaklı.',
+    description: 'ÜFE ve Yİ-ÜFE yıllık ve aylık değişim verileri. TÜİK verileri, TCMB üzerinden.',
     url: `${SITE_URL}/enflasyon/uretici-fiyatlari`,
     siteName: SITE_NAME,
     locale: 'tr_TR',
@@ -62,7 +62,7 @@ export default async function UfePage() {
         }}
       />
 
-      <div className="mx-auto max-w-7xl px-4 pt-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 pt-6 lg:px-8">
         <EnflasyonBreadcrumb
           items={[
             { label: 'Enflasyon Verileri', href: '/enflasyon' },
@@ -76,7 +76,7 @@ export default async function UfePage() {
         />
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 lg:px-8">
         <p
           id="ufe-summary"
           className="mb-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 text-sm leading-relaxed"
@@ -85,7 +85,7 @@ export default async function UfePage() {
         </p>
 
         {ufeLatest && ufePrevious && (
-          <div className="mb-6 grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-2">
+          <div className="mb-6 grid gap-3 atlas-card p-4 sm:grid-cols-2">
             <div>
               <div className="text-xs uppercase tracking-wide text-muted-foreground">Son Dönem</div>
               <div className="mt-1 num text-2xl font-bold tabular-nums text-primary">
@@ -107,11 +107,11 @@ export default async function UfePage() {
           </div>
         )}
 
-        <h2 className="mb-3 mt-8 text-xl font-bold tracking-tight">Tarihsel Veriler</h2>
+        <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3 mt-8">Tarihsel Veriler</h2>
         {rows.length > 0 ? (
           <UfeClient rows={rows} />
         ) : (
-          <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
+          <div className="atlas-card p-6 text-sm text-muted-foreground">
             Tarihsel tablo yüklenemedi.
           </div>
         )}

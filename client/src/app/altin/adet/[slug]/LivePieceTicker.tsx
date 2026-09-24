@@ -47,7 +47,7 @@ export function LivePieceTicker({ count, goldType, goldSlug }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* 1 Adet */}
-        <div className="rounded-xl border border-border bg-card/50 p-4">
+        <div className="atlas-card/50 p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
             1 Adet {goldType}
           </p>
@@ -66,7 +66,7 @@ export function LivePieceTicker({ count, goldType, goldSlug }: Props) {
         </div>
 
         {/* Adet */}
-        <div className="rounded-xl border border-border bg-card/50 p-4">
+        <div className="atlas-card/50 p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Adet</p>
           <p className="text-3xl font-extrabold num">
             {count}

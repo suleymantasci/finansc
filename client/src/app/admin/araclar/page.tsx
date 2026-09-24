@@ -90,7 +90,7 @@ export default function AdminAraclarPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Araç Yönetimi</h1>
+      <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">Araç Yönetimi</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Hesaplama araçlarının görünürlüğünü yönetin.
         Yeni araçlar frontend&apos;e eklendiğinde otomatik senkronize edilir.
@@ -109,7 +109,7 @@ export default function AdminAraclarPage() {
           <div className="overflow-x-auto rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border bg-elevated">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Araç</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Slug</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Durum</th>

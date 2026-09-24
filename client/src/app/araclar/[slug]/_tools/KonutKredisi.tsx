@@ -138,7 +138,7 @@ export function KonutKredisi() {
           {showSchedule && (
             <div className="mt-3 overflow-x-auto rounded-xl border border-border">
               <table className="w-full text-xs">
-                <thead><tr className="border-b border-border bg-muted">
+                <thead><tr className="border-b border-border bg-elevated">
                   <th className="px-3 py-2 text-left">Ay</th>
                   <th className="px-3 py-2 text-right">Taksit</th>
                   <th className="px-3 py-2 text-right">Anapara</th>

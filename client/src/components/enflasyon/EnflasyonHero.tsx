@@ -47,16 +47,16 @@ interface CardProps {
 }
 
 function HeroCard({ title, subtitle, href, accent, data, renderValue }: CardProps) {
-  const accentClass = accent === 'primary' ? 'border-primary/40 bg-primary/5' : 'border-blue-500/40 bg-blue-500/5';
-  const titleClass = accent === 'primary' ? 'text-primary' : 'text-blue-600 dark:text-blue-400';
-  const upClass = accent === 'primary' ? 'text-primary' : 'text-blue-600 dark:text-blue-400';
+  const accentClass = 'atlas-card';
+  const titleClass = 'font-display text-2xl text-foreground';
+  const upClass = accent === 'primary' ? 'text-primary' : 'text-chart-fx';
 
   if (!data) {
     return (
-      <div className={cn('rounded-xl border-2 p-6', accentClass)}>
+      <div className={cn('p-6', accentClass)}>
         <div className="flex items-baseline justify-between">
           <div>
-            <div className={cn('text-lg font-bold', titleClass)}>{title}</div>
+            <div className={titleClass}>{title}</div>
             <div className="text-sm text-muted-foreground">{subtitle}</div>
           </div>
         </div>
@@ -72,13 +72,13 @@ function HeroCard({ title, subtitle, href, accent, data, renderValue }: CardProp
     <Link
       href={href}
       className={cn(
-        'group block rounded-xl border-2 p-6 transition-all hover:border-opacity-100 hover:shadow-md',
+        'atlas-card-link group block p-6',
         accentClass,
       )}
     >
       <div className="flex items-baseline justify-between">
         <div>
-          <div className={cn('text-lg font-bold', titleClass)}>{title}</div>
+          <div className={titleClass}>{title}</div>
           <div className="text-sm text-muted-foreground">{subtitle}</div>
         </div>
         <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
@@ -86,14 +86,14 @@ function HeroCard({ title, subtitle, href, accent, data, renderValue }: CardProp
 
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Yıllık</div>
-          <div className={cn('mt-1 num text-3xl font-bold tabular-nums', upClass)}>
+          <div className="text-[12px] text-muted-foreground">Yıllık</div>
+          <div className={cn('num mt-1 text-4xl font-medium', upClass)}>
             {formatPercentTr(latest.yearly)}
           </div>
         </div>
         <div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Aylık</div>
-          <div className="mt-1 num text-3xl font-bold tabular-nums text-foreground">
+          <div className="text-[12px] text-muted-foreground">Aylık</div>
+          <div className="num mt-1 text-4xl font-medium text-foreground">
             {formatPercentTr(latest.monthly)}
           </div>
         </div>

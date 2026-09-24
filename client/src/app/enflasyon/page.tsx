@@ -14,13 +14,13 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: 'Enflasyon Verileri — TÜFE ve ÜFE | Güncel Aylık ve Yıllık Değişim',
   description:
-    'TÜFE (Tüketici Fiyat Endeksi) ve ÜFE / Yİ-ÜFE (Yurt İçi Üretici Fiyat Endeksi) güncel aylık ve yıllık değişim oranları. TCMB kaynaklı resmi enflasyon verileri, son 12 ay karşılaştırması.',
+    'TÜFE ve Yİ-ÜFE’nin güncel aylık ve yıllık değişim oranları, son 12 ay karşılaştırması. TÜİK tarafından açıklanan veriler, TCMB üzerinden alınır.',
   keywords: ['enflasyon', 'tüfe', 'üfe', 'yi-üfe', 'tüketici fiyat endeksi', 'üretici fiyat endeksi', 'aylık enflasyon', 'yıllık enflasyon'],
   alternates: { canonical: `${SITE_URL}/enflasyon` },
   openGraph: {
     type: 'website',
     title: 'Enflasyon Verileri — TÜFE ve ÜFE | FinansÇözüm',
-    description: 'Güncel TÜFE ve ÜFE / Yİ-ÜFE verileri, son 12 ay karşılaştırması. TCMB kaynaklı.',
+    description: 'Güncel TÜFE ve ÜFE / Yİ-ÜFE verileri, son 12 ay karşılaştırması. TÜİK verileri, TCMB üzerinden.',
     url: `${SITE_URL}/enflasyon`,
     siteName: SITE_NAME,
     locale: 'tr_TR',
@@ -51,7 +51,7 @@ export default async function EnflasyonPage() {
   return (
     <>
       {/* Server-rendered H1 — SEO + accessibility */}
-      <div className="mx-auto max-w-7xl px-4 pt-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 pt-6 lg:px-8">
         <EnflasyonBreadcrumb items={[{ label: 'Enflasyon Verileri' }]} />
         <SectionIntro
           as="page"
@@ -60,7 +60,7 @@ export default async function EnflasyonPage() {
         />
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 lg:px-8">
         <EnflasyonSnippet
           tufeLatest={tufeLatest?.latest ?? null}
           ufeLatest={ufeLatest?.latest ?? null}
@@ -70,7 +70,7 @@ export default async function EnflasyonPage() {
 
         <AdBanner page="enflasyon" position="top" className="my-8" />
 
-        <h2 className="mb-3 mt-8 text-xl font-bold tracking-tight">Son 12 Ay Karşılaştırması</h2>
+        <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3 mt-8">Son 12 Ay Karşılaştırması</h2>
         <EnflasyonCompareTable tufe={tufeAll?.history ?? null} ufe={ufeAll?.history ?? null} months={12} />
 
         <AdBanner page="enflasyon" position="bottom" className="my-8" />

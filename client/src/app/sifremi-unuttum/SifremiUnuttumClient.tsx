@@ -39,22 +39,22 @@ export function SifremiUnuttumClient() {
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 lg:p-8">
-        <h1 className="text-center text-2xl font-bold">Şifremi Unuttum</h1>
+      <div className="w-full max-w-md atlas-card p-6 lg:p-8">
+        <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl text-center">Şifremi Unuttum</h1>
 
         {sent ? (
           <div className="mt-6 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
               <svg className="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             </div>
-            <p className="text-sm text-muted-foreground">Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.</p>
+            <p className="text-sm text-muted-foreground">Bu e-posta adresi kayıtlıysa birkaç dakika içinde şifre sıfırlama bağlantısı gönderilecek. Bağlantı 30 dakika geçerlidir; gelen kutunuzla birlikte spam klasörünü de kontrol edin.</p>
             <Link href="/giris"><Button variant="outline" className="mt-4">Giriş sayfasına dön</Button></Link>
           </div>
         ) : (
           <>
             <p className="mt-1 text-center text-sm text-muted-foreground">E-posta adresinize sıfırlama bağlantısı göndereceğiz</p>
 
-            {error && <div className="mt-4 rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div>}
+            {error && <p role="alert" className="mt-4 rounded-lg border border-down/30 bg-down/10 px-4 py-3 text-sm text-down">{error}</p>}
 
             <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
               <Input label="E-posta" type="email" autoComplete="email" {...register('email')} error={errors.email?.message} />

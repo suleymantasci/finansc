@@ -16,18 +16,18 @@ export function MaasResultTable({ lines }: { lines: MaasLineItem[] }) {
   const brutAmount = brut?.amount ?? 0;
 
   return (
-    <div className="w-full rounded-xl border border-border bg-card overflow-hidden">
+    <div className="w-full atlas-card overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted">
             <tr>
-              <th className="px-2 py-2 sm:px-4 sm:py-2.5 text-left text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-2 py-2 sm:px-4 sm:py-2.5 text-left text-[10px] sm:text-[12px] font-medium text-muted-foreground">
                 Kalem
               </th>
-              <th className="px-2 py-2 sm:px-4 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-2 py-2 sm:px-4 sm:py-2.5 text-right text-[10px] sm:text-[12px] font-medium text-muted-foreground">
                 Tutar (₺)
               </th>
-              <th className="px-2 py-2 sm:px-4 sm:py-2.5 text-right text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground w-16 sm:w-20">
+              <th className="px-2 py-2 sm:px-4 sm:py-2.5 text-right text-[10px] sm:text-[12px] font-medium text-muted-foreground w-16 sm:w-20">
                 Oran
               </th>
             </tr>

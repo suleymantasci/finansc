@@ -15,7 +15,7 @@ export const revalidate = 600;
 export const metadata: Metadata = {
   title: 'Emtia Fiyatları Bugün | Petrol, Gümüş, Bakır, Buğday',
   description:
-    'Brent petrol, WTI, doğalgaz, ons gümüş, platin, paladyum, bakır, buğday, mısır, kahve, kakao ve daha fazla emtianın son kapanış fiyatları, günlük değişimi ve geçmiş grafikleri.',
+    'Brent petrol, WTI, doğalgaz, gümüş, platin, bakır, buğday, kahve ve kakao dahil 16 emtianın son kapanış fiyatı, günlük değişimi ve geçmiş grafiği.',
   alternates: { canonical: `${SITE_URL}/emtia` },
   openGraph: {
     title: 'Emtia Fiyatları Bugün',

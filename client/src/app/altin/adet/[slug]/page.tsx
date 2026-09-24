@@ -29,9 +29,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: item.title,
     description: item.description,
     keywords: [
-      `${item.count} adet ${item.goldName.toLowerCase()}`,
-      `${item.count} adet ${item.goldName.toLowerCase()} fiyatı`,
-      `${item.count} ${item.goldName.toLowerCase()} kaç TL`,
+      `${item.count} adet ${item.goldName.toLocaleLowerCase('tr-TR')}`,
+      `${item.count} adet ${item.goldName.toLocaleLowerCase('tr-TR')} fiyatı`,
+      `${item.count} ${item.goldName.toLocaleLowerCase('tr-TR')} kaç TL`,
       'altın fiyatları',
       'çeyrek altın',
       'tam altın',
@@ -59,19 +59,19 @@ export default async function PieceAltinPage({ params }: Props) {
 
   const faqs = [
     {
-      q: `${item.count} adet ${item.goldName.toLowerCase()} toplam kaç TL?`,
+      q: `${item.count} adet ${item.goldName.toLocaleLowerCase('tr-TR')} toplam kaç TL?`,
       a: `${item.count} adet ${item.goldName} güncel TL toplam fiyatı bu sayfada canlı olarak gösterilmektedir. Anlık alış-satış fiyatları otomatik olarak güncellenmektedir.`,
     },
     {
-      q: `${item.count} adet ${item.goldName.toLowerCase()} almak mantıklı mı?`,
+      q: `${item.count} adet ${item.goldName.toLocaleLowerCase('tr-TR')} almak mantıklı mı?`,
       a: `${item.count} adet ${item.goldName} almak, özellikle düğün, nişan veya toplu yatırım için uygun bir seçenektir. Ancak alım-satış makası ve saklama maliyetlerini göz önünde bulundurmanız önerilir.`,
     },
     {
-      q: `${item.count} adet ${item.goldName.toLowerCase()} kaç gram?`,
-      a: `${item.goldName} için standart ağırlık bilgisi: Çeyrek 1.75 gr, Yarım 3.5 gr, Tam 7 gr, Cumhuriyet 7.2 gr, Ata 7.2 gr, Gremse 18.15 gr. ${item.count} adet için toplam ağırlığı gram altın eşdeğerine dönüştürebilirsiniz.`,
+      q: `${item.count} adet ${item.goldName.toLocaleLowerCase('tr-TR')} kaç gram?`,
+      a: `Yaklaşık standart ağırlıklar: çeyrek 1,75 g, yarım 3,5 g, tam 7 g, Cumhuriyet ve ata 7,2 g, gremse 17,5 g. Bu altınlar 22 ayardır; saf altın içeriği ağırlığın yaklaşık %91,6'sıdır. Bu nedenle ${item.count} adet ${item.goldName.toLocaleLowerCase('tr-TR')} ile aynı ağırlıktaki gram (24 ayar) altının fiyatı aynı değildir.`,
     },
     {
-      q: `Toplu ${item.goldName.toLowerCase()} alımında indirim var mı?`,
+      q: `Toplu ${item.goldName.toLocaleLowerCase('tr-TR')} alımında indirim var mı?`,
       a: `Kuyumcular genellikle toplu alımlarda küçük oranda indirim veya daha iyi fiyat verebilir. Bankalar ise genellikle sabit fiyat uygular. ${item.count} adet alım için birden fazla kuyumcudan teklif almanız önerilir.`,
     },
   ];
@@ -128,11 +128,11 @@ export default async function PieceAltinPage({ params }: Props) {
         </nav>
 
         <header className="mb-6">
-          <h1 className="text-2xl font-extrabold tracking-tight lg:text-4xl">
+          <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">
             {item.count} Adet {item.goldName} Kaç TL?
           </h1>
           <p id="piece-summary" className="mt-3 text-base text-muted-foreground lg:text-lg">
-            <strong>{item.count} adet {item.goldName.toLowerCase()}</strong> güncel Türk Lirası
+            <strong>{item.count} adet {item.goldName.toLocaleLowerCase('tr-TR')}</strong> güncel Türk Lirası
             toplam fiyatı bu sayfada canlı olarak gösterilir. Veriler anlık olarak güncellenir;
             alış-satış fiyatları, son 24 saatlik değişim ve yatırım tavsiyelerini takip edebilirsiniz.
           </p>
@@ -143,11 +143,11 @@ export default async function PieceAltinPage({ params }: Props) {
         <AdBanner page={`altin-adet-${item.slug}`} position="in-article" className="my-8" />
 
         <section className="prose prose-slate dark:prose-invert mt-8 max-w-none">
-          <h2 className="text-xl font-semibold mb-3">
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">
             {item.count} Adet {item.goldName} Detayları
           </h2>
           <p>
-            {item.count} adet {item.goldName.toLowerCase()} toplam yatırım maliyetini
+            {item.count} adet {item.goldName.toLocaleLowerCase('tr-TR')} toplam yatırım maliyetini
             hesaplamak için aşağıdaki bilgileri kullanabilirsiniz. Sayfa, anlık piyasa
             verilerine göre otomatik güncellenmektedir.
           </p>
@@ -163,7 +163,7 @@ export default async function PieceAltinPage({ params }: Props) {
             {item.count} Adet Ne Kadar Kullanım Alanı?
           </h3>
           <p>
-            {item.count} adet {item.goldName.toLowerCase()} özellikle şu durumlar için tercih edilir:
+            {item.count} adet {item.goldName.toLocaleLowerCase('tr-TR')} özellikle şu durumlar için tercih edilir:
           </p>
           <ul>
             {item.count >= 50 && <li><strong>Toplu yatırım</strong> için ideal — uzun vadeli birikim aracı</li>}
@@ -187,12 +187,12 @@ export default async function PieceAltinPage({ params }: Props) {
 
         {/* FAQ */}
         <section className="mt-10">
-          <h2 className="text-xl font-semibold mb-4">Sıkça Sorulan Sorular</h2>
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-4">Sıkça Sorulan Sorular</h2>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
               <details
                 key={i}
-                className="group rounded-lg border border-border bg-card p-4"
+                className="group atlas-card p-4"
               >
                 <summary className="flex cursor-pointer items-center justify-between font-medium">
                   {faq.q}
@@ -206,35 +206,35 @@ export default async function PieceAltinPage({ params }: Props) {
 
         {/* Related Links */}
         <section className="mt-10 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6">
-          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+          <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3 flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
             İlgili Sayfalar
           </h2>
           <div className="grid gap-2 sm:grid-cols-2">
             <Link
               href={`/altin/${item.goldSlug}`}
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:border-primary/50"
+              className="flex items-center justify-between atlas-card p-3 hover:border-primary/50"
             >
               <span className="text-sm font-medium">1 Adet {item.goldName}</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </Link>
             <Link
               href="/altin/gram-altin"
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:border-primary/50"
+              className="flex items-center justify-between atlas-card p-3 hover:border-primary/50"
             >
               <span className="text-sm font-medium">Gram Altın</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </Link>
             <Link
               href="/altin"
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:border-primary/50 sm:col-span-2"
+              className="flex items-center justify-between atlas-card p-3 hover:border-primary/50 sm:col-span-2"
             >
               <span className="text-sm font-medium">Tüm Altın Türleri</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </Link>
             <Link
               href="/araclar/altin-hesaplama"
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:border-primary/50 sm:col-span-2"
+              className="flex items-center justify-between atlas-card p-3 hover:border-primary/50 sm:col-span-2"
             >
               <span className="text-sm font-medium flex items-center gap-2">
                 <Calculator className="h-4 w-4 text-primary" />

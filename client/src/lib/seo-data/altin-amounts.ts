@@ -47,8 +47,8 @@ function generateGramAmounts(): GramAmount[] {
       slug,
       grams,
       path: `/altin/miktar/${slug}`,
-      title: `${label} altın kaç TL? (${grams} gr güncel fiyat)`,
-      description: `${label} (${grams} gram) altının güncel TL fiyatı, son 24 saatlik değişim ve aylık performans. ${grams} gr altın yatırımı yapmadan önce güncel verileri inceleyin.`,
+      title: `${label.charAt(0).toLocaleUpperCase('tr-TR') + label.slice(1)} altın kaç TL? (${grams} gr güncel fiyat)`,
+      description: `${label} (${grams} gram) altının güncel TL fiyatı, kaynaklara göre alış-satış, günlük değişim ve gram altının 1 aylık grafiği.`,
     };
   });
 }
@@ -91,7 +91,7 @@ function generatePieceAmounts(): PieceAmount[] {
         goldName: gold.name,
         path: `/altin/adet/${count}-${gold.slug}`,
         title: `${countLabel} ${gold.name} kaç TL? ${count} adet toplam fiyat`,
-        description: `${count} adet ${gold.name} toplam fiyatı. ${count} adet ${gold.name.toLowerCase()} güncel alış-satış fiyatı ve toplam maliyet. Düğün, nişan veya yatırım için ${count} adet ${gold.name.toLowerCase()} almayı düşünüyorsanız güncel fiyatları görün.`,
+        description: `${count} adet ${gold.name} bugün kaç TL? Kaynaklara göre güncel alış-satış fiyatı ve ${count} adet için toplam tutar.`,
       });
     });
   });

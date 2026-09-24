@@ -112,13 +112,13 @@ export function ToolClient({ slug, title, hideTitle = false }: Props) {
   const isWide = slug === 'maas-hesaplama';
 
   return (
-    <div className={`mx-auto ${isWide ? 'max-w-7xl' : 'max-w-2xl'} px-4 py-6 lg:px-8 pb-20 md:pb-8`}>
+    <div className={`mx-auto ${isWide ? 'max-w-[1440px]' : 'max-w-3xl'} px-4 py-6 lg:px-8 pb-24 md:pb-12`}>
       {/* page.tsx'te H1 üstünde breadcrumb var. Bu render'de tekrar etmiyoruz. */}
       {hideTitle ? (
         // Server-rendered H1 page.tsx'te (Pit 11b). Burada görsel başlık yok.
         <h2 className="sr-only">{title}</h2>
       ) : (
-        <h1 className="text-2xl font-bold">{title}</h1>
+        <h1 className="font-display text-balance text-4xl text-foreground sm:text-5xl">{title}</h1>
       )}
 
       <AdBanner page={`araclar-${slug}`} position="top" />

@@ -120,7 +120,9 @@ export function PriceChart({
 
   // ── 2) Canlı son mum ───────────────────────────────────────────
   useEffect(() => {
-    if (!live) return;
+    // Canlı mum akışı yalnızca gün içi (saatlik) görünümde açılır: günlük/haftalık
+    // görünümde fark yaratmıyor, her sayfada bir kalıcı bağlantı tasarruf edilir.
+    if (!live || preset.interval !== '1h') return;
     // Saatlik ve günlük görünümlerde anlamlı; haftalık+ periyotlarda da son mum
     // güncellenebilir ama etkisi görsel olarak minimal — yine de bağlanıyoruz.
     const unsubscribe = subscribeHistory(instrument, (raw, barInterval) => {

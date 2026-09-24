@@ -27,33 +27,37 @@ function LiveTicker() {
     setBorsaStreamStatus, setGoldStreamStatus, setCurrencyStreamStatus,
   } = useMarketStore();
 
-  // SSE connections for live updates — sole data source
-  const handleBorsaSSE = useCallback(
-    (data: unknown) => {
-      const d = data as BorsaStreamData;
-      if (d.type === 'data') updateFromBorsaStream(d);
+  // Tek birleşik akış (borsa + altın + serbest piyasa + TCMB): sayfa başına tek kalıcı
+  // bağlantı. Ayrı akışlar HTTP/1.1'de tarayıcının 6 bağlantı sınırını dolduruyordu.
+  const handleMarket = useCallback(
+    (raw: unknown) => {
+      const msg = raw as { channel?: string; payload?: unknown };
+      switch (msg.channel) {
+        case 'borsa': {
+          const d = msg.payload as BorsaStreamData;
+          if (d?.type === 'data') updateFromBorsaStream(d);
+          break;
+        }
+        case 'gold': {
+          const d = msg.payload as GoldStreamData;
+          if (d?.type === 'prices') updateFromGoldStream(d);
+          break;
+        }
+        case 'currency:serbest-piyasa':
+          updateFromCurrencyStream('serbest-piyasa', msg.payload as CurrencyStreamData);
+          break;
+        case 'currency:merkez-bankasi':
+          updateFromCurrencyStream('merkez-bankasi', msg.payload as CurrencyStreamData);
+          break;
+      }
     },
-    [updateFromBorsaStream],
+    [updateFromBorsaStream, updateFromGoldStream, updateFromCurrencyStream],
   );
 
-  const handleGoldSSE = useCallback(
-    (data: unknown) => {
-      const d = data as GoldStreamData;
-      if (d.type === 'prices') updateFromGoldStream(d);
-    },
-    [updateFromGoldStream],
-  );
-
-  const handleCurrencySSE = useCallback(
-    (data: unknown) => {
-      updateFromCurrencyStream('serbest-piyasa', data as CurrencyStreamData);
-    },
-    [updateFromCurrencyStream],
-  );
-
-  const { status: borsaStatus } = useSSE({ url: '/api/market/borsa/stream', onMessage: handleBorsaSSE });
-  const { status: goldStatus } = useSSE({ url: '/api/market/gold/stream', onMessage: handleGoldSSE });
-  const { status: currencyStatus } = useSSE({ url: '/api/market/currency/serbest-piyasa/stream', onMessage: handleCurrencySSE });
+  const { status: streamStatus } = useSSE({ url: '/api/market/stream', onMessage: handleMarket });
+  const borsaStatus = streamStatus;
+  const goldStatus = streamStatus;
+  const currencyStatus = streamStatus;
 
   // Altın akışı kaynakları sırayla ve piyasa kapalıyken seyrek gönderiyor; bazı
   // türler (ör. Cumhuriyet) dakikalarca boş kalıyordu. İlk açılışta REST ile doldur.
