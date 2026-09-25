@@ -9,11 +9,17 @@ import { OPEN_CONSENT_EVENT, readConsent, writeConsent } from '@/lib/consent';
  * seçim yapılana kadar analitik çerez yüklenmez. Mobilde alt gezinme çubuğunun üstünde durur.
  */
 export function CookieConsent() {
-  const [open, setOpen] = useState(false);
+  // Çubuk sunucu HTML'inde baştan çizilir (ilk ziyarette mobil LCP öğesi buydu; JS sonrası
+  // belirince LCP ~5 sn'ye çıkıyordu). Onay verilmişse <html data-consent> (layout'taki satır içi
+  // betik, ilk çizimden önce) ve CSS çubuğu gizler; yüklemeden sonra React de kaldırır.
+  const [open, setOpen] = useState(true);
 
   useEffect(() => {
-    if (readConsent() === null) setOpen(true);
-    const onOpen = () => setOpen(true);
+    if (readConsent() !== null) setOpen(false);
+    const onOpen = () => {
+      document.documentElement.removeAttribute('data-consent');
+      setOpen(true);
+    };
     window.addEventListener(OPEN_CONSENT_EVENT, onOpen);
     return () => window.removeEventListener(OPEN_CONSENT_EVENT, onOpen);
   }, []);
@@ -22,11 +28,13 @@ export function CookieConsent() {
 
   const choose = (v: 'granted' | 'denied') => {
     writeConsent(v);
+    document.documentElement.setAttribute('data-consent', '1');
     setOpen(false);
   };
 
   return (
     <div
+      id="fc-consent"
       role="dialog"
       aria-modal="false"
       aria-labelledby="cookie-title"

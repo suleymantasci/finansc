@@ -142,6 +142,14 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable}`}
     >
+      <head>
+        {/* Çerez onayı verilmişse çubuğu ilk çizimden önce gizle (çubuk SSR'da çizilir; bkz. CookieConsent) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "try{if(localStorage.getItem('fc-consent'))document.documentElement.setAttribute('data-consent','1')}catch(e){}",
+          }}
+        />
+      </head>
       <body
         className="atlas-grain flex min-h-screen flex-col"
       >

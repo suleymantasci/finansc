@@ -529,3 +529,6 @@ article img {
   .article-prose h2 { font-size: 1.55rem; }
   .article-prose h3 { font-size: 1.25rem; }
 }
+
+/* Çerez onayı verilmişse sunucuda çizilen çubuk ilk çizimde gizli (layout'taki satır içi betik) */
+html[data-consent] #fc-consent { display: none; }
