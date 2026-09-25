@@ -21,6 +21,7 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin', 'latin-ext'],
   display: 'swap',
+  preload: false, // ilk ekranda kritik değil; önyükleme bant genişliğini başlık fontuna bırakır
 });
 
 // Başlık fontu — klasik gazete serif'i, optik boyut ekseniyle büyük puntoda sıkı durur
@@ -29,7 +30,9 @@ const displaySerif = Newsreader({
   subsets: ['latin', 'latin-ext'],
   axes: ['opsz'],
   style: ['normal'],
-  display: 'swap',
+  // 'optional': font kısa sürede gelmezse o ziyarette yedek serif kalır, başlık beklemez.
+  // 'swap' ile mobil LCP, font değişimine (≈2,3 sn render gecikmesi) bağlanıyordu (PSI).
+  display: 'optional',
 });
 
 export const viewport: Viewport = {
