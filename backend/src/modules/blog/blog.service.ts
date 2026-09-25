@@ -73,7 +73,12 @@ export class BlogService {
     this.blogRepo
       .createQueryBuilder()
       .update(Blog)
-      .set({ viewCount: () => '"viewCount" + 1' })
+      .set({
+        viewCount: () => '"viewCount" + 1',
+        // TypeORM her UPDATE'e updatedAt=now() ekliyor; görüntülenme sayacı "güncellenme"
+        // tarihini değiştirmemeli (her okunan yazı "Güncellendi: bugün" görünüyordu).
+        updatedAt: () => '"updatedAt"',
+      })
       .where('slug = :slug', { slug })
       .execute()
       .catch(() => {});
