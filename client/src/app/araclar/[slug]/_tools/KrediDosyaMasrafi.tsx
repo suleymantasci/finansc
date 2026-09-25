@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -17,7 +18,7 @@ type FormData = z.infer<typeof schema>;
 const defaults: FormData = { amount: 0 };
 
 function readFormFromUrl(): FormData {
-  if (typeof window === 'undefined') return defaults;
+  if (typeof window === 'undefined' || !isToolHydrated()) return defaults;
   const sp = new URLSearchParams(window.location.search);
   const v = sp.get('amount');
   if (v === null || v === '') return defaults;

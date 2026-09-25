@@ -97,14 +97,14 @@ export function SourceTable({ kind, id }: { kind: 'gold' | 'fx'; id: string }) {
         <span className="text-[12px] text-muted-foreground">{rows.length} kaynak</span>
       </div>
       <div className="mt-3 overflow-x-auto">
-        <table className="w-full min-w-[480px] text-sm">
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-[12px] text-muted-foreground">
-              <th scope="col" className="px-5 py-2.5 font-normal sm:px-6">Kaynak</th>
-              <th scope="col" className="px-3 py-2.5 text-right font-normal">Alış</th>
-              <th scope="col" className="px-3 py-2.5 text-right font-normal">Satış</th>
-              <th scope="col" className="px-3 py-2.5 text-right font-normal">Değişim</th>
-              <th scope="col" className="px-5 py-2.5 text-right font-normal sm:px-6">Saat</th>
+              <th scope="col" className="px-4 py-2.5 font-normal sm:px-6">Kaynak</th>
+              <th scope="col" className="px-2 py-2.5 text-right font-normal sm:px-3">Alış</th>
+              <th scope="col" className="px-2 py-2.5 pr-4 text-right font-normal sm:px-3">Satış</th>
+              <th scope="col" className="hidden px-3 py-2.5 text-right font-normal sm:table-cell">Değişim</th>
+              <th scope="col" className="hidden px-5 py-2.5 text-right font-normal sm:table-cell sm:px-6">Saat</th>
             </tr>
           </thead>
           <tbody>
@@ -120,16 +120,22 @@ export function SourceTable({ kind, id }: { kind: 'gold' | 'fx'; id: string }) {
                   const ch = r.change ?? 0;
                   return (
                     <tr key={r.key} className={cn('border-b border-border/60 last:border-0', r.flash === 'up' && 'flash-up', r.flash === 'down' && 'flash-down')}>
-                      <th scope="row" className="px-5 py-3 text-left font-normal text-foreground sm:px-6">
+                      <th scope="row" className="px-4 py-3 text-left font-normal text-foreground sm:px-6">
                         {r.source}
                         {r.variant && <span className="ml-2 text-[11px] text-muted-foreground">{r.variant}</span>}
                       </th>
-                      <td className="num px-3 py-3 text-right text-foreground/85">{nf(r.buy, d)}</td>
-                      <td className="num px-3 py-3 text-right text-foreground">{nf(r.sell, d)}</td>
-                      <td className={cn('num px-3 py-3 text-right', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
+                      <td className="num px-2 py-3 text-right text-foreground/85 sm:px-3">{nf(r.buy, d)}</td>
+                      <td className="num px-2 py-3 pr-4 text-right text-foreground sm:px-3">
+                        {nf(r.sell, d)}
+                        {/* Mobilde değişim ayrı sütun yerine satışın altında */}
+                        <span className={cn('block text-[12px] sm:hidden', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
+                          {pctTr(ch, { signed: true })}
+                        </span>
+                      </td>
+                      <td className={cn('num hidden px-3 py-3 text-right sm:table-cell', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
                         {pctTr(ch, { signed: true })}
                       </td>
-                      <td className="num px-5 py-3 text-right text-[12px] text-muted-foreground sm:px-6">{timeOf(r.time)}</td>
+                      <td className="num hidden px-5 py-3 text-right text-[12px] text-muted-foreground sm:table-cell sm:px-6">{timeOf(r.time)}</td>
                     </tr>
                   );
                 })}

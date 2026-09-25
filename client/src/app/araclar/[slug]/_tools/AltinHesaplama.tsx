@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
@@ -77,7 +78,7 @@ export function AltinHesaplama() {
 
 function AltinHesaplamaInner() {
   const initialForm = readFormFromUrl(
-    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
+    typeof window !== 'undefined' && isToolHydrated() ? new URLSearchParams(window.location.search) : new URLSearchParams(),
   );
   const hasInitialData = initialForm.amount > 0 && initialForm.gramPrice > 0;
   const [result, setResult] = useState<{ value: number; label: string } | null>(

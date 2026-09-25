@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -62,7 +63,7 @@ function readFormFromUrl(
     targetYear: r.target.year,
     targetMonth: r.target.month,
   };
-  if (typeof window === 'undefined') return defaults;
+  if (typeof window === 'undefined' || !isToolHydrated()) return defaults;
   const sp = new URLSearchParams(window.location.search);
   const num = (k: keyof FormData, fallback: number): number => {
     const v = sp.get(k as string);

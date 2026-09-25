@@ -59,20 +59,20 @@ export function EnflasyonCompareTable({ tufe, ufe, months = 12 }: Props) {
       <table className="w-full text-sm">
         <thead className="border-b border-border bg-elevated/50">
           <tr>
-            <th className="px-3 py-2.5 text-left font-semibold text-foreground">Dönem</th>
-            <th colSpan={2} className="px-3 py-2.5 text-center font-semibold text-primary border-l border-border">
+            <th className="px-2 sm:px-3 py-2.5 text-left font-semibold text-foreground">Dönem</th>
+            <th colSpan={2} className="px-2 sm:px-3 py-2.5 text-center font-semibold text-primary border-l border-border">
               TÜFE
             </th>
-            <th colSpan={2} className="px-3 py-2.5 text-center font-semibold text-blue-600 dark:text-blue-400 border-l border-border">
+            <th colSpan={2} className="px-2 sm:px-3 py-2.5 text-center font-semibold text-blue-600 dark:text-blue-400 border-l border-border">
               Yİ-ÜFE
             </th>
           </tr>
           <tr className="border-b border-border bg-elevated/30 text-xs text-muted-foreground">
-            <th className="px-3 py-1.5"></th>
-            <th className="px-3 py-1.5 text-right font-medium border-l border-border">Yıllık</th>
-            <th className="px-3 py-1.5 text-right font-medium">Aylık</th>
-            <th className="px-3 py-1.5 text-right font-medium border-l border-border">Yıllık</th>
-            <th className="px-3 py-1.5 text-right font-medium">Aylık</th>
+            <th className="px-2 sm:px-3 py-1.5"></th>
+            <th className="px-2 sm:px-3 py-1.5 text-right font-medium border-l border-border">Yıllık</th>
+            <th className="px-2 sm:px-3 py-1.5 text-right font-medium">Aylık</th>
+            <th className="px-2 sm:px-3 py-1.5 text-right font-medium border-l border-border">Yıllık</th>
+            <th className="px-2 sm:px-3 py-1.5 text-right font-medium">Aylık</th>
           </tr>
         </thead>
         <tbody>
@@ -81,17 +81,17 @@ export function EnflasyonCompareTable({ tufe, ufe, months = 12 }: Props) {
               key={row.period}
               className={i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}
             >
-              <td className="px-3 py-2 font-medium text-foreground">{formatPeriodTr(row.period)}</td>
-              <td className="px-3 py-2 text-right num border-l border-border">
+              <td className="px-2 sm:px-3 py-2 font-medium text-foreground">{formatPeriodTr(row.period)}</td>
+              <td className="px-2 sm:px-3 py-2 text-right num border-l border-border">
                 {formatPercentTr(row.tufe?.yearlyChange ?? null)}
               </td>
-              <td className="px-3 py-2 text-right num">
+              <td className="px-2 sm:px-3 py-2 text-right num">
                 {formatPercentTr(row.tufe?.monthlyChange ?? null)}
               </td>
-              <td className="px-3 py-2 text-right num border-l border-border">
+              <td className="px-2 sm:px-3 py-2 text-right num border-l border-border">
                 {formatPercentTr(row.ufe?.yiUfeYearlyChange ?? null)}
               </td>
-              <td className="px-3 py-2 text-right num">
+              <td className="px-2 sm:px-3 py-2 text-right num">
                 {formatPercentTr(row.ufe?.yiUfeMonthlyChange ?? null)}
               </td>
             </tr>

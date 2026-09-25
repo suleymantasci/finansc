@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import Image from 'next/image';
+import { getImageProps } from 'next/image';
 import { HeroSearch, QuickChips } from '@/components/search/CommandSearch';
 import { cn } from '@/lib/utils';
 
@@ -70,6 +70,20 @@ function HeroArt() {
   );
 }
 
+// 1x1 saydam GIF: mobilde <img> bunu yükler, gerçek görsel yalnızca lg+ <source> ile gelir
+const BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+function HeroPicture({ src, className }: { src: string; className?: string }) {
+  const { props } = getImageProps({ src, alt: '', fill: true, sizes: '60vw', quality: 75 });
+  return (
+    <picture>
+      <source media="(min-width: 1024px)" srcSet={props.srcSet} sizes="60vw" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={BLANK} alt="" fetchPriority="high" decoding="async" className={cn('absolute inset-0 h-full w-full', className)} />
+    </picture>
+  );
+}
+
 export function AtlasHero() {
   const hasImage = publicFileExists(HERO_IMAGE);
   // Açık tema görseli yoksa koyu görsel iki temada da kullanılır
@@ -81,23 +95,11 @@ export function AtlasHero() {
       <div className="pointer-events-none absolute inset-0 overflow-hidden lg:left-[42%]" aria-hidden="true">
         {hasImage ? (
           <>
-            <Image
-              src={HERO_IMAGE}
-              alt=""
-              fill
-              priority
-              sizes="(min-width:1024px) 60vw, 100vw"
-              className={cn('object-cover object-right opacity-90', hasLight && 'theme-dark-only')}
-            />
-            {hasLight && (
-              <Image
-                src={HERO_IMAGE_LIGHT}
-                alt=""
-                fill
-                sizes="(min-width:1024px) 60vw, 100vw"
-                className="theme-light-only object-cover object-right"
-              />
-            )}
+            {/* Görsel yalnızca lg+ yüklenir: mobilde metnin arkasında degrade altında kalıyor ama
+                750px indirilip LCP'yi ~8 sn'ye çekiyordu (PSI). Mobilde yerine hafif CSS ışıltısı. */}
+            <HeroPicture src={HERO_IMAGE} className={cn('object-cover object-right opacity-90', hasLight && 'theme-dark-only')} />
+            {hasLight && <HeroPicture src={HERO_IMAGE_LIGHT} className="theme-light-only object-cover object-right" />}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_15%,color-mix(in_srgb,var(--color-primary)_22%,transparent),transparent_60%)] lg:hidden" />
           </>
         ) : (
           <HeroArt />

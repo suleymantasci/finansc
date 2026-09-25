@@ -1,6 +1,7 @@
 'use client';
+import { isToolHydrated } from './hydration';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +29,7 @@ interface CreditCalcProps {
 }
 
 function readFormFromUrl(): FormData {
-  if (typeof window === 'undefined') return defaults;
+  if (typeof window === 'undefined' || !isToolHydrated()) return defaults;
   const sp = new URLSearchParams(window.location.search);
   const num = (k: keyof FormData): number => {
     const v = sp.get(k as string);
@@ -64,16 +65,25 @@ function compute(data: FormData, bsmv: number, kkdf: number): CalcResult | null 
 }
 
 export function CreditCalc({ bsmv = 0.15, kkdf = 0.15, maxTerm = 360, title, description }: CreditCalcProps) {
-  const initialForm = readFormFromUrl();
-  const initial = initialForm.amount > 0 && initialForm.term > 0 && initialForm.rate > 0
-    ? compute(initialForm, bsmv, kkdf) : null;
-  const [result, setResult] = useState<CalcResult | null>(initial);
+  // İlk çizim sunucuyla aynı (boş sonuç); URL'deki değerler yüklendikten sonra okunur ve hesaplanır.
+  // Render sırasında hesaplamak hydration uyuşmazlığı (React #418) veriyordu.
+  const [result, setResult] = useState<CalcResult | null>(null);
   const [schedule, setSchedule] = useState<ReturnType<typeof amortizationSchedule>>([]);
   const [showSchedule, setShowSchedule] = useState(false);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
     resolver: zodResolver(schema.extend({ term: z.coerce.number().min(1).max(maxTerm) })),
-    defaultValues: initialForm,
+    defaultValues: defaults,
   });
+
+  useEffect(() => {
+    const f = readFormFromUrl();
+    if (!(f.amount > 0 && f.term > 0 && f.rate > 0)) return;
+    reset(f);
+    setResult(compute(f, bsmv, kkdf));
+    setSchedule(amortizationSchedule(f.amount, f.rate, f.term, bsmv, kkdf));
+    // Yalnız ilk yüklemede
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = (data: FormData) => {
     const rows = amortizationSchedule(data.amount, data.rate, data.term, bsmv, kkdf);

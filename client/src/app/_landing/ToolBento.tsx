@@ -46,7 +46,7 @@ function SalaryCard() {
 
   const toNet = direction === 'brutten-nete';
   const headline = result ? (toNet ? result.net : result.gross) : 0;
-  const detailHref = `/araclar/maas-hesaplama?amount=${amount}&direction=${direction}&year=${year}`;
+  const detailHref = `/araclar/maas-hesaplama?amount=${amount}&direction=${direction}&year=${year}&month=1`; // 12 aylık döküm: yıl başından
 
   return (
     <article className="atlas-card flex flex-col p-5 sm:p-6">

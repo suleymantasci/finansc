@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { markToolHydrated } from './_tools/_shared/hydration';
+
 import { AdBanner } from '@/components/ads/AdBanner';
 import { ReportErrorButton } from '@/components/shared/ReportErrorButton';
 
@@ -108,6 +111,23 @@ const TOOL_MAP: Record<string, React.FC> = {
 export function ToolClient({ slug, title, hideTitle = false }: Props) {
   const ToolComponent = TOOL_MAP[slug];
 
+  // Araçlar başlangıç değerlerini URL'den (?amount=…) render sırasında okuyor. Sayfa sunucuda
+  // parametresiz üretildiği için hydration sunucudaki varsayılanları koruyor, URL'deki değerler
+  // ve otomatik hesaplama görünmüyordu (paylaşılan linkler, ana sayfa kartları). URL'de parametre
+  // varsa araç yüklendikten sonra bir kez yeniden kurulur; bu kurulum tamamen istemcide olduğu için
+  // URL'yi doğru okur. Sunucu HTML'i (SEO) değişmez.
+  // Sayfa içi geçişte (ana sayfa kartları) Next adres çubuğunu bu effect'ten SONRA güncelliyor;
+  // kontrol bir sonraki görev döngüsüne ertelenir. (useSearchParams statik sayfada aracı sunucu
+  // HTML'inden çıkarırdı; kullanılmıyor.)
+  const [mountKey, setMountKey] = useState('ssr');
+  useEffect(() => {
+    const t = setTimeout(() => {
+      markToolHydrated();
+      if (window.location.search.length > 1) setMountKey(`url:${window.location.search}`);
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
+
   // Geniş tablo içeren araçlar için container genişliğini artır
   const isWide = slug === 'maas-hesaplama';
 
@@ -124,7 +144,7 @@ export function ToolClient({ slug, title, hideTitle = false }: Props) {
       <AdBanner page={`araclar-${slug}`} position="top" />
 
       <div className="mt-6">
-        {ToolComponent ? <ToolComponent /> : <p className="text-muted-foreground">Bu araç henüz aktif değil.</p>}
+        {ToolComponent ? <ToolComponent key={mountKey} /> : <p className="text-muted-foreground">Bu araç henüz aktif değil.</p>}
       </div>
 
       <div className="mt-8 flex justify-end">

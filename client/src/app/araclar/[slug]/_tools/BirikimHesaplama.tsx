@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
@@ -63,7 +64,7 @@ export function BirikimHesaplama() {
 
 function BirikimHesaplamaInner() {
   const initialForm = readFormFromUrl(
-    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
+    typeof window !== 'undefined' && isToolHydrated() ? new URLSearchParams(window.location.search) : new URLSearchParams(),
   );
   const hasInitialData = initialForm.months > 0;
   const [result, setResult] = useState<{ total: number; deposits: number; interest: number } | null>(

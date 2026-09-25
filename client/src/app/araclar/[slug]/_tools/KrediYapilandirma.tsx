@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -33,7 +34,7 @@ type CalcResult = { oldRemaining: number; oldMonthly: number; oldTotal: number; 
 const defaults: FormData = { type: 'ihtiyac', amount: 0, term: 0, rate: 0, paidMonths: 0, earlyPenalty: 0, newTerm: 0, newRate: 0, newCost: 0 };
 
 function readFormFromUrl(): FormData {
-  if (typeof window === 'undefined') return defaults;
+  if (typeof window === 'undefined' || !isToolHydrated()) return defaults;
   const sp = new URLSearchParams(window.location.search);
   const num = (k: keyof FormData): number => {
     const v = sp.get(k as string);

@@ -227,12 +227,13 @@ export function PriceChart({
             </button>
           ))}
         </div>
-        {hasOhlc && (
-          <div className="flex gap-1 rounded-lg border border-border p-0.5" role="group" aria-label="Grafik türü">
-            <button type="button" aria-pressed={mode === 'area'} onClick={() => setMode('area')} className={tabBtn(mode === 'area')}>
+        {/* Veri gelmeden de yer ayrılır (CLS): mum verisi yoksa görünmez kalır */}
+        {(
+          <div className={`flex gap-1 rounded-lg border border-border p-0.5 ${hasOhlc ? '' : 'invisible'}`} role="group" aria-label="Grafik türü" aria-hidden={!hasOhlc || undefined}>
+            <button type="button" disabled={!hasOhlc} aria-pressed={mode === 'area'} onClick={() => setMode('area')} className={tabBtn(mode === 'area')}>
               Alan
             </button>
-            <button type="button" aria-pressed={mode === 'candle'} onClick={() => setMode('candle')} className={tabBtn(mode === 'candle')}>
+            <button type="button" disabled={!hasOhlc} aria-pressed={mode === 'candle'} onClick={() => setMode('candle')} className={tabBtn(mode === 'candle')}>
               Mum
             </button>
           </div>
@@ -242,10 +243,12 @@ export function PriceChart({
       <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[13px]">
         <span className="text-foreground/90">{series?.label ?? instrument}</span>
         <span className="text-muted-foreground">· {preset.label}</span>
-        {points.length > 1 && (
+        {points.length > 1 ? (
           <span className={`num font-medium ${up ? 'text-up' : 'text-down'}`}>
             {formatPrice(last, decimals)} ({up ? '+' : '-'}%{Math.abs(change).toFixed(2).replace('.', ',')})
           </span>
+        ) : (
+          <span className="num invisible font-medium" aria-hidden="true">0.000,00 (+%0,00)</span>
         )}
       </div>
 
@@ -384,11 +387,11 @@ export function PriceChart({
         )}
       </div>
 
-      {series && (
-        <p className="mt-3 text-[11px] text-muted-foreground">
-          Kaynak: {series.source} · {series.count} veri noktası · {preset.interval === '1h' ? 'saatlik' : preset.interval === '1d' ? 'günlük' : preset.interval === '1w' ? 'haftalık' : 'aylık'} kapanışlar
-        </p>
-      )}
+      {/* Satır her zaman yer kaplar; veri gelince dolar (CLS) */}
+      <p className="mt-3 min-h-[1.1rem] text-[11px] text-muted-foreground">
+        {series &&
+          `Kaynak: ${series.source} · ${series.count} veri noktası · ${preset.interval === '1h' ? 'saatlik' : preset.interval === '1d' ? 'günlük' : preset.interval === '1w' ? 'haftalık' : 'aylık'} kapanışlar`}
+      </p>
     </div>
   );
 }

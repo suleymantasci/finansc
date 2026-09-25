@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
@@ -17,7 +18,7 @@ type FormData = z.infer<typeof schema>;
 const defaults: FormData = { count: 2 };
 
 function readFormFromUrl(): { count: number; payments: { days: number; amount: number }[] } {
-  if (typeof window === 'undefined') return { count: 2, payments: [{ days: 0, amount: 0 }, { days: 0, amount: 0 }] };
+  if (typeof window === 'undefined' || !isToolHydrated()) return { count: 2, payments: [{ days: 0, amount: 0 }, { days: 0, amount: 0 }] };
   const sp = new URLSearchParams(window.location.search);
   const countStr = sp.get('count');
   const count = countStr === null ? 2 : Math.min(Math.max(2, Number(countStr) || 2), 50);

@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useState } from 'react';
 import { fetchHistory } from '@/lib/history';
@@ -19,7 +20,7 @@ type FormData = z.infer<typeof schema>;
 const defaults: FormData = { amount: 0, rate: 0 };
 
 function readFormFromUrl(): FormData {
-  if (typeof window === 'undefined') return defaults;
+  if (typeof window === 'undefined' || !isToolHydrated()) return defaults;
   const sp = new URLSearchParams(window.location.search);
   const num = (k: keyof FormData): number => {
     const v = sp.get(k as string);

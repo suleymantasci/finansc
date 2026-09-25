@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
@@ -65,7 +66,7 @@ export function BilesikBuyume() {
 
 function BilesikBuyumeInner() {
   const initialForm = readFormFromUrl(
-    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
+    typeof window !== 'undefined' && isToolHydrated() ? new URLSearchParams(window.location.search) : new URLSearchParams(),
   );
   const hasInitialData = initialForm.startValue > 0 && initialForm.endValue > 0 && initialForm.periods > 0;
   const [result, setResult] = useState<{ cagr: number; totalGrowth: number } | null>(

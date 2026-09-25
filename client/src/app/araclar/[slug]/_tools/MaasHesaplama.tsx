@@ -7,8 +7,8 @@ import { Calculator, Clock, Utensils, Percent, Receipt } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
+import { maasFormSchema } from './_shared/maas-schema';
 import {
-  maasFormSchema,
   EMPLOYEE_TYPE_LABELS,
   DISABILITY_LABELS,
   AVAILABLE_YEARS,
@@ -16,7 +16,6 @@ import {
   type MaasFormData,
 } from './_shared/tax-data';
 import { calculateYearlyTable, fmtTL, type YearlyTableResult } from './_shared/maas-engine';
-import { generateMaasPdf } from './_shared/pdfExport';
 import { MaasChart } from './_shared/MaasChart';
 import { YearlyMaasTable } from './_shared/YearlyMaasTable';
 import { ShareButton } from '@/components/shared/ShareButton';
@@ -138,28 +137,12 @@ export function MaasHesaplama() {
 }
 
 function MaasHesaplamaInner() {
-  // Mount'ta URL'den initial değerleri oku
-  const initialForm = readMaasFormFromUrl(
-    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
-  );
-  const initialMonthly = readMonthlyFromUrl(
-    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
-  );
-
-  // Mount'ta otomatik hesapla — URL'den gelen değerlerle dolu form açılınca
-  // kullanıcı "Hesapla"ya basmadan sonuç görünmeli.
-  const hasInitialData = initialMonthly.some((a) => a > 0);
-  const [yearlyResult, setYearlyResult] = useState<YearlyTableResult | null>(
-    hasInitialData
-      ? calculateYearlyTable(
-          (() => {
-            const { month: _m, cumulativeMatrah: _c, ...rest } = initialForm;
-            return rest;
-          })(),
-          initialMonthly,
-        )
-      : null,
-  );
+  // İlk çizim sunucuyla aynı olmalı (varsayılan değerler). URL render sırasında okunursa sunucu
+  // parametresiz ürettiği için hydration eski değeri koruyordu (ana sayfadan ?amount=… ile gelince
+  // brüt maaş eski kalıyordu). URL aşağıdaki useEffect'te, yüklendikten sonra okunur.
+  const initialForm = defaults;
+  const initialMonthly: number[] = Array(12).fill(0);
+  const [yearlyResult, setYearlyResult] = useState<YearlyTableResult | null>(null);
   const [monthlyAmounts, setMonthlyAmounts] = useState<number[]>(initialMonthly);
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -187,6 +170,25 @@ function MaasHesaplamaInner() {
     },
     [],
   );
+
+  // URL'deki değerlerle formu doldur ve hemen hesapla. Aylık liste (m=…) yoksa ama tutar (amount)
+  // varsa, seçilen aydan yıl sonuna kadar o tutar kullanılır — ana sayfa bağlantısı yalnız amount taşır.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (![...params.keys()].length) return;
+    const form = readMaasFormFromUrl(params);
+    let amounts = readMonthlyFromUrl(params);
+    if (!amounts.some((a) => a > 0) && params.has('amount') && form.amount > 0) {
+      amounts = Array.from({ length: 12 }, (_, i) => (i >= form.month - 1 ? form.amount : 0));
+    }
+    reset(form);
+    if (amounts.some((a) => a > 0)) {
+      setMonthlyAmounts(amounts);
+      runCalculation(form, amounts);
+    }
+    // Yalnız ilk yüklemede
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Direction değiştiğinde mevcut verilerle yeniden hesapla
   useEffect(() => {
@@ -235,9 +237,11 @@ function MaasHesaplamaInner() {
     [watch],
   );
 
-  const handlePdfDownload = () => {
+  // jsPDF (~600 KB) yalnızca tıklanınca yüklenir; sayfa ve ana sayfa önyüklemesi hafif kalır
+  const handlePdfDownload = async () => {
     if (!yearlyResult) return;
     const formValues = watch();
+    const { generateMaasPdf } = await import('./_shared/pdfExport');
     generateMaasPdf(yearlyResult, formValues, taxData);
   };
 

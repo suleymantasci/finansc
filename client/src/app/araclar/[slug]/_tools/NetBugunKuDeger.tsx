@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
@@ -18,7 +19,7 @@ type FormData = z.infer<typeof schema>;
 const defaults: FormData = { discountRate: 0, periods: 3 };
 
 function readFormFromUrl(): { form: FormData; flows: number[] } {
-  if (typeof window === 'undefined') return { form: defaults, flows: [0] };
+  if (typeof window === 'undefined' || !isToolHydrated()) return { form: defaults, flows: [0] };
   const sp = new URLSearchParams(window.location.search);
   const num = (k: keyof FormData): number => {
     const v = sp.get(k as string);

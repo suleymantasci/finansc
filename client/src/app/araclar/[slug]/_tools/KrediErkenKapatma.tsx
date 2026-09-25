@@ -1,4 +1,5 @@
 'use client';
+import { isToolHydrated } from './_shared/hydration';
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -20,7 +21,7 @@ type CalcResult = { penalty: number; rate: number };
 const defaults: FormData = { remainingTerm: 'short', earlyPayment: 0 };
 
 function readFormFromUrl(): FormData {
-  if (typeof window === 'undefined') return defaults;
+  if (typeof window === 'undefined' || !isToolHydrated()) return defaults;
   const sp = new URLSearchParams(window.location.search);
   const v = sp.get('earlyPayment');
   const n = v === null || v === '' ? 0 : Number(v);
