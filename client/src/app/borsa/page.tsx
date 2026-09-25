@@ -5,6 +5,7 @@ import { SectionIntro } from '@/components/shared/SectionIntro';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { FaqBlock } from '@/components/instrument/FaqBlock';
 import { SITE_URL } from '@/lib/constants';
+import { AnswerSummary } from '@/components/instrument/AnswerSummary';
 
 export const metadata: Metadata = {
   title: 'Borsa İstanbul Hisseleri ve Endeksleri | BIST 100',
@@ -41,6 +42,7 @@ export default function BorsaPage() {
           title="Borsa İstanbul"
           description="Tüm hisse senetleri ve endeksler tek listede. Sıralayın, arayın; her hissenin ve endeksin grafikli sayfasına tek tıkla gidin."
         />
+        <AnswerSummary spec={{ kind: 'borsa-list' }} className="-mt-2 mb-6 max-w-3xl text-[15px] leading-relaxed text-muted-foreground" />
       </div>
       <Suspense>
         <BorsaClient />

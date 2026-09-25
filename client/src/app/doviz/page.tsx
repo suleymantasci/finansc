@@ -7,6 +7,7 @@ import { FaqBlock } from '@/components/instrument/FaqBlock';
 import { CURRENCIES } from '@/lib/instruments/currencies';
 import { SITE_URL } from '@/lib/constants';
 import { safeJsonLd } from '@/lib/json-ld';
+import { AnswerSummary } from '@/components/instrument/AnswerSummary';
 
 export const metadata: Metadata = {
   title: 'Döviz Kurları Bugün | Dolar, Euro, Sterlin Canlı',
@@ -46,6 +47,7 @@ export default function DovizPage() {
           title="Döviz kurları"
           description="Serbest piyasa ve TCMB kurlarını karşılaştırın. Dolar, euro, sterlin ve 50’den fazla para biriminin grafikli detay sayfası ve çeviricisi var."
         />
+        <AnswerSummary spec={{ kind: 'fx-list' }} className="-mt-2 mb-6 max-w-3xl text-[15px] leading-relaxed text-muted-foreground" />
       </div>
       <Suspense>
         <DovizClient />

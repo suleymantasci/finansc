@@ -7,6 +7,7 @@ import { PriceChart } from '@/components/charts/PriceChart';
 import { Coins } from 'lucide-react';
 import { GOLD_BY_SLUG, GOLD_ENTRIES, goldHistoryKey } from '@/lib/instruments/gold';
 import { DetailHeader } from '@/components/instrument/DetailHeader';
+import { AnswerSummary } from '@/components/instrument/AnswerSummary';
 import { LiveQuote } from '@/components/instrument/LiveQuote';
 import { SourceTable } from '@/components/instrument/SourceTable';
 import { Converter } from '@/components/instrument/Converter';
@@ -144,6 +145,8 @@ export default async function GoldTypePage({ params }: Props) {
         emblem={<Coins className="h-7 w-7" />}
         actions={<FavoriteButton type="gold" symbol={meta.slug} label={meta.name} />}
       />
+      {/* Yapay zekâ tarayıcıları JS çalıştırmaz: fiyat sunucu HTML'inde olsun */}
+      <AnswerSummary spec={{ kind: 'gold', liveName: entry.liveName, label: meta.name, currency: entry.currency === 'USD' ? 'USD' : 'TRY' }} />
 
       <div className="mx-auto grid max-w-[1440px] gap-6 px-4 py-8 pb-24 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 md:pb-12">
         <div className="min-w-0 space-y-6">

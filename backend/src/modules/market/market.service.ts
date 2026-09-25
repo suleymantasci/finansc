@@ -56,6 +56,13 @@ export class MarketService implements OnModuleInit {
     return [];
   }
 
+  /** Döviz kurları (REST anlık görüntü) — sunucu tarafı render (SSR/ISR) için; canlı güncelleme SSE'den. */
+  async getCurrencies(source: 'serbest-piyasa' | 'merkez-bankasi') {
+    const { data } = await firstValueFrom(this.http.get(`${this.baseUrl}/api/currency/${source}`, { timeout: 10000 }));
+    const list = data?.data?.currencies ?? data?.data ?? data;
+    return Array.isArray(list) ? list : [];
+  }
+
   async getStocks() {
     return this.fetchStocksWithCache();
   }

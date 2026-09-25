@@ -11,6 +11,7 @@ import { PriceChart } from '@/components/charts/PriceChart';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
 import { DetailHeader } from '@/components/instrument/DetailHeader';
+import { AnswerSummary } from '@/components/instrument/AnswerSummary';
 import { LiveQuote } from '@/components/instrument/LiveQuote';
 import { RelatedQuotes } from '@/components/instrument/RelatedQuotes';
 import { AboutBlock } from '@/components/instrument/AboutBlock';
@@ -181,6 +182,8 @@ export default async function IndexPage({ params }: Props) {
         emblem={<CandlestickChart className="h-7 w-7" />}
         actions={<FavoriteButton type="index" symbol={meta.symbol} label={`${meta.symbol} endeksi`} />}
       />
+      {/* Yapay zekâ tarayıcıları JS çalıştırmaz: fiyat sunucu HTML'inde olsun */}
+      <AnswerSummary spec={{ kind: 'index', symbol: sembol, label: meta.name && meta.name !== sembol ? `${meta.name} (${sembol})` : sembol }} />
 
       <div className="mx-auto grid max-w-[1440px] gap-6 px-4 py-8 pb-24 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 md:pb-12">
         <div className="min-w-0 space-y-6">

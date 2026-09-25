@@ -8,6 +8,7 @@ import { GOLD_META } from '@/lib/seo-data/gold';
 import { GOLD_ENTRIES } from '@/lib/instruments/gold';
 import { SITE_URL } from '@/lib/constants';
 import { safeJsonLd } from '@/lib/json-ld';
+import { AnswerSummary } from '@/components/instrument/AnswerSummary';
 
 export const metadata: Metadata = {
   title: 'Altın Fiyatları Bugün | Gram, Çeyrek, Ons Canlı',
@@ -57,6 +58,7 @@ export default function AltinPage() {
           title="Altın fiyatları"
           description="Gram, çeyrek, yarım, tam, Cumhuriyet, ata, bilezik, ons altın ve gümüş fiyatlarını kaynak bazında karşılaştırın. Her türün grafikli detay sayfası var."
         />
+        <AnswerSummary spec={{ kind: 'gold-list' }} className="-mt-2 mb-6 max-w-3xl text-[15px] leading-relaxed text-muted-foreground" />
       </div>
       <Suspense>
         <AltinClient />

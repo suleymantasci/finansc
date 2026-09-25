@@ -9,6 +9,7 @@ import {
 } from '@/lib/seo-data/whitelist';
 import { instrumentKey } from '@/lib/history';
 import { DetailHeader } from '@/components/instrument/DetailHeader';
+import { AnswerSummary } from '@/components/instrument/AnswerSummary';
 import { LiveQuote } from '@/components/instrument/LiveQuote';
 import { Converter } from '@/components/instrument/Converter';
 import { RelatedQuotes } from '@/components/instrument/RelatedQuotes';
@@ -200,6 +201,8 @@ export default async function StockPage({ params }: Props) {
         emblem={<span className="num text-base font-semibold">{meta.symbol.slice(0, 4)}</span>}
         actions={<FavoriteButton type="stock" symbol={meta.symbol} label={`${meta.symbol} hissesi`} />}
       />
+      {/* Yapay zekâ tarayıcıları JS çalıştırmaz: fiyat sunucu HTML'inde olsun */}
+      <AnswerSummary spec={{ kind: 'stock', symbol, label: meta.name && meta.name !== symbol ? `${symbol} (${meta.name})` : symbol }} />
 
       <div className="mx-auto grid max-w-[1440px] gap-6 px-4 py-8 pb-24 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 md:pb-12">
         <div className="min-w-0 space-y-6">

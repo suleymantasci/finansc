@@ -21,6 +21,15 @@ export class MarketController {
   }
 
   @Public()
+  @Get('currency/:source')
+  getCurrencies(@Param('source') source: string) {
+    if (source !== 'serbest-piyasa' && source !== 'merkez-bankasi') {
+      throw new BadRequestException('Invalid source');
+    }
+    return this.marketService.getCurrencies(source);
+  }
+
+  @Public()
   @Get('stocks')
   getStocks(): Promise<BorsaStock[]> {
     return this.marketService.getStocks();
