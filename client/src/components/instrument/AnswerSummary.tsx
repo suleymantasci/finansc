@@ -9,7 +9,7 @@ import { API_URL } from '@/lib/constants';
  * Veri alınamazsa hiçbir şey çizilmez.
  */
 
-type Spec =
+export type Spec =
   | { kind: 'gold'; liveName: string; label: string; currency: 'TRY' | 'USD' }
   | { kind: 'fx'; code: string; serbestName: string; label: string }
   | { kind: 'stock'; symbol: string; label: string }
@@ -43,6 +43,11 @@ function stamp(iso?: string | null): string {
 function stampToday(hhmm?: string | null): string {
   const day = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ });
   return hhmm && /^\d{1,2}:\d{2}$/.test(hhmm) ? `${day} ${hhmm}` : day;
+}
+
+/** Özet cümlesinin düz metni (llms.txt gibi sayfa dışı kullanım için) */
+export async function answerText(spec: Spec): Promise<string | null> {
+  return (await sentence(spec))?.text ?? null;
 }
 
 async function sentence(spec: Spec): Promise<{ text: string; iso?: string } | null> {

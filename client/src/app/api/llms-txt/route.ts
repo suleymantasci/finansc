@@ -5,8 +5,9 @@ import { COMMODITIES } from '@/lib/instruments/commodities';
 import { GRAM_AMOUNTS } from '@/lib/seo-data/altin-amounts';
 import { NextResponse } from 'next/server';
 import { SITE_NAME, SITE_URL, API_URL } from '@/lib/constants';
+import { answerText } from '@/components/instrument/AnswerSummary';
 
-export const revalidate = 3600; // 1 hour cache
+export const revalidate = 300; // 5 dk: güncel piyasa özeti içeriyor
 export const runtime = 'nodejs';
 
 interface BlogPost {
@@ -157,16 +158,31 @@ export async function GET() {
   lines.push(`# ${SITE_NAME}`);
   lines.push('');
   lines.push(
-    `> Türkiye'nin bağımsız finans bilgi platformu: canlı altın, borsa, döviz verileri, ` +
-    `${ARAC_SLUGS.length} finansal hesaplama aracı ve ${blogs.length} güncel finans yazısı. ` +
-    `Veriler MB, BIST, TÜİK ve banka kaynaklarından derlenir.`,
+    `> Türkiye'nin bağımsız finans bilgi platformu: güncel altın ve döviz fiyatları, gecikmeli borsa verileri, ` +
+    `${ARAC_SLUGS.length} finansal hesaplama aracı ve ${blogs.length} finans yazısı. ` +
+    `Piyasa verileri kamuya açık kaynaklardan ve TCMB'den derlenir; borsa verileri en az 15 dakika gecikmelidir.`,
   );
   lines.push('');
   lines.push(`> Site URL: ${SITE_URL}`);
   lines.push('> İçerik dili: Türkçe (tr-TR)');
   lines.push('> Yayıncı: FinansCozum (Türkiye)');
-  lines.push('> Güncelleme: canlı (piyasalar), düzenli (içerik)');
+  lines.push('> Güncelleme: altın ve döviz yaklaşık 30 sn, borsa 15+ dk gecikmeli, içerik düzenli');
   lines.push('');
+
+  // Güncel piyasa özeti — yapay zekâ modelleri sayfaları JS çalıştırmadan okur; değerler burada da olsun
+  const summaries = (
+    await Promise.all([
+      answerText({ kind: 'gold-list' }),
+      answerText({ kind: 'fx-list' }),
+      answerText({ kind: 'borsa-list' }),
+    ])
+  ).filter(Boolean);
+  if (summaries.length) {
+    lines.push('## Güncel piyasa özeti');
+    for (const t of summaries) lines.push(`- ${t}`);
+    lines.push(`- Ayrıntı ve grafikler: [Altın](${SITE_URL}/altin) · [Döviz](${SITE_URL}/doviz) · [Borsa](${SITE_URL}/borsa)`);
+    lines.push('');
+  }
 
   // Ana sayfa
   lines.push('## Ana Sayfa');
@@ -182,7 +198,7 @@ export async function GET() {
   if (orderedStocks.length > 0) {
     lines.push(`## Borsa İstanbul Hisse Senetleri (top ${orderedStocks.length} / ${stocks.length} toplam)`);
     for (const sym of orderedStocks) {
-      lines.push(`- [${sym} Hisse Fiyatı](${SITE_URL}/borsa/hisseler/${sym}): ${sym} canlı fiyat, grafik, analiz`);
+      lines.push(`- [${sym} Hisse Fiyatı](${SITE_URL}/borsa/hisseler/${sym}): ${sym} güncel (15 dk gecikmeli) fiyat ve grafik`);
     }
     lines.push('');
     if (otherStocks.length > 30) {

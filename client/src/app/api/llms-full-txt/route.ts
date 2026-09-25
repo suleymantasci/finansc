@@ -217,7 +217,7 @@ export async function GET() {
   lines.push(`> Toplam URL: ${totalUrls}`);
   lines.push(`> Son güncelleme: ${now}`);
   lines.push(`> Site URL: ${SITE_URL}`);
-  lines.push(`> Veri kaynakları: BIST, TCMB, TÜİK, banka kaynakları`);
+  lines.push(`> Veri kaynakları: kamuya açık piyasa yayınları ve TCMB; borsa verileri en az 15 dakika gecikmelidir`);
   lines.push('');
 
   // ── Ana Sayfalar ──
@@ -235,7 +235,7 @@ export async function GET() {
   lines.push(`## Borsa İstanbul Hisse Senetleri (${stocks.length} hisse)`);
   lines.push('');
   for (const sym of stocks) {
-    lines.push(`- [${sym} Hisse Fiyatı](${SITE_URL}/borsa/hisseler/${sym}): ${sym} canlı fiyat, grafik, teknik ve temel analiz`);
+    lines.push(`- [${sym} Hisse Fiyatı](${SITE_URL}/borsa/hisseler/${sym}): ${sym} güncel (15 dk gecikmeli) fiyat ve geçmiş grafik`);
   }
   lines.push('');
 
