@@ -24,10 +24,29 @@ const AI_BOTS: [RegExp, string][] = [
   [/YouBot/i, 'YouBot'],
 ];
 
+// Arama motoru tarayıcıları: hangi motorun siteyi ne sıklıkla taradığı (dizine alınma göstergesi).
+// Aynı JSON satırına t:'search-bot' ile yazılır; SEO raporu sayar.
+const SEARCH_BOTS: [RegExp, string][] = [
+  [/Googlebot-Image/i, 'Googlebot-Image'],
+  [/Googlebot/i, 'Googlebot'],
+  [/bingbot/i, 'Bingbot'],
+  [/YandexBot|YandexMobileBot/i, 'YandexBot'],
+  [/Applebot(?!-Extended)/i, 'Applebot'],
+  [/DuckDuckBot/i, 'DuckDuckBot'],
+  [/PetalBot/i, 'PetalBot'],
+  [/SeznamBot/i, 'SeznamBot'],
+  [/Baiduspider/i, 'Baiduspider'],
+];
+
 function logAiBot(request: NextRequest) {
   const ua = request.headers.get('user-agent') || '';
   const hit = AI_BOTS.find(([re]) => re.test(ua));
-  if (hit) console.log(JSON.stringify({ t: 'ai-bot', bot: hit[1], path: request.nextUrl.pathname, ts: new Date().toISOString() }));
+  if (hit) {
+    console.log(JSON.stringify({ t: 'ai-bot', bot: hit[1], path: request.nextUrl.pathname, ts: new Date().toISOString() }));
+    return;
+  }
+  const se = SEARCH_BOTS.find(([re]) => re.test(ua));
+  if (se) console.log(JSON.stringify({ t: 'search-bot', bot: se[1], path: request.nextUrl.pathname, ts: new Date().toISOString() }));
 }
 
 const AUTH_SCOPE = ['/hesabim', '/admin', '/giris', '/kayit', '/sifremi-unuttum'];

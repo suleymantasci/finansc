@@ -19,6 +19,8 @@ import { FavoriteButton } from '@/components/instrument/FavoriteButton';
 import { PriceChart } from '@/components/charts/PriceChart';
 import { AdBanner } from '@/components/ads/AdBanner';
 import { DataDisclaimer } from '@/components/shared/DataDisclaimer';
+import { StockStats } from '@/components/instrument/StockStats';
+import { getStockStats, statsFaq } from '@/lib/stock-stats';
 
 interface Props {
   params: Promise<{ sembol: string }>;
@@ -43,7 +45,7 @@ function getFallbackMeta(symbol: string): StockMeta {
     symbol,
     name: symbol, // sembol adını aynen göster (örn. "A1CAP" → A1CAP Hissesi)
     sector: 'BIST',
-    description: `${symbol} hisse senedi Borsa İstanbul'da (BIST) işlem görmektedir. ${symbol} için güncel alış, satış, günlük değişim yüzdesi, hacim ve gün içi en yüksek/düşük fiyat verileri bu sayfada anlık olarak güncellenmektedir. Yatırımcılar sembol bazında günlük performans, sektör karşılaştırması ve detaylı fiyat analizini takip edebilir.`,
+    description: `${symbol} hisse senedi Borsa İstanbul'da (BIST) işlem görmektedir. ${symbol} için son fiyat, günlük değişim, işlem hacmi ve gün içi en yüksek/düşük fiyat verileri bu sayfada en az 15 dakika gecikmeli olarak güncellenir. Sayfada ayrıca 1 yıllık fiyat grafiği, dönemsel getiriler ve BIST 100 ile karşılaştırma yer alır.`,
     faq: [
       {
         q: `${symbol} hangi endekste işlem görüyor?`,
@@ -66,8 +68,11 @@ function getFallbackMeta(symbol: string): StockMeta {
 // 615 sembolün hepsi static prerender'a giremez; Next.js ISR (revalidate=60)
 // ile değişiklikleri yakalar, whitelist ise günlük yenilenir.
 export async function generateStaticParams() {
-  const symbols = await getKnownStockSymbols();
-  return symbols.map((sembol) => ({ sembol }));
+  // Derlemede yalnız elle içerik girilmiş popüler hisseler üretilir; performans özeti her sayfada
+  // fiyat geçmişi çektiği için 634 sayfanın hepsi derlemeyi ~2,5 kat uzatıyor ve canlı backend'in
+  // istek sınırına takılabiliyordu. Diğerleri ilk ziyarette üretilip önbelleğe alınır (dynamicParams).
+  const known = new Set(await getKnownStockSymbols());
+  return Object.keys(STOCK_META).filter((s) => known.has(s)).map((sembol) => ({ sembol }));
 }
 
 // dynamicParams=true: whitelist'te olmayan semboller için runtime'da
@@ -140,9 +145,18 @@ export default async function StockPage({ params }: Props) {
   // Whitelist kontrolü: BIST'te gerçekten var mı?
   if (!(await isKnownStockSymbol(symbol))) notFound();
   // Geçerli formatta ve gerçek sembol → STOCK_META'da varsa tam meta, yoksa fallback
-  const meta = getStockMeta(symbol) ?? getFallbackMeta(symbol);
+  const known = getStockMeta(symbol);
+  const meta = known ?? getFallbackMeta(symbol);
   const canonical = `${SITE_URL}/borsa/hisseler/${meta.symbol}`;
   const pageTitle = `${meta.name} (${meta.symbol}) Hisse Senedi Fiyatı ve Analiz`;
+
+  // Kendi fiyat geçmişimizden hesaplanan performans özeti + hisseye özgü SSS (saatlik yenilenir)
+  const stats = await getStockStats(meta.symbol);
+  const faqs = [
+    ...(stats ? statsFaq(stats) : []),
+    // Şablon hisselerde belirsiz genel SSS yerine hesaplanan yanıtlar yeterli
+    ...(known ? meta.faq ?? [] : stats ? [] : meta.faq ?? []),
+  ];
 
   // Quote + FinancialProduct JSON-LD (GEO-friendly)
   const jsonLd = {
@@ -165,6 +179,12 @@ export default async function StockPage({ params }: Props) {
           { '@type': 'ListItem', position: 4, name: meta.name, item: canonical },
         ],
       },
+      ...(faqs.length
+        ? [{
+            '@type': 'FAQPage',
+            mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+          }]
+        : []),
       {
         '@type': 'WebPage',
         '@id': canonical,
@@ -212,6 +232,8 @@ export default async function StockPage({ params }: Props) {
 
           <PriceChart instrument={instrumentKey.stock(meta.symbol)} defaultRange="1y" height={360} />
 
+          {stats && <StockStats s={stats} />}
+
           <AdBanner page={`hisse-${meta.symbol}`} position="in-article" />
 
           <AboutBlock
@@ -227,7 +249,7 @@ export default async function StockPage({ params }: Props) {
             <p>{meta.description}</p>
           </AboutBlock>
 
-          <FaqBlock title={`${meta.symbol} hakkında sık sorulanlar`} faqs={meta.faq ?? []} />
+          <FaqBlock title={`${meta.symbol} hakkında sık sorulanlar`} faqs={faqs} />
           <DataDisclaimer variant="borsa" />
         </div>
 
