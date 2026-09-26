@@ -16,6 +16,7 @@ const AI_BOTS = [
   'ChatGPT-User',    // OpenAI — ChatGPT browsing
   'ClaudeBot',       // Anthropic — training
   'Claude-User',     // Anthropic — Claude with browsing
+  'Claude-SearchBot', // Anthropic — Claude search index
   'PerplexityBot',   // Perplexity — indexer
   'Perplexity-User', // Perplexity — live fetch
   'Google-Extended', // Google — Gemini / AI Overview (separate from Googlebot)

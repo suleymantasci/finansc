@@ -65,7 +65,7 @@ export default function HakkimizdaPage() {
           </p>
         </section>
 
-        <section>
+        <section id="kunye" className="scroll-mt-24">
           <h2 className="font-display text-2xl text-foreground sm:text-3xl mb-3">Künye</h2>
           <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[max-content_1fr]">
             <dt className="text-foreground">İşleten</dt>

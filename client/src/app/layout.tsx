@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   // mutlakağa dönüşür.
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} - Finansal Çözümler Platformu`,
+    default: `${SITE_NAME} - Canlı Altın, Döviz, Borsa ve Hesaplama Araçları`,
     template: `%s | ${SITE_NAME}`,
   },
   description:
