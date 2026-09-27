@@ -37,12 +37,12 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
         const isFirst = i === 0;
         const Icon = isFirst ? Home : ChevronRight;
         return (
-          <span key={`${item.label}-${i}`} className="flex items-center gap-1">
+          <span key={`${item.label}-${i}`} className="flex min-w-0 max-w-full items-center gap-1">
             {i > 0 && <ChevronRight className="h-3.5 w-3.5 opacity-50" aria-hidden="true" />}
             {item.href && !isLast ? (
               <Link
                 href={item.href}
-                className="hover:text-foreground transition-colors truncate max-w-[40ch]"
+                className="hover:text-foreground transition-colors truncate min-w-0 sm:max-w-[40ch]"
                 title={item.label}
               >
                 {item.label}
@@ -50,7 +50,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
             ) : (
               <span
                 className={cn(
-                  'truncate max-w-[40ch]',
+                  'truncate min-w-0 sm:max-w-[40ch]',
                   isLast && 'font-medium text-foreground',
                 )}
                 aria-current={isLast ? 'page' : undefined}

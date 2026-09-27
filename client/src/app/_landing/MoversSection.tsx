@@ -89,8 +89,8 @@ function MoversTable({ rows, start, caption, flashMap, continued }: { rows: Stoc
                   </span>
                 </Link>
               </td>
-              <td className="num py-2.5 text-right text-foreground">{fmt(s.lastPrice)} ₺</td>
-              <td className={cn('num w-[5.5rem] py-2.5 pl-3 text-right font-medium', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
+              <td className="num whitespace-nowrap py-2.5 pl-2 text-right text-foreground">{fmt(s.lastPrice)} ₺</td>
+              <td className={cn('num w-[5.5rem] whitespace-nowrap py-2.5 pl-3 text-right font-medium', ch > 0 && 'text-up', ch < 0 && 'text-down', ch === 0 && 'text-neutral')}>
                 {pctTr(ch, { signed: true })}
               </td>
               <td className="hidden py-2.5 pl-6 sm:table-cell">
@@ -137,7 +137,7 @@ export function MoversSection() {
                   aria-controls="movers-panel"
                   onClick={() => setTab(t.id)}
                   className={cn(
-                    'h-8 rounded-full px-3.5 text-[13px] transition-colors',
+                    'h-8 whitespace-nowrap rounded-full px-2.5 text-[12px] transition-colors sm:px-3.5 sm:text-[13px]',
                     tab === t.id ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:text-foreground',
                   )}
                 >

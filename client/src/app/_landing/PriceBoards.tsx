@@ -62,20 +62,20 @@ function Board({
   rows: { key: string; label: string; sub?: string; href: string; buy?: number; sell?: number; change?: number | null; d: number; flash?: 'up' | 'down' }[];
 }) {
   return (
-    <div className="atlas-card p-5 sm:p-6">
+    <div className="atlas-card p-4 sm:p-6">
       <div className="mb-2 flex items-center justify-between">
         <h3 id={id} className="font-display text-2xl text-foreground">
           {title}
         </h3>
         <ArrowLink href={href}>{hrefLabel}</ArrowLink>
       </div>
-      <table className="w-full text-sm" aria-labelledby={id}>
+      <table className="w-full text-[13px] sm:text-sm" aria-labelledby={id}>
         <thead>
           <tr className="border-b border-border text-[11px] text-muted-foreground">
             <th scope="col" className="py-2.5 text-left font-normal">Tür</th>
-            <th scope="col" className="py-2.5 text-right font-normal">Alış</th>
-            <th scope="col" className="py-2.5 text-right font-normal">Satış</th>
-            <th scope="col" className="py-2.5 text-right font-normal">Değişim</th>
+            <th scope="col" className="py-2.5 pl-3 text-right font-normal">Alış</th>
+            <th scope="col" className="py-2.5 pl-3 text-right font-normal">Satış</th>
+            <th scope="col" className="py-2.5 pl-3 text-right font-normal">Değişim</th>
           </tr>
         </thead>
         <tbody>
@@ -88,19 +88,19 @@ function Board({
                 r.flash === 'down' && 'flash-down',
               )}
             >
-              <th scope="row" className="py-2.5 text-left font-normal">
+              <th scope="row" className="py-2.5 pr-1 text-left font-normal">
                 <Link href={r.href} className="text-foreground hover:text-primary">
                   {r.label}
                 </Link>
-                {r.sub && <span className="ml-2 text-[11px] text-muted-foreground">{r.sub}</span>}
+                {r.sub && <span className="ml-1.5 whitespace-nowrap text-[11px] text-muted-foreground">{r.sub}</span>}
               </th>
-              <td className="num py-2.5 text-right text-foreground/85">
+              <td className="num whitespace-nowrap py-2.5 pl-3 text-right text-foreground/85">
                 {loading || r.buy == null ? <span className="skeleton-shimmer ml-auto block h-3 w-16 rounded" /> : fmt(r.buy, r.d)}
               </td>
-              <td className="num py-2.5 text-right text-foreground">
+              <td className="num whitespace-nowrap py-2.5 pl-3 text-right text-foreground">
                 {loading || r.sell == null ? <span className="skeleton-shimmer ml-auto block h-3 w-16 rounded" /> : fmt(r.sell, r.d)}
               </td>
-              <td className="py-2.5 text-right">{r.buy == null ? '' : <Change v={r.change} />}</td>
+              <td className="whitespace-nowrap py-2.5 pl-3 text-right">{r.buy == null ? '' : <Change v={r.change} />}</td>
             </tr>
           ))}
         </tbody>
