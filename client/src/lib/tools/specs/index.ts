@@ -6,11 +6,14 @@ import { SPEC_MODULE_OF } from './modules';
 import { specs as maas } from './maas';
 import { specs as emeklilik } from './emeklilik';
 import { specs as vergi } from './vergi';
+import { specs as kredi } from './kredi';
 import { specs as krediFaiz } from './kredi-faiz';
+import { specs as faizEnflasyon } from './faiz-enflasyon';
 import { specs as yatirimEmlak } from './yatirim-emlak';
+import { specs as piyasa } from './piyasa';
 import { specs as ticaretGunluk } from './ticaret-gunluk';
 
-export const ALL_SPECS: Record<string, ToolSpec> = { ...maas, ...emeklilik, ...vergi, ...krediFaiz, ...yatirimEmlak, ...ticaretGunluk };
+export const ALL_SPECS: Record<string, ToolSpec> = { ...maas, ...emeklilik, ...vergi, ...kredi, ...krediFaiz, ...faizEnflasyon, ...yatirimEmlak, ...piyasa, ...ticaretGunluk };
 
 /** Katalog, tanımlar ve modül haritası birbirini tutmazsa derlemeyi durdurur. */
 export function assertSpecRegistry(): void {

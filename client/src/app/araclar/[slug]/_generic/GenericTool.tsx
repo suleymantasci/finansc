@@ -6,9 +6,12 @@ import { cn } from '@/lib/utils';
 import { ShareBar } from '@/components/shared/ShareBar';
 import { isToolHydrated } from '../_tools/_shared/hydration';
 import { isIsoDate, parseTrNumber } from '@/lib/calculators/core';
-import { isResult, type CalcResult, type Field, type ResultRow, type ToolSpec, type Values } from '@/lib/tools/types';
+import { isResult, type CalcResult, type DataStatus, type Field, type ResultRow, type ToolSpec, type Values } from '@/lib/tools/types';
 
 type Raw = Record<string, string | boolean | string[][]>;
+
+/** İndirilen dış veriler (aynı oturumda araçlar arası paylaşılır) */
+const DATA_CACHE = new Map<string, unknown>();
 
 const trNum = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 6 });
 
@@ -24,6 +27,7 @@ function dateDefault(f: Extract<Field, { type: 'date' }>, today: string): string
 function defaultRaw(f: Field, today: string): Raw[string] {
   switch (f.type) {
     case 'number': return toText(f.default);
+    case 'text': return f.default;
     case 'select': return f.default;
     case 'date': return dateDefault(f, today);
     case 'toggle': return f.default;
@@ -49,6 +53,7 @@ function decode(f: Field, s: string): Raw[string] | undefined {
   switch (f.type) {
     case 'number': { const n = Number(s); return Number.isFinite(n) ? toText(n) : undefined; }
     case 'toggle': return s === '1';
+    case 'text': return s.slice(0, 200);
     case 'select': return f.options.some((o) => o.value === s) ? s : undefined;
     case 'date': return isIsoDate(s) ? s : undefined;
     case 'rows': return s.split('~').slice(0, f.maxRows ?? 50).map((r) => {
@@ -62,9 +67,18 @@ function readUrl(spec: ToolSpec, base: Raw): Raw {
   if (typeof window === 'undefined' || !isToolHydrated()) return base;
   const sp = new URLSearchParams(window.location.search);
   const out = { ...base };
+  // Eski biçimli parametreler (ör. cf=100,200) önce uygulanır; yeni biçim varsa üzerine yazar
+  const legacy = spec.legacyQuery?.(sp) ?? {};
+  for (const f of spec.fields) {
+    const lv = legacy[f.key];
+    if (lv === undefined) continue;
+    if (f.type === 'rows' && Array.isArray(lv)) out[f.key] = lv.map((r) => r.map((c) => toText(c)));
+    else if (f.type === 'number' && typeof lv === 'number') out[f.key] = toText(lv);
+    else if (typeof lv === 'string' || typeof lv === 'boolean') out[f.key] = lv;
+  }
   for (const f of spec.fields) {
     const s = sp.get(f.key);
-    if (s == null) continue;
+    if (s == null || legacy[f.key] !== undefined) continue;
     const v = decode(f, s);
     if (v !== undefined) out[f.key] = v;
   }
@@ -102,6 +116,10 @@ function parse(spec: ToolSpec, raw: Raw): Parsed {
       if (f.min != null && n < f.min) errors[f.key] = `En az ${toText(f.min)} olmalı`;
       else if (f.max != null && n > f.max) errors[f.key] = `En fazla ${toText(f.max)} olmalı`;
       else if (f.integer && !Number.isInteger(n)) errors[f.key] = 'Tam sayı girin';
+    } else if (f.type === 'text') {
+      const t = (raw[f.key] as string).trim();
+      values[f.key] = t;
+      if (visible && !t && !f.optional) complete = false;
     } else if (f.type === 'date') {
       const d = raw[f.key] as string;
       values[f.key] = d;
@@ -140,10 +158,32 @@ export function GenericTool({ spec, title, today: serverToday }: { spec: ToolSpe
   }, [spec, serverToday]);
 
   const parsed = useMemo(() => parse(spec, raw), [spec, raw]);
+
+  // Dış veri (canlı fiyat, TÜFE, geçmiş kur): anahtar değişince indir, sonucu önbellekte tut
+  const dataKey = spec.data && parsed.complete ? spec.data.key(parsed.values) : null;
+  const [loaded, setLoaded] = useState<{ key: string; status: DataStatus; data?: unknown } | null>(null);
+  const valuesRef = useRef(parsed.values);
+  valuesRef.current = parsed.values;
+  useEffect(() => {
+    if (!spec.data || !dataKey) return;
+    const cached = DATA_CACHE.get(dataKey);
+    if (cached) { setLoaded({ key: dataKey, status: 'ready', data: cached }); return; }
+    const ctrl = new AbortController();
+    setLoaded({ key: dataKey, status: 'loading' });
+    const t = setTimeout(() => {
+      spec.data!.load(valuesRef.current, ctrl.signal)
+        .then((d) => { DATA_CACHE.set(dataKey, d); if (!ctrl.signal.aborted) setLoaded({ key: dataKey, status: 'ready', data: d }); })
+        .catch(() => { if (!ctrl.signal.aborted) setLoaded({ key: dataKey, status: 'error' }); });
+    }, 250);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [spec, dataKey]);
+  const dataStatus: DataStatus = !spec.data || !dataKey ? 'none' : loaded?.key === dataKey ? loaded.status : 'loading';
+  const data = dataStatus === 'ready' ? loaded?.data : undefined;
+
   const output = useMemo(() => {
     if (!parsed.complete) return null;
-    try { return spec.compute(parsed.values, { today }); } catch { return { error: 'Bu değerlerle hesaplama yapılamadı.' }; }
-  }, [spec, parsed, today]);
+    try { return spec.compute(parsed.values, { today, data, dataStatus }); } catch { return { error: 'Bu değerlerle hesaplama yapılamadı.' }; }
+  }, [spec, parsed, today, data, dataStatus]);
 
   // Değerleri adres çubuğuna yaz (paylaşılabilir link); yazmayı kısa süre geciktir
   const query = useMemo(() => buildQuery(spec, raw, base), [spec, raw, base]);
@@ -171,7 +211,14 @@ export function GenericTool({ spec, title, today: serverToday }: { spec: ToolSpe
         {spec.fields.map((f) => {
           if (f.showIf && !f.showIf(parsed.values)) return null;
           return (
-            <FieldInput key={f.key} field={f} value={raw[f.key]} error={parsed.errors[f.key]} onChange={(v) => set(f.key, v)} />
+            <FieldInput
+              key={f.key}
+              field={f}
+              value={raw[f.key]}
+              error={parsed.errors[f.key]}
+              placeholder={f.type === 'number' && f.placeholderFrom && data !== undefined ? f.placeholderFrom(data, parsed.values) : undefined}
+              onChange={(v) => set(f.key, v)}
+            />
           );
         })}
         <div className="flex justify-end sm:col-span-2">
@@ -187,7 +234,9 @@ export function GenericTool({ spec, title, today: serverToday }: { spec: ToolSpe
 
       <section aria-live="polite" aria-label="Hesaplama sonucu" className="min-w-0 lg:sticky lg:top-24">
         {output == null && (
-          <div className="atlas-card p-6 text-sm text-muted-foreground">Sonucu görmek için alanları doldurun.</div>
+          <div className="atlas-card p-6 text-sm text-muted-foreground">
+            {dataStatus === 'loading' ? 'Güncel veriler yükleniyor…' : dataStatus === 'error' ? 'Veri şu an alınamadı; ilgili değeri elle girerek hesaplayabilirsiniz.' : 'Sonucu görmek için alanları doldurun.'}
+          </div>
         )}
         {output && 'error' in output && (
           <div className="atlas-card flex items-start gap-2 border-down/40 p-5 text-sm text-down" role="alert">
@@ -207,7 +256,7 @@ export function GenericTool({ spec, title, today: serverToday }: { spec: ToolSpe
 
 const inputCls = 'h-11 w-full rounded-lg border border-border bg-elevated px-3.5 text-[15px] text-foreground placeholder:text-muted-foreground/70 transition-colors hover:border-border-strong focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 
-function FieldInput({ field: f, value, error, onChange }: { field: Field; value: Raw[string]; error?: string; onChange: (v: Raw[string]) => void }) {
+function FieldInput({ field: f, value, error, placeholder, onChange }: { field: Field; value: Raw[string]; error?: string; placeholder?: string; onChange: (v: Raw[string]) => void }) {
   const id = `f-${f.key}`;
   const wide = f.wide || f.type === 'rows' || (f.type === 'select' && f.segmented && f.options.length > 3) || f.type === 'toggle';
   const label = (
@@ -278,10 +327,31 @@ function FieldInput({ field: f, value, error, onChange }: { field: Field; value:
 
   if (f.type === 'rows') return <RowsInput field={f} value={value as string[][]} onChange={onChange} />;
 
+  if (f.type === 'text') {
+    return (
+      <div className={cn('space-y-1.5', 'sm:col-span-2')}>
+        {label}
+        <input
+          id={id}
+          type="text"
+          inputMode={f.inputMode}
+          autoComplete="off"
+          autoCapitalize={f.uppercase ? 'characters' : undefined}
+          spellCheck={false}
+          value={value as string}
+          placeholder={f.placeholder}
+          onChange={(e) => onChange(f.uppercase ? e.target.value.toUpperCase() : e.target.value)}
+          className={cn(inputCls, 'num tracking-wide', error && 'border-down')}
+        />
+        {help}
+      </div>
+    );
+  }
+
   return (
     <div className={cn('space-y-1.5', wide && 'sm:col-span-2')}>
       {label}
-      <NumberBox id={id} value={value as string} unit={f.unit} placeholder={f.placeholder} invalid={!!error} onChange={onChange} />
+      <NumberBox id={id} value={value as string} unit={f.unit} placeholder={placeholder ?? f.placeholder} invalid={!!error} onChange={onChange} />
       {help}
     </div>
   );
@@ -365,6 +435,7 @@ function Rows({ rows }: { rows: ResultRow[] }) {
 }
 
 function ResultView({ r }: { r: CalcResult }) {
+  const [allRows, setAllRows] = useState(false);
   return (
     <div className="atlas-card overflow-hidden">
       <div className="border-b border-border bg-elevated/60 p-5">
@@ -396,14 +467,20 @@ function ResultView({ r }: { r: CalcResult }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {r.table.rows.map((row, i) => (
+                  {(r.table.collapseAfter && !allRows ? r.table.rows.slice(0, r.table.collapseAfter) : r.table.rows).map((row, i) => (
                     <tr key={i} className="border-b border-border/60 last:border-0">
                       {row.map((c, j) => <td key={j} className={cn('num py-2 pr-3 align-top', j > 0 ? 'text-right tabular-nums' : 'text-muted-foreground')}>{c}</td>)}
                     </tr>
                   ))}
                 </tbody>
               </table>
+              {r.table.collapseAfter && r.table.rows.length > r.table.collapseAfter && (
+                <button type="button" onClick={() => setAllRows((x) => !x)} className="py-2 text-sm text-primary hover:underline">
+                  {allRows ? 'Daha az göster' : `Tümünü göster (${r.table.rows.length} satır)`}
+                </button>
+              )}
             </div>
+            {r.table.note && <p className="mt-2 text-xs text-muted-foreground">{r.table.note}</p>}
           </div>
         )}
         {r.notes && (

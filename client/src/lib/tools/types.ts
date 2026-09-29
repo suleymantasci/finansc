@@ -22,6 +22,18 @@ export interface NumberField extends FieldBase {
   integer?: boolean;
   optional?: boolean;
   placeholder?: string;
+  /** Yüklenen veriye göre ipucu (ör. boş bırakılırsa kullanılacak canlı fiyat) */
+  placeholderFrom?: (data: unknown, v: Values) => string | undefined;
+}
+
+export interface TextField extends FieldBase {
+  type: 'text';
+  default: string;
+  placeholder?: string;
+  optional?: boolean;
+  /** Mobil klavye ve otomatik düzeltme ayarları */
+  inputMode?: 'text' | 'numeric';
+  uppercase?: boolean;
 }
 
 export interface SelectField extends FieldBase {
@@ -52,7 +64,7 @@ export interface RowsField extends FieldBase {
   addLabel?: string;
 }
 
-export type Field = NumberField | SelectField | DateField | ToggleField | RowsField;
+export type Field = NumberField | TextField | SelectField | DateField | ToggleField | RowsField;
 
 export type Value = number | string | boolean | number[][];
 export type Values = Record<string, Value>;
@@ -71,7 +83,7 @@ export interface CalcResult {
   headline: { label: string; value: string; sub?: string; tone?: Tone };
   rows?: ResultRow[];
   sections?: { title: string; rows: ResultRow[] }[];
-  table?: { caption?: string; columns: string[]; rows: string[][]; note?: string };
+  table?: { caption?: string; columns: string[]; rows: string[][]; note?: string; /** İlk N satırı göster, kalanı açılır bölümde */ collapseAfter?: number };
   notes?: string[];
   warnings?: string[];
   /** Paylaşım metni için kısa özet; verilmezse headline kullanılır */
@@ -80,8 +92,24 @@ export interface CalcResult {
 
 export type CalcOutput = CalcResult | { error: string } | null;
 
+export type DataStatus = 'none' | 'loading' | 'ready' | 'error';
+
 export interface ComputeContext {
   today: string;
+  /** spec.data ile yüklenen veri (hazır değilse undefined) */
+  data?: unknown;
+  dataStatus: DataStatus;
+}
+
+/**
+ * Hesap için dış veri (canlı fiyat, TÜFE endeksi, geçmiş kur). `key` girdilere göre hangi verinin
+ * gerektiğini söyler; null ise veri istenmez. Aynı anahtar bir kez indirilir ve önbelleğe alınır.
+ */
+export interface DataSource {
+  key: (v: Values) => string | null;
+  load: (v: Values, signal: AbortSignal) => Promise<unknown>;
+  /** Kullanıcıya gösterilen kaynak adı (ör. "TCMB TÜFE endeksi") */
+  label?: string;
 }
 
 export interface ToolInfoContent {
@@ -99,6 +127,9 @@ export interface ToolSpec {
   fields: Field[];
   compute: (v: Values, ctx: ComputeContext) => CalcOutput;
   info: ToolInfoContent;
+  data?: DataSource;
+  /** Eski sürümün farklı biçimli URL parametrelerini alan değerlerine çevirir (paylaşılmış linkler bozulmasın) */
+  legacyQuery?: (sp: URLSearchParams) => Record<string, number | string | boolean | number[][]>;
 }
 
 export function isResult(o: CalcOutput): o is CalcResult {

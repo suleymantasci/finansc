@@ -1,7 +1,7 @@
 // Hangi aracın tanımı hangi dosyada — istemci yalnızca ilgili grubu yükler.
 // Sayfa derlemesinde specs/index.ts ile tutarlılığı doğrulanır (assertSpecRegistry).
 
-export type SpecModule = 'maas' | 'emeklilik' | 'vergi' | 'kredi-faiz' | 'yatirim-emlak' | 'ticaret-gunluk';
+export type SpecModule = 'maas' | 'emeklilik' | 'vergi' | 'kredi' | 'kredi-faiz' | 'faiz-enflasyon' | 'yatirim-emlak' | 'piyasa' | 'ticaret-gunluk';
 
 export const SPEC_MODULE_SLUGS: Record<SpecModule, string[]> = {
   'maas': [
@@ -37,12 +37,42 @@ export const SPEC_MODULE_SLUGS: Record<SpecModule, string[]> = {
     'gecikme-zammi-hesaplama',
     'yasal-faiz-hesaplama',
   ],
+  'kredi': [
+    'ihtiyac-kredisi',
+    'tasit-kredisi',
+    'is-yeri-kredisi',
+    'ticari-kredi',
+    'ticari-ihtiyac-kredisi',
+    'ticari-arac-kredisi',
+    'konut-kredisi',
+    'kredi-hesaplama',
+    'ne-kadar-kredi-alabilirim',
+    'kredi-dosya-masrafi',
+    'kredi-erken-kapatma',
+    'kredi-gecikme-faizi',
+    'kredi-yapilandirma',
+    'kredi-yillik-maliyet-orani',
+    'kredi-karti-asgari-odeme',
+    'kredi-karti-gecikme-faizi',
+    'kredi-karti-ek-taksit',
+    'kredi-karti-islem-taksitlendirme',
+    'kredi-karti-taksitli-nakit-avans',
+  ],
   'kredi-faiz': [
     'kredi-faiz-orani-hesaplama',
     'kredi-karsilastirma',
     'kredi-karti-borc-kapatma',
     'gunluk-faiz-hesaplama',
     'faiz-orani-donusturme',
+  ],
+  'faiz-enflasyon': [
+    'faiz-hesaplama',
+    'vadeli-mevduat',
+    'birikim-hesaplama',
+    'enflasyon-hesaplama',
+    'parasal-deger',
+    'reel-getiri',
+    'kira-artis-orani',
   ],
   'yatirim-emlak': [
     'altin-ayar-hesaplama',
@@ -58,6 +88,24 @@ export const SPEC_MODULE_SLUGS: Record<SpecModule, string[]> = {
     'emlak-vergisi-hesaplama',
     'emlakci-komisyonu-hesaplama',
     'ev-amortisman-hesaplama',
+  ],
+  'piyasa': [
+    'altin-hesaplama',
+    'doviz-hesaplama',
+    'gecmis-altin-fiyatlari',
+    'gecmis-doviz-kurlari',
+    'sermaye-temettu',
+    'bono-hesaplama',
+    'tahvil-hesaplama',
+    'repo-hesaplama',
+    'eurobond-hesaplama',
+    'bilesik-buyume',
+    'net-bugunku-deger',
+    'ic-verim-orani',
+    'vadeli-islem-fiyati',
+    'ic-dis-iskonto',
+    'ortalama-vade',
+    'iban-dogrulama',
   ],
   'ticaret-gunluk': [
     'yuzde-hesaplama',

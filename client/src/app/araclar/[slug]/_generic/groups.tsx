@@ -13,7 +13,10 @@ export const GROUP_COMPONENTS: Record<SpecModule, ComponentType<Props>> = {
   'maas': dynamic(() => import('./group-maas')),
   'emeklilik': dynamic(() => import('./group-emeklilik')),
   'vergi': dynamic(() => import('./group-vergi')),
+  'kredi': dynamic(() => import('./group-kredi')),
   'kredi-faiz': dynamic(() => import('./group-kredi-faiz')),
+  'faiz-enflasyon': dynamic(() => import('./group-faiz-enflasyon')),
   'yatirim-emlak': dynamic(() => import('./group-yatirim-emlak')),
+  'piyasa': dynamic(() => import('./group-piyasa')),
   'ticaret-gunluk': dynamic(() => import('./group-ticaret-gunluk')),
 };

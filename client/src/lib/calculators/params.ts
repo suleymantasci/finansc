@@ -267,3 +267,28 @@ export const ALTIN_MILYEM: Record<string, number> = {
   '14': 0.585,
   '8': 0.333,
 };
+
+// Kredi kartı azami faiz oranları (TCMB, aylık) — 1 Eylül 2026 itibarıyla; TCMB her ay yeniden belirler.
+// Kaynak: TCMB "Kredi Kartı İşlemlerinde Uygulanacak Azami Faiz Oranları"
+export const KART_AZAMI_FAIZ = {
+  donem: 'Eylül 2026',
+  bantlar: [
+    { ustSinir: 30000, akdi: 0.0325, gecikme: 0.0355 },
+    { ustSinir: 180000, akdi: 0.0375, gecikme: 0.0405 },
+    { ustSinir: Infinity, akdi: 0.0425, gecikme: 0.0455 },
+  ],
+  nakitAvans: { akdi: 0.0425, gecikme: 0.0455 },
+};
+
+/** Dönem borcuna göre TCMB azami akdi ve gecikme faizi */
+export function kartAzamiFaiz(donemBorcu: number): { akdi: number; gecikme: number } {
+  return KART_AZAMI_FAIZ.bantlar.find((b) => donemBorcu < b.ustSinir) ?? KART_AZAMI_FAIZ.bantlar[2];
+}
+
+// Stopaj: 22.12.2021–31.12.2026 arası edinilen devlet tahvili ve hazine bonosu gelirlerinde %0
+// (11444 s. CBK ile 31.12.2026'ya uzatıldı); repo gelirlerinde %15.
+export const DIBS_STOPAJ = 0;
+export const REPO_STOPAJ = 0.15;
+
+// TMSF: her kredi kuruluşunda kişi başı sigortalı mevduat üst sınırı (2026)
+export const TMSF_LIMIT = 1200000;
