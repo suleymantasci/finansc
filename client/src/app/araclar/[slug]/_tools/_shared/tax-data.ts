@@ -51,7 +51,7 @@ export interface TaxDataYear {
   incomeTaxBrackets: TaxBracket[];
   /** Engellilik indirimi (yıllık, TL) */
   disabilityDeduction: Record<DisabilityDegree, number>;
-  /** SGK tavan (aylık üst sınır TL) — brüt asgari ücretin 7.5 katı */
+  /** SGK tavan (aylık üst sınır TL) — brüt asgari ücretin katı (2026'dan itibaren 9, öncesi 7,5) */
   sgkCeilingMultiplier: number;
   /** Asgari ücret istisnası uygulanıyor mu? (2022'den beri evet) */
   minimumWageExemption: boolean;
@@ -87,7 +87,7 @@ const taxData2025: TaxDataYear = {
   minWageBrut: 26005.50,
   minWageNet: 22104.67,
   sgkEmployee: 0.14,
-  sgkEmployer: 0.205,
+  sgkEmployer: 0.2075, // 2025: %20,75 (teşviksiz)
   unemploymentEmployee: 0.01,
   unemploymentEmployer: 0.02,
   stampTax: 0.00759, // ‰7.59
@@ -110,7 +110,7 @@ const taxData2026: TaxDataYear = {
   minWageBrut: 33030.00,
   minWageNet: 28075.50,
   sgkEmployee: 0.14,
-  sgkEmployer: 0.205,
+  sgkEmployer: 0.2175, // 7566 s. Kanun: %21,75 (teşviksiz)
   unemploymentEmployee: 0.01,
   unemploymentEmployer: 0.02,
   stampTax: 0.00759,
@@ -122,7 +122,7 @@ const taxData2026: TaxDataYear = {
     { limit: 5300000,    rate: 0.40 },
   ],
   disabilityDeduction: { yok: 0, birinci: 120000, ikinci: 70000, ucuncu: 29000 },
-  sgkCeilingMultiplier: 7.5,
+  sgkCeilingMultiplier: 9, // 7566 s. Kanun: 1.1.2026'dan itibaren 9 kat (SGK)
   minimumWageExemption: true,
 };
 

@@ -1,0 +1,106 @@
+// Bildirimsel hesaplama aracı tanımı. Bir araç = alanlar + saf hesaplama fonksiyonu + açıklama
+// metni. GenericTool alanları çizer, değerleri URL'de tutar (paylaşılabilir link), sonucu anlık
+// hesaplar; sayfa açıklama/SSS kısmını sunucuda çizer (SEO).
+
+export interface FieldBase {
+  key: string;
+  label: string;
+  help?: string;
+  /** Alan yalnızca koşul sağlanınca görünür ve hesaba girer */
+  showIf?: (v: Values) => boolean;
+  /** Geniş ekranda tam satır kaplar */
+  wide?: boolean;
+}
+
+export interface NumberField extends FieldBase {
+  type: 'number';
+  default: number | null;
+  unit?: string;
+  min?: number;
+  max?: number;
+  /** Tam sayı alanı */
+  integer?: boolean;
+  optional?: boolean;
+  placeholder?: string;
+}
+
+export interface SelectField extends FieldBase {
+  type: 'select';
+  options: { value: string; label: string }[];
+  default: string;
+  /** Az seçenekte düğme grubu olarak çiz */
+  segmented?: boolean;
+}
+
+export interface DateField extends FieldBase {
+  type: 'date';
+  /** 'today' veya bugüne göre hesaplanan varsayılan */
+  default: string | ((today: string) => string);
+  optional?: boolean;
+}
+
+export interface ToggleField extends FieldBase {
+  type: 'toggle';
+  default: boolean;
+}
+
+export interface RowsField extends FieldBase {
+  type: 'rows';
+  columns: { key: string; label: string; unit?: string }[];
+  default: number[][];
+  maxRows?: number;
+  addLabel?: string;
+}
+
+export type Field = NumberField | SelectField | DateField | ToggleField | RowsField;
+
+export type Value = number | string | boolean | number[][];
+export type Values = Record<string, Value>;
+
+export type Tone = 'up' | 'down' | 'primary';
+
+export interface ResultRow {
+  label: string;
+  value: string;
+  tone?: Tone;
+  strong?: boolean;
+  hint?: string;
+}
+
+export interface CalcResult {
+  headline: { label: string; value: string; sub?: string; tone?: Tone };
+  rows?: ResultRow[];
+  sections?: { title: string; rows: ResultRow[] }[];
+  table?: { caption?: string; columns: string[]; rows: string[][]; note?: string };
+  notes?: string[];
+  warnings?: string[];
+  /** Paylaşım metni için kısa özet; verilmezse headline kullanılır */
+  shareText?: string;
+}
+
+export type CalcOutput = CalcResult | { error: string } | null;
+
+export interface ComputeContext {
+  today: string;
+}
+
+export interface ToolInfoContent {
+  /** Hesaplamanın nasıl yapıldığı — paragraflar */
+  how: string[];
+  /** Formül satırları */
+  formula?: string[];
+  faqs: { q: string; a: string }[];
+  sources?: { label: string; url: string }[];
+}
+
+export interface ToolSpec {
+  slug: string;
+  intro?: string;
+  fields: Field[];
+  compute: (v: Values, ctx: ComputeContext) => CalcOutput;
+  info: ToolInfoContent;
+}
+
+export function isResult(o: CalcOutput): o is CalcResult {
+  return !!o && !('error' in o);
+}

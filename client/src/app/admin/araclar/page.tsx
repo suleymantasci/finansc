@@ -5,57 +5,15 @@ import { api } from '@/lib/api';
 import { Badge } from '@/components/ui/Badge';
 import { SkeletonTable } from '@/components/ui/Skeleton';
 import type { Tool } from '@/types';
+import { TOOL_CATALOG, TOOL_GROUPS } from '@/lib/tools/catalog';
 
-// Frontend'de tanımlı tüm araçlar — slug + title + category
-// Bu liste ToolClient TOOL_MAP ve page.tsx TOOL_META ile uyumlu olmalı.
-const ALL_FRONTEND_TOOLS: { slug: string; title: string; category: string }[] = [
-  // Maaş & Bordro
-  { slug: 'maas-hesaplama', title: 'Maaş Hesaplama', category: 'vergi' },
-  // Kredi
-  { slug: 'ihtiyac-kredisi', title: 'İhtiyaç Kredisi', category: 'kredi' },
-  { slug: 'konut-kredisi', title: 'Konut Kredisi', category: 'kredi' },
-  { slug: 'tasit-kredisi', title: 'Taşıt Kredisi', category: 'kredi' },
-  { slug: 'is-yeri-kredisi', title: 'İş Yeri Kredisi', category: 'kredi' },
-  { slug: 'ticari-kredi', title: 'Ticari Kredi', category: 'kredi' },
-  { slug: 'ticari-ihtiyac-kredisi', title: 'Ticari İhtiyaç Kredisi', category: 'kredi' },
-  { slug: 'ticari-arac-kredisi', title: 'Ticari Araç Kredisi', category: 'kredi' },
-  { slug: 'kredi-hesaplama', title: 'Kredi Hesaplama', category: 'kredi' },
-  { slug: 'ne-kadar-kredi-alabilirim', title: 'Ne Kadar Kredi Alabilirim?', category: 'kredi' },
-  { slug: 'kredi-dosya-masrafi', title: 'Kredi Dosya Masrafı', category: 'kredi' },
-  { slug: 'kredi-erken-kapatma', title: 'Kredi Erken Kapatma', category: 'kredi' },
-  { slug: 'kredi-gecikme-faizi', title: 'Kredi Gecikme Faizi', category: 'kredi' },
-  { slug: 'kredi-yapilandirma', title: 'Kredi Yapılandırma', category: 'kredi' },
-  { slug: 'kredi-yillik-maliyet-orani', title: 'Yıllık Maliyet Oranı', category: 'kredi' },
-  { slug: 'kredi-karti-asgari-odeme', title: 'Asgari Ödeme', category: 'kredi' },
-  { slug: 'kredi-karti-ek-taksit', title: 'Ek Taksit', category: 'kredi' },
-  { slug: 'kredi-karti-gecikme-faizi', title: 'Kart Gecikme Faizi', category: 'kredi' },
-  { slug: 'kredi-karti-islem-taksitlendirme', title: 'İşlem Taksitlendirme', category: 'kredi' },
-  { slug: 'kredi-karti-taksitli-nakit-avans', title: 'Nakit Avans', category: 'kredi' },
-  // Finans
-  { slug: 'altin-hesaplama', title: 'Altın Hesaplama', category: 'yatirim' },
-  { slug: 'doviz-hesaplama', title: 'Döviz Hesaplama', category: 'yatirim' },
-  { slug: 'faiz-hesaplama', title: 'Faiz Hesaplama', category: 'yatirim' },
-  { slug: 'vadeli-mevduat', title: 'Vadeli Mevduat', category: 'tasarruf' },
-  { slug: 'bono-hesaplama', title: 'Bono Hesaplama', category: 'yatirim' },
-  { slug: 'tahvil-hesaplama', title: 'Tahvil Hesaplama', category: 'yatirim' },
-  { slug: 'repo-hesaplama', title: 'Repo Hesaplama', category: 'yatirim' },
-  { slug: 'eurobond-hesaplama', title: 'Eurobond Hesaplama', category: 'yatirim' },
-  { slug: 'birikim-hesaplama', title: 'Birikim Hesaplama', category: 'tasarruf' },
-  { slug: 'enflasyon-hesaplama', title: 'Enflasyon Hesaplama', category: 'diger' },
-  { slug: 'bilesik-buyume', title: 'Bileşik Büyüme (CAGR)', category: 'yatirim' },
-  { slug: 'reel-getiri', title: 'Reel Getiri', category: 'yatirim' },
-  { slug: 'kira-artis-orani', title: 'Kira Artış Oranı', category: 'diger' },
-  { slug: 'parasal-deger', title: 'Parasal Değer', category: 'diger' },
-  { slug: 'net-bugunku-deger', title: 'Net Bugünkü Değer (NPV)', category: 'yatirim' },
-  { slug: 'ic-verim-orani', title: 'İç Verim Oranı (IRR)', category: 'yatirim' },
-  { slug: 'ic-dis-iskonto', title: 'İç ve Dış İskonto', category: 'yatirim' },
-  { slug: 'ortalama-vade', title: 'Ortalama Vade', category: 'yatirim' },
-  { slug: 'vadeli-islem-fiyati', title: 'Vadeli İşlem Fiyatı', category: 'yatirim' },
-  { slug: 'sermaye-temettu', title: 'Sermaye ve Temettü', category: 'yatirim' },
-  { slug: 'gecmis-altin-fiyatlari', title: 'Geçmiş Altın Fiyatları', category: 'yatirim' },
-  { slug: 'gecmis-doviz-kurlari', title: 'Geçmiş Döviz Kurları', category: 'yatirim' },
-  { slug: 'iban-dogrulama', title: 'IBAN Doğrulama', category: 'diger' },
-];
+// Frontend'de tanımlı tüm araçlar — katalogdan (lib/tools/catalog.ts). Senkron, eksikleri DB'ye ekler.
+const CATEGORY_OF = Object.fromEntries(TOOL_GROUPS.map((g) => [g.id, g.category]));
+const ALL_FRONTEND_TOOLS: { slug: string; title: string; category: string }[] = TOOL_CATALOG.map((t) => ({
+  slug: t.slug,
+  title: t.short,
+  category: CATEGORY_OF[t.group],
+}));
 
 export default function AdminAraclarPage() {
   const [tools, setTools] = useState<Tool[]>([]);

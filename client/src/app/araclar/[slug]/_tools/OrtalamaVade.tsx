@@ -130,7 +130,7 @@ function OrtalamaVadeInner() {
                   newP[i] = { ...newP[i], days: parseInt(e.target.value) || 0 };
                   setPayments(newP);
                 }}
-                className="flex h-8 w-24 rounded-md border border-border bg-background px-2 text-sm"
+                className="flex h-8 w-24 min-w-0 shrink rounded-md border border-border bg-background px-2 text-sm"
               />
               <span className="text-xs text-muted-foreground">gün</span>
               <input
@@ -142,7 +142,7 @@ function OrtalamaVadeInner() {
                   newP[i] = { ...newP[i], amount: parseFloat(e.target.value) || 0 };
                   setPayments(newP);
                 }}
-                className="flex h-8 flex-1 rounded-md border border-border bg-background px-2 text-sm"
+                className="flex h-8 min-w-0 flex-1 rounded-md border border-border bg-background px-2 text-sm"
               />
             </div>
           ))}

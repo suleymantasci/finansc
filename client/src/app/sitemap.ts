@@ -1,5 +1,6 @@
 import { API_URL } from '@/lib/constants';
 import type { MetadataRoute } from 'next';
+import { TOOL_CATALOG } from '@/lib/tools/catalog';
 import { GOLD_META } from '@/lib/seo-data/gold';
 import { CURRENCIES } from '@/lib/instruments/currencies';
 import { COMMODITIES } from '@/lib/instruments/commodities';
@@ -28,19 +29,8 @@ const FALLBACK_BLOG_SLUGS = [
   'faiz-oranlari-ve-sermaye-piyasasi',
 ];
 
-const FALLBACK_TOOL_SLUGS = [
-  'ihtiyac-kredisi','konut-kredisi','tasit-kredisi','is-yeri-kredisi','ticari-kredi',
-  'ticari-ihtiyac-kredisi','ticari-arac-kredisi','kredi-hesaplama','ne-kadar-kredi-alabilirim',
-  'kredi-dosya-masrafi','kredi-erken-kapatma','kredi-gecikme-faizi','kredi-yapilandirma',
-  'kredi-yillik-maliyet-orani','kredi-karti-asgari-odeme','kredi-karti-ek-taksit',
-  'kredi-karti-gecikme-faizi','kredi-karti-islem-taksitlendirme','kredi-karti-taksitli-nakit-avans',
-  'altin-hesaplama','doviz-hesaplama','faiz-hesaplama','vadeli-mevduat','bono-hesaplama',
-  'tahvil-hesaplama','repo-hesaplama','eurobond-hesaplama','birikim-hesaplama',
-  'enflasyon-hesaplama','bilesik-buyume','reel-getiri','kira-artis-orani',
-  'parasal-deger','net-bugunku-deger','ic-verim-orani','ic-dis-iskonto','maas-hesaplama',
-  'ortalama-vade','vadeli-islem-fiyati','sermaye-temettu','gecmis-altin-fiyatlari',
-  'gecmis-doviz-kurlari','iban-dogrulama',
-];
+// Araç listesi katalogdan (lib/tools/catalog.ts); API yalnızca admin'in kapattıklarını bildirir.
+
 
 interface BlogItem {
   slug: string;
@@ -51,6 +41,7 @@ interface BlogItem {
 interface ToolItem {
   slug: string;
   updatedAt: string;
+  isActive: boolean;
 }
 
 async function fetchAllBlogs(): Promise<BlogItem[]> {
@@ -79,7 +70,7 @@ async function fetchAllBlogs(): Promise<BlogItem[]> {
 
 async function fetchAllTools(): Promise<ToolItem[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/tools?active=true`, {
+    const res = await fetch(`${API_BASE}/api/tools`, {
       next: { revalidate: 3600 },
       signal: AbortSignal.timeout(5000),
     });
@@ -131,9 +122,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Araç sayfaları — API'den veya fallback'ten
-  const toolPages: MetadataRoute.Sitemap = (tools.length > 0 ? tools : FALLBACK_TOOL_SLUGS).map((item) => ({
-    url: `${BASE_URL}/araclar/${typeof item === 'string' ? item : item.slug}`,
-    lastModified: typeof item === 'string' ? new Date() : new Date(item.updatedAt),
+  const dbTools = new Map(tools.map((t) => [t.slug, t]));
+  const toolPages: MetadataRoute.Sitemap = TOOL_CATALOG.filter((t) => dbTools.get(t.slug)?.isActive !== false).map((t) => ({
+    url: `${BASE_URL}/araclar/${t.slug}`,
+    lastModified: dbTools.get(t.slug) ? new Date(dbTools.get(t.slug)!.updatedAt) : new Date(),
     changeFrequency: 'monthly',
     priority: 0.7,
   }));

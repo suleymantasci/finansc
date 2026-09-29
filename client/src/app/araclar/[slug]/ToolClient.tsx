@@ -5,6 +5,9 @@ import { markToolHydrated } from './_tools/_shared/hydration';
 
 import { AdBanner } from '@/components/ads/AdBanner';
 import { ReportErrorButton } from '@/components/shared/ReportErrorButton';
+import { ShareBar } from '@/components/shared/ShareBar';
+import { SPEC_MODULE_OF } from '@/lib/tools/specs/modules';
+import { GROUP_COMPONENTS } from './_generic/groups';
 
 // Kredi Araçları
 import { IhtiyacKredisi } from './_tools/IhtiyacKredisi';
@@ -56,6 +59,8 @@ import { MaasHesaplama } from './_tools/MaasHesaplama';
 interface Props {
   slug: string;
   title: string;
+  /** Sunucudaki bugünün tarihi (Europe/Istanbul) — tarih alanlı araçların varsayılanı */
+  today: string;
   /** Server-rendered H1 + citable snippet zaten sayfada — client H1'i gizle */
   hideTitle?: boolean;
 }
@@ -108,8 +113,13 @@ const TOOL_MAP: Record<string, React.FC> = {
   'maas-hesaplama': MaasHesaplama,
 };
 
-export function ToolClient({ slug, title, hideTitle = false }: Props) {
+// Kendi paylaşım düğmesi olmayan elle yazılmış araçlar: sayfa altına paylaşım çubuğu eklenir
+const NEEDS_SHARE_BAR = new Set(['kredi-karti-asgari-odeme', 'kredi-karti-ek-taksit', 'kredi-karti-gecikme-faizi']);
+
+export function ToolClient({ slug, title, today, hideTitle = false }: Props) {
   const ToolComponent = TOOL_MAP[slug];
+  const specModule = SPEC_MODULE_OF[slug];
+  const GenericGroup = specModule ? GROUP_COMPONENTS[specModule] : null;
 
   // Araçlar başlangıç değerlerini URL'den (?amount=…) render sırasında okuyor. Sayfa sunucuda
   // parametresiz üretildiği için hydration sunucudaki varsayılanları koruyor, URL'deki değerler
@@ -128,11 +138,12 @@ export function ToolClient({ slug, title, hideTitle = false }: Props) {
     return () => clearTimeout(t);
   }, []);
 
-  // Geniş tablo içeren araçlar için container genişliğini artır
+  // Geniş tablo içeren araçlar ve iki sütunlu (form + sonuç) bildirimsel araçlar geniş
   const isWide = slug === 'maas-hesaplama';
+  const maxW = isWide ? 'max-w-[1440px]' : GenericGroup ? 'max-w-6xl' : 'max-w-3xl';
 
   return (
-    <div className={`mx-auto ${isWide ? 'max-w-[1440px]' : 'max-w-3xl'} px-4 py-6 lg:px-8 pb-24 md:pb-12`}>
+    <div className={`mx-auto ${maxW} px-4 py-6 lg:px-8 pb-24 md:pb-12`}>
       {/* page.tsx'te H1 üstünde breadcrumb var. Bu render'de tekrar etmiyoruz. */}
       {hideTitle ? (
         // Server-rendered H1 page.tsx'te (Pit 11b). Burada görsel başlık yok.
@@ -144,8 +155,18 @@ export function ToolClient({ slug, title, hideTitle = false }: Props) {
       <AdBanner page={`araclar-${slug}`} position="top" />
 
       <div className="mt-6">
-        {ToolComponent ? <ToolComponent key={mountKey} /> : <p className="text-muted-foreground">Bu araç henüz aktif değil.</p>}
+        {GenericGroup ? (
+          <GenericGroup key={mountKey} slug={slug} title={title.split('|')[0].trim()} today={today} />
+        ) : ToolComponent ? (
+          <ToolComponent key={mountKey} />
+        ) : (
+          <p className="text-muted-foreground">Bu araç henüz aktif değil.</p>
+        )}
       </div>
+
+      {NEEDS_SHARE_BAR.has(slug) && (
+        <ShareBar className="mt-6" text={title.split('|')[0].trim()} />
+      )}
 
       <div className="mt-8 flex justify-end">
         <ReportErrorButton type="tool" slug={slug} pageTitle={title} />

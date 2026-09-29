@@ -7,6 +7,14 @@ import { TOOL_META } from '@/lib/seo-data/tools';
 import { Breadcrumb, shortToolName } from '@/components/shared/Breadcrumb';
 import { FavoriteButton } from '@/components/instrument/FavoriteButton';
 import { ToolClient } from './ToolClient';
+import { ToolArticle } from './ToolArticle';
+import { ALL_SPECS, assertSpecRegistry } from '@/lib/tools/specs';
+import { TOOL_BY_SLUG, relatedTools } from '@/lib/tools/catalog';
+
+/** Sunucudaki bugünün tarihi (Türkiye saati) — tarih alanlı araçların varsayılanı. */
+function todayIstanbul(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+}
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -31,10 +39,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: 'tr_TR',
       type: 'website',
     },
+    twitter: { card: 'summary_large_image', title: meta.title, description },
   };
 }
 
 export function generateStaticParams() {
+  assertSpecRegistry();
   return Object.keys(TOOL_META).map((slug) => ({ slug }));
 }
 
@@ -58,6 +68,10 @@ export default async function ToolSlugPage({ params }: Props) {
   // Paylaşımlı sayfa düzeni: MaasHesaplama gibi geniş tablolu/analizli
   // araçlar tam genişlik (max-w-[1440px]), diğerleri kompakt (max-w-2xl).
   const isWide = slug === 'maas-hesaplama';
+  const spec = ALL_SPECS[slug];
+  const headerW = isWide ? 'max-w-[1440px]' : spec ? 'max-w-6xl' : 'max-w-3xl';
+  const toolName = meta.title.split('|')[0].trim();
+  const entry = TOOL_BY_SLUG[slug];
 
   // JSON-LD: WebPage + SoftwareApplication + BreadcrumbList + SpeakableSpecification
   // Bu sayfa Türkçe finansal hesaplama araçları — "calculator" tool semantiği.
@@ -79,6 +93,16 @@ export default async function ToolSlugPage({ params }: Props) {
           cssSelector: ['#tool-summary', 'h1'],
         },
       },
+      ...(spec && spec.info.faqs.length > 0
+        ? [{
+          '@type': 'FAQPage',
+          mainEntity: spec.info.faqs.map((f) => ({
+            '@type': 'Question',
+            name: f.q,
+            acceptedAnswer: { '@type': 'Answer', text: f.a },
+          })),
+        }]
+        : []),
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
@@ -92,7 +116,6 @@ export default async function ToolSlugPage({ params }: Props) {
 
   // Citable snippet — AI engine'lerin doğrudan cevap olarak kullanacağı 1-2 cümle.
   // Tool'un ne yaptığını ve nasıl kullanıldığını düz dille anlatır.
-  const toolName = meta.title.split('|')[0].trim();
   const summary = `${toolName}, FinansÇözüm tarafından sunulan ücretsiz bir online hesaplama aracıdır. ${meta.desc} Sonuçlar anlık hesaplanır, kayıt veya üyelik gerektirmez.`;
 
   return (
@@ -102,18 +125,18 @@ export default async function ToolSlugPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
-      <div className={`mx-auto ${isWide ? 'max-w-[1440px]' : 'max-w-3xl'} px-4 pt-6 lg:px-8`}>
+      <div className={`mx-auto ${headerW} px-4 pt-6 lg:px-8`}>
         <Breadcrumb
           items={[
             { label: 'Ana Sayfa', href: '/' },
             { label: 'Araçlar', href: '/araclar' },
-            { label: shortToolName(meta.title.split('|')[0].trim()) },
+            { label: entry?.short ?? shortToolName(toolName) },
           ]}
         />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="eyebrow text-primary">Hesaplama aracı</p>
-            <h1 className="font-display mt-2 text-balance text-4xl text-foreground sm:text-5xl">{meta.title.split('|')[0].trim()}</h1>
+            <h1 className="font-display mt-2 text-balance text-4xl text-foreground sm:text-5xl">{toolName}</h1>
           </div>
           <FavoriteButton type="tool" symbol={slug} label={meta.title.split('|')[0].trim()} />
         </div>
@@ -123,7 +146,8 @@ export default async function ToolSlugPage({ params }: Props) {
         </p>
       </div>
 
-      <ToolClient slug={slug} title={meta.title} hideTitle />
+      <ToolClient slug={slug} title={meta.title} today={todayIstanbul()} hideTitle />
+      <ToolArticle name={entry?.short ?? toolName} info={spec?.info} related={relatedTools(slug)} />
     </>
   );
 }

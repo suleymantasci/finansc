@@ -113,9 +113,9 @@ export function VadeliMevduat() {
 
       <ToolInfo
         title="Vadeli Mevduat Nedir?"
-        description="Vadeli mevduat, belirli bir süre için bankaya yatırılan ve vade sonunda faiz getirisi elde edilen tasarruf ürünüdür. Getiri üzerinden vadeye bağlı olarak %10-15 arası stopaj kesilir."
+        description="Vadeli mevduat, belirli bir süre için bankaya yatırılan ve vade sonunda faiz getirisi elde edilen tasarruf ürünüdür. Getiri üzerinden vadeye bağlı olarak %10 ile %17,5 arasında stopaj kesilir."
         faqs={[
-          { q: 'Stopaj oranları nasıl belirlenir?', a: '6 aya kadar %15, 6-12 ay arası %12, 12 aydan uzun vadede %10 stopaj uygulanır.' },
+          { q: 'Stopaj oranları nasıl belirlenir?', a: 'TL mevduatta 31.12.2026’ya kadar vadesiz ve 6 aya kadar vadelerde %17,5, 1 yıla kadar vadelerde %15, 1 yıldan uzun vadelerde %10 stopaj uygulanır.' },
           { q: 'Vadeli mevduat güvencesi var mı?', a: 'TMSF (Tasarruf Mevduatı Sigorta Fonu) kapsamında kişi başı 600.000 TL\'ye kadar güvence altındadır.' },
           { q: 'Vade bozulursa ne olur?', a: 'Banka genellikle vadesiz mevduat faizi uygular veya hiç faiz ödemez.' },
         ]}
