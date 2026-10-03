@@ -5,6 +5,7 @@ import { COMMODITIES } from '@/lib/instruments/commodities';
 import { GRAM_AMOUNTS } from '@/lib/seo-data/altin-amounts';
 import { NextResponse } from 'next/server';
 import { SITE_NAME, SITE_URL, API_URL } from '@/lib/constants';
+import { BORSA_ENABLED } from '@/lib/features';
 import { answerText } from '@/components/instrument/AnswerSummary';
 
 export const revalidate = 300; // 5 dk: güncel piyasa özeti içeriyor
@@ -90,6 +91,7 @@ interface MarketItem {
 }
 
 async function fetchMarketStocks(): Promise<string[]> {
+  if (!BORSA_ENABLED) return [];
   try {
     const res = await fetch(`${API_URL}/api/market/stocks`, {
       signal: AbortSignal.timeout(5000),
@@ -158,15 +160,15 @@ export async function GET() {
   lines.push(`# ${SITE_NAME}`);
   lines.push('');
   lines.push(
-    `> Türkiye'nin bağımsız finans bilgi platformu: güncel altın ve döviz fiyatları, gecikmeli borsa verileri, ` +
+    `> Türkiye'nin bağımsız finans bilgi platformu: güncel altın ve döviz fiyatları, ${BORSA_ENABLED ? 'gecikmeli borsa verileri, ' : ''}` +
     `${ARAC_SLUGS.length} finansal hesaplama aracı ve ${blogs.length} finans yazısı. ` +
-    `Piyasa verileri kamuya açık kaynaklardan ve TCMB'den derlenir; borsa verileri en az 15 dakika gecikmelidir.`,
+    `Piyasa verileri kamuya açık kaynaklardan ve TCMB'den derlenir${BORSA_ENABLED ? '; borsa verileri en az 15 dakika gecikmelidir' : ''}.`,
   );
   lines.push('');
   lines.push(`> Site URL: ${SITE_URL}`);
   lines.push('> İçerik dili: Türkçe (tr-TR)');
   lines.push('> Yayıncı: FinansCozum (Türkiye)');
-  lines.push('> Güncelleme: altın ve döviz yaklaşık 30 sn, borsa 15+ dk gecikmeli, içerik düzenli');
+  lines.push(`> Güncelleme: altın ve döviz yaklaşık 30 sn, ${BORSA_ENABLED ? 'borsa 15+ dk gecikmeli, ' : ''}içerik düzenli`);
   lines.push('');
 
   // Güncel piyasa özeti — yapay zekâ modelleri sayfaları JS çalıştırmadan okur; değerler burada da olsun
@@ -174,21 +176,21 @@ export async function GET() {
     await Promise.all([
       answerText({ kind: 'gold-list' }),
       answerText({ kind: 'fx-list' }),
-      answerText({ kind: 'borsa-list' }),
+      BORSA_ENABLED ? answerText({ kind: 'borsa-list' }) : Promise.resolve(null),
     ])
   ).filter(Boolean);
   if (summaries.length) {
     lines.push('## Güncel piyasa özeti');
     for (const t of summaries) lines.push(`- ${t}`);
-    lines.push(`- Ayrıntı ve grafikler: [Altın](${SITE_URL}/altin) · [Döviz](${SITE_URL}/doviz) · [Borsa](${SITE_URL}/borsa)`);
+    lines.push(`- Ayrıntı ve grafikler: [Altın](${SITE_URL}/altin) · [Döviz](${SITE_URL}/doviz)${BORSA_ENABLED ? ` · [Borsa](${SITE_URL}/borsa)` : ''}`);
     lines.push('');
   }
 
   // Ana sayfa
   lines.push('## Ana Sayfa');
-  lines.push(`- [FinansÇözüm Ana Sayfa](${SITE_URL}): Canlı altın, borsa, döviz, ${ARAC_SLUGS.length} hesaplama aracı`);
+  lines.push(`- [FinansÇözüm Ana Sayfa](${SITE_URL}): Canlı altın, ${BORSA_ENABLED ? 'borsa, ' : ''}döviz, ${ARAC_SLUGS.length} hesaplama aracı`);
   lines.push(`- [Altın Fiyatları](${SITE_URL}/altin): 10+ altın türü, anlık alış-satış`);
-  lines.push(`- [Borsa İstanbul](${SITE_URL}/borsa): Hisse senetleri ve endeksler`);
+  if (BORSA_ENABLED) lines.push(`- [Borsa İstanbul](${SITE_URL}/borsa): Hisse senetleri ve endeksler`);
   lines.push(`- [Döviz Kurları](${SITE_URL}/doviz): 8+ döviz çifti`);
   lines.push(`- [Hesaplama Araçları](${SITE_URL}/araclar): ${ARAC_SLUGS.length} finansal araç`);
   lines.push(`- [Bilgi Merkezi (Blog)](${SITE_URL}/blog): ${blogs.length} finans yazısı`);

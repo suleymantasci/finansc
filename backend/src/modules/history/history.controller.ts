@@ -1,12 +1,19 @@
 import { SkipThrottle } from '@nestjs/throttler';
-import { Controller, Get, Param, Query, Sse, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Param, Query, Sse, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Observable, map } from 'rxjs';
 import { HistoryService } from './history.service';
 import { Public } from '../../common/decorators';
+import { BORSA_ENABLED, isBorsaIstanbulInstrument } from '../../common/borsa';
 
 const KEY_RE = /^[a-zA-Z0-9:_\-.]{2,64}$/;
 const INTERVALS = ['1h', '1d', '1w', '1mo', '1y'];
+
+/** Geçersiz anahtar → 400; borsa kapalıyken BIST enstrümanı → 404 */
+function assertInstrument(instrument: string): void {
+  if (!KEY_RE.test(instrument)) throw new BadRequestException('Geçersiz enstrüman');
+  if (!BORSA_ENABLED && isBorsaIstanbulInstrument(instrument)) throw new NotFoundException('Bu enstrüman için veri yok');
+}
 
 /**
  * Grafik verisi.
@@ -40,7 +47,7 @@ export class HistoryController {
     @Query('to') to?: string,
     @Query('source') source?: string,
   ) {
-    if (!KEY_RE.test(instrument)) throw new BadRequestException('Geçersiz enstrüman');
+    assertInstrument(instrument);
     if (interval && !INTERVALS.includes(interval)) {
       throw new BadRequestException(`interval şunlardan biri olmalı: ${INTERVALS.join(', ')}`);
     }
@@ -50,14 +57,14 @@ export class HistoryController {
   @Public()
   @Get(':instrument/sources')
   getSources(@Param('instrument') instrument: string) {
-    if (!KEY_RE.test(instrument)) throw new BadRequestException('Geçersiz enstrüman');
+    assertInstrument(instrument);
     return this.historyService.getSources(instrument);
   }
 
   @Public()
   @Sse(':instrument/stream')
   stream(@Param('instrument') instrument: string): Observable<{ data: string }> {
-    if (!KEY_RE.test(instrument)) throw new BadRequestException('Geçersiz enstrüman');
+    assertInstrument(instrument);
     return this.historyService
       .getStream(instrument)
       .pipe(map((event) => ({ data: (event as unknown as { data: string }).data })));

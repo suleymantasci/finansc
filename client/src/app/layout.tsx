@@ -9,6 +9,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { MobileNav } from '@/components/layout/MobileNav';
 import './globals.css';
+import { BORSA_ENABLED } from '@/lib/features';
 
 // latin-ext: ş, ğ, ı, İ gibi Türkçe glifler için şart (yoksa fallback font'a düşer)
 const geistSans = Geist({
@@ -50,20 +51,21 @@ export const metadata: Metadata = {
   // mutlakağa dönüşür.
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} - Canlı Altın, Döviz, Borsa ve Hesaplama Araçları`,
+    default: BORSA_ENABLED ? `${SITE_NAME} - Canlı Altın, Döviz, Borsa ve Hesaplama Araçları` : `${SITE_NAME} - Canlı Altın, Döviz ve Hesaplama Araçları`,
     template: `%s | ${SITE_NAME}`,
   },
   description:
-    'Canlı altın fiyatları, borsa verileri, finansal hesaplama araçları ve güncel finans haberleri. Piyasaların nabzı burada.',
+    BORSA_ENABLED
+      ? 'Canlı altın fiyatları, borsa verileri, finansal hesaplama araçları ve güncel finans haberleri. Piyasaların nabzı burada.'
+      : 'Canlı altın ve döviz fiyatları, finansal hesaplama araçları ve güncel finans haberleri. Piyasaların nabzı burada.',
   keywords: [
     'altın fiyatları',
-    'borsa istanbul',
-    'hisse senedi',
+    ...(BORSA_ENABLED ? ['borsa istanbul', 'hisse senedi'] : []),
     'döviz kuru',
     'finans',
     'yatırım',
     'hesaplama araçları',
-    'canlı borsa',
+    ...(BORSA_ENABLED ? ['canlı borsa'] : []),
   ],
   // ── Favicon & Icons ──
   icons: {
@@ -86,8 +88,10 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'tr_TR',
     siteName: SITE_NAME,
-    title: `${SITE_NAME} - Canlı Altın, Borsa, Döviz ve Finansal Araçlar`,
-    description: 'Bağımsız finans bilgi platformu: güncel altın ve döviz fiyatları, gecikmeli borsa verileri, hesaplama araçları ve finans rehberleri.',
+    title: BORSA_ENABLED ? `${SITE_NAME} - Canlı Altın, Borsa, Döviz ve Finansal Araçlar` : `${SITE_NAME} - Canlı Altın, Döviz ve Finansal Araçlar`,
+    description: BORSA_ENABLED
+      ? 'Bağımsız finans bilgi platformu: güncel altın ve döviz fiyatları, gecikmeli borsa verileri, hesaplama araçları ve finans rehberleri.'
+      : 'Bağımsız finans bilgi platformu: güncel altın ve döviz fiyatları, hesaplama araçları ve finans rehberleri.',
     url: 'https://finanscozum.net',
     images: [
       {
@@ -103,7 +107,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: `${SITE_NAME} - Canlı Finans Verileri`,
-    description: 'Canlı altın, borsa, döviz ve finansal hesaplama araçları.',
+    description: BORSA_ENABLED ? 'Canlı altın, borsa, döviz ve finansal hesaplama araçları.' : 'Canlı altın, döviz ve finansal hesaplama araçları.',
     images: ['https://finanscozum.net/og-default.png'],
     creator: '@finanscozum',
     site: '@finanscozum',
@@ -181,7 +185,9 @@ export default function RootLayout({
                   height: 512,
                 },
                 description:
-                  "Türkiye'nin bağımsız finans bilgi platformu. Canlı altın, borsa ve döviz verileri, hesaplama araçları, güncel finans haberleri.",
+                  BORSA_ENABLED
+                    ? "Türkiye'nin bağımsız finans bilgi platformu. Canlı altın, borsa ve döviz verileri, hesaplama araçları, güncel finans haberleri."
+                    : "Türkiye'nin bağımsız finans bilgi platformu. Canlı altın ve döviz verileri, hesaplama araçları, güncel finans haberleri.",
                 foundingDate: '2025',
                 areaServed: { '@type': 'Country', name: 'Türkiye' },
                 inLanguage: 'tr-TR',
@@ -207,9 +213,8 @@ export default function RootLayout({
                 ],
                 knowsAbout: [
                   'Altın Fiyatları',
-                  'Borsa İstanbul',
+                  ...(BORSA_ENABLED ? ['Borsa İstanbul', 'Hisse Senetleri'] : []),
                   'Döviz Kurları',
-                  'Hisse Senetleri',
                   'Yatırım',
                   'Finansal Hesaplama',
                   'Türk Lirası',
@@ -230,7 +235,9 @@ export default function RootLayout({
                 alternateName: 'FinansÇözüm',
                 url: 'https://finanscozum.net',
                 description:
-                  "Türkiye'nin bağımsız finans bilgi platformu: canlı altın, borsa, döviz, hesaplama araçları, finansal içerikler.",
+                  BORSA_ENABLED
+                    ? "Türkiye'nin bağımsız finans bilgi platformu: canlı altın, borsa, döviz, hesaplama araçları, finansal içerikler."
+                    : "Türkiye'nin bağımsız finans bilgi platformu: canlı altın, döviz, hesaplama araçları, finansal içerikler.",
                 publisher: { '@id': 'https://finanscozum.net/#organization' },
                 inLanguage: 'tr-TR',
                 potentialAction: {

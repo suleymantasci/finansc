@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, Search, X, Calculator, Coins, Landmark, LineChart, Building2, CornerDownLeft, Fuel } from 'lucide-react';
 import { searchStatic, type SearchItem } from '@/lib/search/static-index';
 import { cn } from '@/lib/utils';
+import { BORSA_ENABLED } from '@/lib/features';
 
 /**
  * Komut paleti tarzı arama.
@@ -30,8 +31,12 @@ export const POPULAR_LINKS: { label: string; href: string; type: SearchItem['typ
   { label: 'Dolar kuru', href: '/doviz/dolar', type: 'doviz' },
   { label: 'Kredi hesaplama', href: '/araclar/ihtiyac-kredisi', type: 'arac' },
   { label: 'Maaş hesaplama', href: '/araclar/maas-hesaplama', type: 'arac' },
-  { label: 'BIST 100', href: '/borsa/endeksler/XU100', type: 'endeks' },
-  { label: 'THYAO', href: '/borsa/hisseler/THYAO', type: 'hisse' },
+  ...(BORSA_ENABLED
+    ? ([
+        { label: 'BIST 100', href: '/borsa/endeksler/XU100', type: 'endeks' },
+        { label: 'THYAO', href: '/borsa/hisseler/THYAO', type: 'hisse' },
+      ] as const)
+    : []),
 ];
 
 interface Option {
@@ -132,7 +137,7 @@ function SearchBox({
       >
         <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <label htmlFor={`${listId}-input`} className="sr-only">
-          Sitede ara: altın, döviz, hisse, hesaplama aracı
+          {BORSA_ENABLED ? 'Sitede ara: altın, döviz, hisse, hesaplama aracı' : 'Sitede ara: altın, döviz, emtia, hesaplama aracı'}
         </label>
         <input
           ref={inputRef}

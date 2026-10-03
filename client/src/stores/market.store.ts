@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { GoldPrice, Stock, MarketIndex, Currency } from '@/types';
 import type { MarketConnectionStatus } from '@/components/shared/MarketStatus';
+import { BORSA_ENABLED } from '@/lib/features';
 
 // ── Stream data shapes from upstream Market API ──
 interface BorsaStreamData {
@@ -84,7 +85,8 @@ export const useMarketStore = create<MarketState>((set, get) => ({
   setCurrencyStreamStatus: (s) => set({ currencyStreamStatus: s }),
 
   updateFromBorsaStream: (data) => {
-    if (data.type !== 'data') return;
+    // Borsa kapalıyken hisse/endeks verisi store'a hiç girmez
+    if (!BORSA_ENABLED || data.type !== 'data') return;
 
     const newFlashes: Record<string, 'up' | 'down'> = {};
 

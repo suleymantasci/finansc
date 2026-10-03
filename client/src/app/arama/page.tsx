@@ -12,6 +12,7 @@ import {
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { SearchResultItem } from '@/components/shared/SearchInput';
+import { BORSA_ENABLED } from '@/lib/features';
 
 interface Props {
   searchParams: Promise<{ q?: string }>;
@@ -40,7 +41,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: query + ' — Arama Sonuçları',
     description:
-      'FinansÇözüm\'de "' + query + '" aramasının sonuçları — araçlar, endeksler, döviz, altın, hisse ve blog yazıları.',
+      'FinansÇözüm\'de "' + query + '" aramasının sonuçları — ' + (BORSA_ENABLED ? 'araçlar, endeksler, döviz, altın, hisse ve blog yazıları.' : 'araçlar, döviz, altın, emtia ve blog yazıları.'),
     robots: { index: false, follow: true },
     alternates: { canonical: SITE_URL + '/arama?q=' + encodeURIComponent(query) },
   };
@@ -72,14 +73,13 @@ async function fetchDynamic(q: string): Promise<{
       base + '/api/blogs?limit=' + limit + '&search=' + encodeURIComponent(q),
       { next: { revalidate: 60 } },
     ),
-    fetch(
-      base + '/api/market/stocks/search?q=' + encodeURIComponent(q),
-      { next: { revalidate: 300 } },
-    ),
-    fetch(
-      base + '/api/market/indices/search?q=' + encodeURIComponent(q),
-      { next: { revalidate: 300 } },
-    ),
+    // Borsa kapalıyken hisse/endeks araması yapılmaz (reddedilen sonuç atlanır)
+    BORSA_ENABLED
+      ? fetch(base + '/api/market/stocks/search?q=' + encodeURIComponent(q), { next: { revalidate: 300 } })
+      : Promise.reject(new Error('borsa disabled')),
+    BORSA_ENABLED
+      ? fetch(base + '/api/market/indices/search?q=' + encodeURIComponent(q), { next: { revalidate: 300 } })
+      : Promise.reject(new Error('borsa disabled')),
   ]);
 
   const blog: BlogResult[] = [];

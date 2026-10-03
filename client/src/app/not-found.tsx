@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Home, Search, TrendingUp, Calculator, BookOpen, ArrowRight } from 'lucide-react';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
+import { BORSA_ENABLED } from '@/lib/features';
 
 export const metadata: Metadata = {
   title: 'Sayfa Bulunamadı (404)',
-  description: 'Aradığınız sayfa bulunamadı. Ancak FinansÇözüm\'de altın, borsa, döviz ve 40+ finansal hesaplama aracı sizleri bekliyor.',
+  description: 'Aradığınız sayfa bulunamadı. Ancak FinansÇözüm\'de altın, döviz ve 40+ finansal hesaplama aracı sizleri bekliyor.',
   robots: {
     index: false,
     follow: false,
@@ -46,17 +47,19 @@ export default function NotFound() {
             </div>
             <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground" />
           </Link>
-          <Link
-            href="/borsa"
-            className="flex items-center gap-3 atlas-card p-4 transition-colors hover:border-primary"
-          >
-            <TrendingUp className="h-5 w-5 text-primary" />
-            <div>
-              <p className="font-semibold">Borsa & Endeksler</p>
-              <p className="text-xs text-muted-foreground">60+ hisse, BIST 100/30</p>
-            </div>
-            <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground" />
-          </Link>
+          {BORSA_ENABLED && (
+            <Link
+              href="/borsa"
+              className="flex items-center gap-3 atlas-card p-4 transition-colors hover:border-primary"
+            >
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-semibold">Borsa & Endeksler</p>
+                <p className="text-xs text-muted-foreground">60+ hisse, BIST 100/30</p>
+              </div>
+              <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground" />
+            </Link>
+          )}
           <Link
             href="/altin"
             className="flex items-center gap-3 atlas-card p-4 transition-colors hover:border-primary"

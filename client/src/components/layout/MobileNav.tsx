@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Coins, Banknote, CandlestickChart, Calculator, BookOpen } from 'lucide-react';
+import { Coins, Banknote, CandlestickChart, Calculator, BookOpen, Fuel } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BORSA_ENABLED } from '@/lib/features';
 
 const MOBILE_TABS = [
   { label: 'Altın', href: '/altin', icon: Coins },
   { label: 'Döviz', href: '/doviz', icon: Banknote },
-  { label: 'Borsa', href: '/borsa', icon: CandlestickChart },
+  BORSA_ENABLED ? { label: 'Borsa', href: '/borsa', icon: CandlestickChart } : { label: 'Emtia', href: '/emtia', icon: Fuel },
   { label: 'Araçlar', href: '/araclar', icon: Calculator },
   { label: 'Bilgi', href: '/blog', icon: BookOpen },
 ] as const;

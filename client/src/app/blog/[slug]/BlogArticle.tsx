@@ -8,6 +8,7 @@ import { categoryLabel } from '@/lib/blog-categories';
 import type { TocItem } from '@/lib/blog-content';
 import type { BlogPost } from '@/types';
 import { ArticleShare } from './ArticleActions';
+import { BORSA_ENABLED } from '@/lib/features';
 
 /**
  * Makale görünümü — sunucuda render edilir (içerik ilk HTML'de).
@@ -148,7 +149,7 @@ export function BlogArticle({
             { label: 'Gram Altın', href: '/altin/gram-altin', spec: { kind: 'gold', slug: 'gram-altin' } },
             { label: 'Dolar', sub: 'USD/TRY', href: '/doviz/dolar', spec: { kind: 'fx', code: 'USD' } },
             { label: 'Euro', sub: 'EUR/TRY', href: '/doviz/euro', spec: { kind: 'fx', code: 'EUR' } },
-            { label: 'BIST 100', sub: 'XU100', href: '/borsa/endeksler/XU100', spec: { kind: 'index', symbol: 'XU100' } },
+            ...(BORSA_ENABLED ? [{ label: 'BIST 100', sub: 'XU100', href: '/borsa/endeksler/XU100', spec: { kind: 'index' as const, symbol: 'XU100' } }] : []),
           ]}
         />
       </div>

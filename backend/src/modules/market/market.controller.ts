@@ -1,10 +1,16 @@
 import { SkipThrottle } from '@nestjs/throttler';
-import { Controller, Get, Param, Query, Sse, BadRequestException } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query, Sse, BadRequestException, NotFoundException } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { merge, Observable, map } from 'rxjs';
 import { MarketService } from './market.service';
 import { type BorsaStock, type BorsaIndex } from './market.types';
 import { Public } from '../../common/decorators';
+import { BORSA_ENABLED } from '../../common/borsa';
+
+/** Borsa kapalıyken BIST uçları yokmuş gibi davranır (404) */
+function assertBorsaEnabled(): void {
+  if (!BORSA_ENABLED) throw new NotFoundException();
+}
 
 @ApiTags('Market')
 // Salt okunur piyasa verisi: SSR/ISR tek IP'den çok sayıda istek atar; sınırlama
@@ -30,29 +36,37 @@ export class MarketController {
   }
 
   @Public()
+  @ApiExcludeEndpoint(!BORSA_ENABLED)
   @Get('stocks')
   getStocks(): Promise<BorsaStock[]> {
+    assertBorsaEnabled();
     return this.marketService.getStocks();
   }
 
   // Search endpoint — frontend search overlay ve /arama sayfasi icin.
   // /api/market/stocks/search?q=A1CAP → { success, data: [{symbol, name}, ...] }
   @Public()
+  @ApiExcludeEndpoint(!BORSA_ENABLED)
   @Get('stocks/search')
   async searchStocks(@Query('q') q?: string): Promise<{ success: boolean; data: BorsaStock[]; count: number }> {
+    assertBorsaEnabled();
     const results = await this.marketService.searchStocks(q);
     return { success: true, data: results, count: results.length };
   }
 
   @Public()
+  @ApiExcludeEndpoint(!BORSA_ENABLED)
   @Get('indices')
   getIndices(): Promise<BorsaIndex[]> {
+    assertBorsaEnabled();
     return this.marketService.getIndices();
   }
 
   @Public()
+  @ApiExcludeEndpoint(!BORSA_ENABLED)
   @Get('indices/search')
   async searchIndices(@Query('q') q?: string): Promise<{ success: boolean; data: BorsaIndex[]; count: number }> {
+    assertBorsaEnabled();
     const results = await this.marketService.searchIndices(q);
     return { success: true, data: results, count: results.length };
   }
@@ -79,7 +93,7 @@ export class MarketController {
       return { data: JSON.stringify({ channel, payload }) };
     };
     return merge(
-      this.marketService.getBorsaStream().pipe(map(tag('borsa'))),
+      ...(BORSA_ENABLED ? [this.marketService.getBorsaStream().pipe(map(tag('borsa')))] : []),
       this.marketService.getGoldStream().pipe(map(tag('gold'))),
       this.marketService.getCurrencyStream('serbest-piyasa').pipe(map(tag('currency:serbest-piyasa'))),
       this.marketService.getCurrencyStream('merkez-bankasi').pipe(map(tag('currency:merkez-bankasi'))),
@@ -106,8 +120,10 @@ export class MarketController {
   }
 
   @Public()
+  @ApiExcludeEndpoint(!BORSA_ENABLED)
   @Sse('borsa/stream')
   borsaStream(): Observable<{ data: string }> {
+    assertBorsaEnabled();
     return this.marketService.getBorsaStream().pipe(
       map((event) => ({ data: typeof event.data === 'string' ? event.data : JSON.stringify(event.data) })),
     );

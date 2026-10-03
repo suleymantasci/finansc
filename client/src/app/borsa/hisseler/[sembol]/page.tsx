@@ -1,6 +1,7 @@
 import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { BORSA_ENABLED } from '@/lib/features';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { STOCK_META, getStockMeta, type StockMeta } from '@/lib/seo-data/stocks';
 import {
@@ -71,6 +72,7 @@ export async function generateStaticParams() {
   // Derlemede yalnız elle içerik girilmiş popüler hisseler üretilir; performans özeti her sayfada
   // fiyat geçmişi çektiği için 634 sayfanın hepsi derlemeyi ~2,5 kat uzatıyor ve canlı backend'in
   // istek sınırına takılabiliyordu. Diğerleri ilk ziyarette üretilip önbelleğe alınır (dynamicParams).
+  if (!BORSA_ENABLED) return [];
   const known = new Set(await getKnownStockSymbols());
   return Object.keys(STOCK_META).filter((s) => known.has(s)).map((sembol) => ({ sembol }));
 }

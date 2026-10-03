@@ -10,6 +10,7 @@ import { fetchHistory, instrumentKey, type HistoryPoint, type Interval } from '@
 import { pickCurrency, pickGold, pickIndex } from '@/lib/market-pick';
 import { AreaChart, CandleChart, Sparkline, type SeriesPoint } from '@/components/charts/MiniCharts';
 import { cn } from '@/lib/utils';
+import { BORSA_ENABLED } from '@/lib/features';
 import { ArrowLink, CardHead, ChangePill, RangeTabs, timeOf } from './parts';
 
 // ── Yardımcılar ────────────────────────────────────────────────────
@@ -234,7 +235,7 @@ function LoanCard() {
   const detailHref = `/araclar/ihtiyac-kredisi?amount=${amount}&rate=${rate}&term=${term}`;
 
   return (
-    <article className="atlas-card flex flex-col p-5 sm:p-6 lg:row-span-2">
+    <article className={cn('atlas-card flex flex-col p-5 sm:p-6 lg:row-span-2', !BORSA_ENABLED && 'md:max-lg:col-span-2')}>
       <CardHead icon={<Calculator className="h-4 w-4" />} title="Kredi Hesaplama" href="/araclar/ihtiyac-kredisi" />
       <div className="mt-5 space-y-5">
         <Slider
@@ -287,9 +288,16 @@ export function MarketBento() {
   return (
     <section aria-labelledby="piyasalar-title" className="mx-auto max-w-[1440px] px-4 lg:px-8">
       <h2 id="piyasalar-title" className="sr-only">
-        Canlı piyasalar: gram altın, dolar, euro, BIST 100 ve kredi hesaplama
+        {BORSA_ENABLED
+          ? 'Canlı piyasalar: gram altın, dolar, euro, BIST 100 ve kredi hesaplama'
+          : 'Canlı piyasalar: gram altın, dolar, euro ve kredi hesaplama'}
       </h2>
-      <div className="space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 lg:grid-cols-[1.25fr_1fr_1.1fr_1fr] lg:grid-rows-[auto_auto]">
+      <div
+        className={cn(
+          'space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 lg:grid-rows-[auto_auto]',
+          BORSA_ENABLED ? 'lg:grid-cols-[1.25fr_1fr_1.1fr_1fr]' : 'lg:grid-cols-[1.25fr_1fr_1fr]',
+        )}
+      >
         {/* Mobilde yatay kaydırılan piyasa şeridi; md+ ızgaraya karışır */}
         <div
           className={cn(
@@ -303,7 +311,7 @@ export function MarketBento() {
             <FxCard code="USD" href="/doviz/dolar" symbol="$" name="Amerikan doları" />
             <FxCard code="EUR" href="/doviz/euro" symbol="€" name="Euro" />
           </div>
-          <BistCard />
+          {BORSA_ENABLED && <BistCard />}
         </div>
         <LoanCard />
       </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { LEGAL, LEGAL_OPERATOR } from '@/lib/legal';
+import { BORSA_ENABLED } from '@/lib/features';
 
 export const metadata: Metadata = {
   title: 'Hakkımızda | FinansCozum Ekibi ve Misyon',
@@ -43,7 +44,7 @@ export default function HakkimizdaPage() {
           <ul className="ml-6 list-disc space-y-2">
             <li>
               <strong className="text-foreground">Piyasa Verileri:</strong> Altın ve döviz fiyatlarını yaklaşık 30 saniyede
-              bir güncellenen verilerle, Borsa İstanbul hisse ve endekslerini en az 15 dakika gecikmeli olarak takip edin.
+              bir güncellenen verilerle{BORSA_ENABLED ? ', Borsa İstanbul hisse ve endekslerini en az 15 dakika gecikmeli olarak' : ''} takip edin.
             </li>
             <li>
               <strong className="text-foreground">Hesaplama Araçları:</strong> Kredi, vergi, mevduat getirisi ve

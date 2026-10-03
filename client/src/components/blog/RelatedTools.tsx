@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { TOOL_META } from '@/lib/seo-data/tools';
+import { BORSA_ENABLED } from '@/lib/features';
 
 interface Tool {
   title: string;
@@ -30,7 +31,7 @@ const TOOLS_BY_CATEGORY: Record<string, Tool[]> = {
     { title: 'Bileşik Faiz Hesaplama', description: 'Uzun vadeli birikim gücü', href: '/araclar/bilesik-buyume', icon: '🧮' },
   ],
   borsa: [
-    { title: 'BIST 100 Anlık', description: 'Endeks ve hisse verileri', href: '/borsa?tab=hisseler', icon: '📊' },
+    ...(BORSA_ENABLED ? [{ title: 'BIST 100 Anlık', description: 'Endeks ve hisse verileri', href: '/borsa?tab=hisseler', icon: '📊' }] : []),
     { title: 'Net Bugünkü Değer', description: 'Hisse değerleme NPV', href: '/araclar/net-bugunku-deger', icon: '💹' },
     { title: 'İç Verim Oranı (IRR)', description: 'Yatırım getiri analizi', href: '/araclar/ic-verim-orani', icon: '📈' },
   ],

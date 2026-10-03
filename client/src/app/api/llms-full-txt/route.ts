@@ -5,6 +5,7 @@ import { COMMODITIES } from '@/lib/instruments/commodities';
 import { GRAM_AMOUNTS } from '@/lib/seo-data/altin-amounts';
 import { NextResponse } from 'next/server';
 import { SITE_NAME, SITE_URL, API_URL } from '@/lib/constants';
+import { BORSA_ENABLED } from '@/lib/features';
 
 export const revalidate = 3600; // 1 hour cache
 export const runtime = 'nodejs';
@@ -143,6 +144,7 @@ async function fetchAllBlogs(): Promise<BlogPost[]> {
 }
 
 async function fetchMarketStocks(): Promise<string[]> {
+  if (!BORSA_ENABLED) return [];
   try {
     const res = await fetch(`${API_URL}/api/market/stocks`, {
       signal: AbortSignal.timeout(5000),
@@ -217,21 +219,22 @@ export async function GET() {
   lines.push(`> Toplam URL: ${totalUrls}`);
   lines.push(`> Son güncelleme: ${now}`);
   lines.push(`> Site URL: ${SITE_URL}`);
-  lines.push(`> Veri kaynakları: kamuya açık piyasa yayınları ve TCMB; borsa verileri en az 15 dakika gecikmelidir`);
+  lines.push(`> Veri kaynakları: kamuya açık piyasa yayınları ve TCMB${BORSA_ENABLED ? '; borsa verileri en az 15 dakika gecikmelidir' : ''}`);
   lines.push('');
 
   // ── Ana Sayfalar ──
   lines.push(`## Ana Sayfalar (6 URL)`);
   lines.push('');
-  lines.push(`- [Ana Sayfa](${SITE_URL}): Canlı altın, borsa, döviz ve hesaplama araçları`);
+  lines.push(`- [Ana Sayfa](${SITE_URL}): Canlı altın, ${BORSA_ENABLED ? 'borsa, ' : ''}döviz ve hesaplama araçları`);
   lines.push(`- [Altın Fiyatları](${SITE_URL}/altin): Tüm altın türleri, fiyat karşılaştırma`);
-  lines.push(`- [Borsa İstanbul](${SITE_URL}/borsa): Hisse senetleri ve endeksler`);
+  if (BORSA_ENABLED) lines.push(`- [Borsa İstanbul](${SITE_URL}/borsa): Hisse senetleri ve endeksler`);
   lines.push(`- [Döviz Kurları](${SITE_URL}/doviz): Döviz çiftleri ve çevirici`);
   lines.push(`- [Hesaplama Araçları](${SITE_URL}/araclar): ${ARAC_SLUGS.length} finansal araç`);
   lines.push(`- [Bilgi Merkezi](${SITE_URL}/blog): Blog yazıları`);
   lines.push('');
 
-  // ── BIST Hisse Senetleri ──
+  // ── BIST Hisse Senetleri ve Endeksler (borsa kapalıyken yok) ──
+  if (BORSA_ENABLED) {
   lines.push(`## Borsa İstanbul Hisse Senetleri (${stocks.length} hisse)`);
   lines.push('');
   for (const sym of stocks) {
@@ -247,6 +250,7 @@ export async function GET() {
     lines.push(`- [${idx} Endeksi](${SITE_URL}/borsa/endeksler/${idx}): ${idx} anlık değer ve bileşen hisseler`);
   }
   lines.push('');
+  }
 
   // ── Altın ──
   lines.push(`## Altın Fiyatları (${goldSlugs.length} tür)`);

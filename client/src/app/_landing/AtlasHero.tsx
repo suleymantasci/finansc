@@ -3,6 +3,7 @@ import path from 'node:path';
 import { getImageProps } from 'next/image';
 import { HeroSearch, QuickChips } from '@/components/search/CommandSearch';
 import { cn } from '@/lib/utils';
+import { BORSA_ENABLED } from '@/lib/features';
 
 /**
  * Hero — H1 hem anahtar kelimeyi (SEO) hem editoryal sloganı taşır.
@@ -112,7 +113,7 @@ export function AtlasHero() {
         <div className="max-w-4xl">
           <h1 id="hero-title">
             <span className="eyebrow block text-primary">
-              Canlı altın, döviz, borsa &amp; 40+ hesaplama aracı
+              {BORSA_ENABLED ? 'Canlı altın, döviz, borsa & 40+ hesaplama aracı' : 'Canlı altın, döviz & 40+ hesaplama aracı'}
             </span>
             <span className="font-display mt-5 block text-[2.6rem] leading-[1.05] text-foreground sm:text-6xl lg:text-[4.75rem]">
               Tüm finansal cevaplar,{' '}
@@ -120,7 +121,9 @@ export function AtlasHero() {
             </span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Gram altından dolara, BIST hisselerinden kredi ve maaş hesaplamaya — aradığınızı yazın, doğrudan oraya gidin.
+            {BORSA_ENABLED
+              ? 'Gram altından dolara, BIST hisselerinden kredi ve maaş hesaplamaya — aradığınızı yazın, doğrudan oraya gidin.'
+              : 'Gram altından dolara, emtiadan kredi ve maaş hesaplamaya — aradığınızı yazın, doğrudan oraya gidin.'}
           </p>
 
           <div className="mt-8 max-w-2xl">

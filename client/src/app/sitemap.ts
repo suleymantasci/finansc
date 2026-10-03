@@ -5,6 +5,7 @@ import { GOLD_META } from '@/lib/seo-data/gold';
 import { CURRENCIES } from '@/lib/instruments/currencies';
 import { COMMODITIES } from '@/lib/instruments/commodities';
 import { INDEX_SYMBOLS } from '@/lib/seo-data/indices';
+import { BORSA_ENABLED } from '@/lib/features';
 import { GRAM_AMOUNTS, PIECE_AMOUNTS } from '@/lib/seo-data/altin-amounts';
 import { getKnownStockSymbols, getWhitelistMeta, getKnownIndexSymbols } from '@/lib/seo-data/whitelist';
 
@@ -90,7 +91,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: BASE_URL, lastModified: new Date(), changeFrequency: 'hourly', priority: 1 },
     { url: `${BASE_URL}/altin`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
-    { url: `${BASE_URL}/borsa`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
+    ...(BORSA_ENABLED
+      ? [{ url: `${BASE_URL}/borsa`, lastModified: new Date(), changeFrequency: 'hourly' as const, priority: 0.9 }]
+      : []),
     // /borsa?tab=hisseler ve /borsa?tab=endeksler aynı sayfada query ile
     // değişiyor; canonical /borsa, tab query canonical'ı bozmaz (Google
     // canonical'a query eklenmiş URL'leri de tanır). Bu yüzden ayrı
@@ -133,12 +136,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Hisse sayfaları: whitelist'ten (build-time API fetch + 24h cache).
   // 615 gerçek BIST sembolünün HEPSİ sitemap'te → Google hepsini keşfeder.
   // getWhitelistMeta kaynak bilgisini loglar (debug/monitoring).
-  const knownSymbols = await getKnownStockSymbols();
-  const whitelistMeta = await getWhitelistMeta();
-  // eslint-disable-next-line no-console
-  console.log(
-    `[sitemap] hisse sembolleri: ${whitelistMeta.count} (kaynak: ${whitelistMeta.source})`,
-  );
+  // Borsa kapalıyken (BORSA_ENABLED=false) hisse/endeks URL'si üretilmez, API'ye de gidilmez.
+  const knownSymbols = BORSA_ENABLED ? await getKnownStockSymbols() : [];
+  if (BORSA_ENABLED) {
+    const whitelistMeta = await getWhitelistMeta();
+    // eslint-disable-next-line no-console
+    console.log(
+      `[sitemap] hisse sembolleri: ${whitelistMeta.count} (kaynak: ${whitelistMeta.source})`,
+    );
+  }
   const stockPages: MetadataRoute.Sitemap = knownSymbols.map((symbol) => ({
     url: `${BASE_URL}/borsa/hisseler/${symbol}`,
     lastModified: new Date(),
@@ -160,7 +166,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  const indexSymbols = [...new Set([...INDEX_SYMBOLS, ...(await getKnownIndexSymbols())])];
+  const indexSymbols = BORSA_ENABLED ? [...new Set([...INDEX_SYMBOLS, ...(await getKnownIndexSymbols())])] : [];
   const indexPages: MetadataRoute.Sitemap = indexSymbols.map((symbol) => ({
     url: `${BASE_URL}/borsa/endeksler/${symbol}`,
     lastModified: new Date(),

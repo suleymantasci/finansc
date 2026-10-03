@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { SectionHead } from './parts';
+import { BORSA_ENABLED } from '@/lib/features';
 
 /**
  * Hızlı erişim dizini + SSS.
@@ -9,7 +10,7 @@ import { SectionHead } from './parts';
  * SSS: AI arama motorlarının alıntılayabileceği kısa, kendi başına anlamlı cevaplar.
  */
 
-const DIRECTORY: { title: string; href: string; links: { label: string; href: string }[] }[] = [
+const ALL_DIRECTORY: { title: string; href: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Altın',
     href: '/altin',
@@ -93,10 +94,13 @@ const DIRECTORY: { title: string; href: string; links: { label: string; href: st
   },
 ];
 
+const DIRECTORY = BORSA_ENABLED ? ALL_DIRECTORY : ALL_DIRECTORY.filter((col) => col.href !== '/borsa');
+
 const FAQS = [
   {
     q: 'FinansÇözüm’deki fiyatlar ne sıklıkla güncellenir?',
-    a: 'Altın ve döviz fiyatları piyasa açıkken canlı veri akışıyla anlık olarak güncellenir. Borsa İstanbul hisse ve endeks verileri, BIST veri yayın kuralları gereği 15 dakika gecikmeli gösterilir.',
+    a: 'Altın ve döviz fiyatları piyasa açıkken canlı veri akışıyla anlık olarak güncellenir.' +
+      (BORSA_ENABLED ? ' Borsa İstanbul hisse ve endeks verileri, BIST veri yayın kuralları gereği 15 dakika gecikmeli gösterilir.' : ''),
   },
   {
     q: 'Altın fiyatları hangi kaynaklardan alınıyor?',

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { PROTECTED_ROUTES, AUTH_ROUTES, ADMIN_ROUTES } from '@/lib/constants';
+import { BORSA_ENABLED } from '@/lib/features';
 
 // Yapay zekâ tarayıcı/asistanları. *-User ve OAI-SearchBot/PerplexityBot istekleri, bir kullanıcının
 // sorusu yanıtlanırken sayfanın okunduğunu gösterir (GEO görünürlüğünün doğrudan işareti).
@@ -54,6 +55,16 @@ const AUTH_SCOPE = ['/hesabim', '/admin', '/giris', '/kayit', '/sifremi-unuttum'
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   logAiBot(request);
+
+  // Borsa İstanbul verisi yayından kaldırıldı: /borsa altı kalıcı olarak 410 Gone
+  if (!BORSA_ENABLED && (pathname === '/borsa' || pathname.startsWith('/borsa/'))) {
+    return new NextResponse(
+      '<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Sayfa kaldırıldı</title></head>' +
+        '<body style="font-family:system-ui,sans-serif;max-width:560px;margin:15vh auto;padding:0 16px;text-align:center">' +
+        '<h1>Bu sayfa kaldırıldı</h1><p>Borsa bölümü artık yayında değil.</p><p><a href="/">Ana sayfaya dön</a></p></body></html>',
+      { status: 410, headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex', 'Cache-Control': 'public, max-age=3600' } },
+    );
+  }
   if (!AUTH_SCOPE.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return NextResponse.next();
 
   // Check if user has auth token in cookies (set by client-side auth flow)

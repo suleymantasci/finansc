@@ -9,6 +9,7 @@ import { CURRENCIES } from '../instruments/currencies';
 import { COMMODITIES } from '../instruments/commodities';
 import { GOLD_SLUGS, getGoldMeta } from '../seo-data/gold';
 import { STOCK_META } from '../seo-data/stocks';
+import { BORSA_ENABLED } from '../features';
 
 export interface SearchItem {
   type: 'arac' | 'endeks' | 'doviz' | 'altin' | 'hisse' | 'emtia';
@@ -35,7 +36,7 @@ export const STATIC_SEARCH_INDEX: SearchItem[] = ((): SearchItem[] => {
       url: '/araclar/' + slug,
     });
   }
-  for (const [symbol, meta] of Object.entries(INDEX_META)) {
+  for (const [symbol, meta] of BORSA_ENABLED ? Object.entries(INDEX_META) : []) {
     out.push({
       type: 'endeks',
       slug: symbol,
@@ -73,7 +74,7 @@ export const STATIC_SEARCH_INDEX: SearchItem[] = ((): SearchItem[] => {
       url: '/altin/' + slug,
     });
   }
-  for (const [symbol, meta] of Object.entries(STOCK_META)) {
+  for (const [symbol, meta] of BORSA_ENABLED ? Object.entries(STOCK_META) : []) {
     out.push({
       type: 'hisse',
       slug: symbol,

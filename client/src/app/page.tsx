@@ -6,6 +6,7 @@ import { PriceBoards } from './_landing/PriceBoards';
 import { LearnSection } from './_landing/LearnSection';
 import { DirectorySection } from './_landing/DirectorySection';
 import { AdBanner } from '@/components/ads/AdBanner';
+import { BORSA_ENABLED } from '@/lib/features';
 
 /**
  * Ana sayfa — "Finansal Atlas"
@@ -27,7 +28,7 @@ export default function Home() {
       </div>
 
       <div className="space-y-16 py-12 pb-24 md:pb-16 lg:space-y-20 lg:py-16">
-        <MoversSection />
+        {BORSA_ENABLED && <MoversSection />}
         <PriceBoards />
         <LearnSection />
         <div className="mx-auto max-w-[1440px] px-4 lg:px-8">

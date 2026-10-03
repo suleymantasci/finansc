@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { Observable, ReplaySubject } from 'rxjs';
 import { EventSource } from 'eventsource';
+import { BORSA_ENABLED, isBorsaIstanbulInstrument } from '../../common/borsa';
 
 /**
  * Geçmiş veri (grafik) proxy'si — upstream tasci-api'nin /api/history servisleri.
@@ -122,6 +123,11 @@ export class HistoryService {
     const { data } = await firstValueFrom(
       this.http.get(`${this.baseUrl}/api/history/instruments?${params.toString()}`, { timeout: 15000 }),
     );
+    // Borsa kapalıyken BIST hisse/endeksleri listede yer almaz
+    if (!BORSA_ENABLED && Array.isArray(data?.instruments)) {
+      const instruments = (data.instruments as { key: string }[]).filter((i) => !isBorsaIstanbulInstrument(i.key));
+      return { ...data, count: instruments.length, instruments };
+    }
     return data;
   }
 

@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Heart, Star, BarChart3, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { BORSA_ENABLED } from '@/lib/features';
 
 export default function HesabimPage() {
   const user = useAuthStore((s) => s.user);
@@ -23,7 +24,7 @@ export default function HesabimPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Altın, döviz, hisse, endeks, emtia ve araç favorileriniz</p>
+              <p className="text-sm text-muted-foreground">{BORSA_ENABLED ? 'Altın, döviz, hisse, endeks, emtia ve araç favorileriniz' : 'Altın, döviz, emtia ve araç favorileriniz'}</p>
             </CardContent>
           </Card>
         </Link>

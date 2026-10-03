@@ -1,4 +1,5 @@
 import { API_URL } from '@/lib/constants';
+import { BORSA_ENABLED } from '@/lib/features';
 // Search API route — dinamik icerik (blog + hisse + endeks).
 // Statik veri (araçlar, endeksler, döviz, altın) client-side bundle'da
 // aranıyor, bu endpoint sadece DB/API verileri için.
@@ -35,32 +36,36 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     .catch(() => []);
 
   // Backend proxy — stocks cache'i (5dk TTL) üzerinden.
-  const stocksPromise: Promise<unknown[]> = fetch(
-    API_BASE + '/api/market/stocks/search?q=' + encodeURIComponent(q),
-    { next: { revalidate: 300 } },
-  )
-    .then((r) => (r.ok ? r.json() : { data: [] }))
-    .then((d: unknown): unknown[] => {
-      if (d && typeof d === 'object' && 'data' in d && Array.isArray((d as { data: unknown }).data)) {
-        return (d as { data: unknown[] }).data;
-      }
-      return [];
-    })
-    .catch(() => []);
+  const stocksPromise: Promise<unknown[]> = !BORSA_ENABLED
+    ? Promise.resolve([])
+    : fetch(
+        API_BASE + '/api/market/stocks/search?q=' + encodeURIComponent(q),
+        { next: { revalidate: 300 } },
+      )
+        .then((r) => (r.ok ? r.json() : { data: [] }))
+        .then((d: unknown): unknown[] => {
+          if (d && typeof d === 'object' && 'data' in d && Array.isArray((d as { data: unknown }).data)) {
+            return (d as { data: unknown[] }).data;
+          }
+          return [];
+        })
+        .catch(() => []);
 
   // Backend proxy — indices cache'i.
-  const indicesPromise: Promise<unknown[]> = fetch(
-    API_BASE + '/api/market/indices/search?q=' + encodeURIComponent(q),
-    { next: { revalidate: 300 } },
-  )
-    .then((r) => (r.ok ? r.json() : { data: [] }))
-    .then((d: unknown): unknown[] => {
-      if (d && typeof d === 'object' && 'data' in d && Array.isArray((d as { data: unknown }).data)) {
-        return (d as { data: unknown[] }).data;
-      }
-      return [];
-    })
-    .catch(() => []);
+  const indicesPromise: Promise<unknown[]> = !BORSA_ENABLED
+    ? Promise.resolve([])
+    : fetch(
+        API_BASE + '/api/market/indices/search?q=' + encodeURIComponent(q),
+        { next: { revalidate: 300 } },
+      )
+        .then((r) => (r.ok ? r.json() : { data: [] }))
+        .then((d: unknown): unknown[] => {
+          if (d && typeof d === 'object' && 'data' in d && Array.isArray((d as { data: unknown }).data)) {
+            return (d as { data: unknown[] }).data;
+          }
+          return [];
+        })
+        .catch(() => []);
 
   const [blog, stocks, indices] = await Promise.all([
     blogPromise,

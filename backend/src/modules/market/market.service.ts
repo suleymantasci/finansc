@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { ReplaySubject, Observable } from 'rxjs';
 import { EventSource } from 'eventsource';
 import type { BorsaStock, BorsaIndex } from './market.types';
+import { BORSA_ENABLED } from '../../common/borsa';
 
 interface CacheEntry<T> {
   data: T;
@@ -37,7 +38,7 @@ export class MarketService implements OnModuleInit {
 
   onModuleInit() {
     // Start upstream SSE connections eagerly so data is cached before the first client connects
-    this.ensureBorsaSSE();
+    if (BORSA_ENABLED) this.ensureBorsaSSE();
     this.ensureGoldSSEForSource('harem');
     this.ensureCurrencySSE('serbest-piyasa');
     this.ensureCurrencySSE('merkez-bankasi');

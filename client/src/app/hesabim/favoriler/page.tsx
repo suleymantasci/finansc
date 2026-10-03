@@ -15,9 +15,10 @@ import { INDEX_META } from '@/lib/seo-data/indices';
 import { STOCK_META } from '@/lib/seo-data/stocks';
 import { TOOL_META } from '@/lib/seo-data/tools';
 import { cn } from '@/lib/utils';
+import { BORSA_ENABLED } from '@/lib/features';
 import type { Favorite, FavoriteType } from '@/types';
 
-const GROUPS: { type: FavoriteType; title: string }[] = [
+const ALL_GROUPS: { type: FavoriteType; title: string }[] = [
   { type: 'gold', title: 'Altın' },
   { type: 'currency', title: 'Döviz' },
   { type: 'stock', title: 'Hisseler' },
@@ -25,6 +26,7 @@ const GROUPS: { type: FavoriteType; title: string }[] = [
   { type: 'commodity', title: 'Emtia' },
   { type: 'tool', title: 'Hesaplama araçları' },
 ];
+const GROUPS = BORSA_ENABLED ? ALL_GROUPS : ALL_GROUPS.filter((g) => g.type !== 'stock' && g.type !== 'index');
 
 /** Favori kaydını görünen ad, bağlantı ve (varsa) canlı fiyat tanımına çevir */
 function describe(f: Favorite): { label: string; sub?: string; href: string; spec?: QuoteSpec } {
@@ -92,7 +94,7 @@ export default function FavorilerPage() {
       <p className="eyebrow text-primary">Hesabım</p>
       <h1 className="font-display mt-2 text-4xl text-foreground sm:text-5xl">Favorilerim</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Detay sayfalarındaki <Star className="inline h-3.5 w-3.5 align-[-2px]" aria-hidden="true" /> Favorilere ekle butonuyla altın, döviz, hisse, endeks, emtia ve hesaplama araçlarını buraya ekleyebilirsiniz.
+        Detay sayfalarındaki <Star className="inline h-3.5 w-3.5 align-[-2px]" aria-hidden="true" /> Favorilere ekle butonuyla altın, döviz, {BORSA_ENABLED && 'hisse, endeks, '}emtia ve hesaplama araçlarını buraya ekleyebilirsiniz.
       </p>
 
       <div className="mt-8 space-y-6">
@@ -108,7 +110,7 @@ export default function FavorilerPage() {
                 ['Dolar', '/doviz/dolar'],
                 ['BIST 100', '/borsa/endeksler/XU100'],
                 ['Kredi hesaplama', '/araclar/ihtiyac-kredisi'],
-              ].map(([l, h]) => (
+              ].filter(([, h]) => BORSA_ENABLED || !h.startsWith('/borsa')).map(([l, h]) => (
                 <Link key={h} href={h} className="inline-flex h-9 items-center rounded-full border border-border px-4 text-[13px] text-muted-foreground hover:border-primary/60 hover:text-foreground">
                   {l}
                 </Link>

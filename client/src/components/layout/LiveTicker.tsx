@@ -9,6 +9,7 @@ import { pickCurrency, pickGold, pickIndex } from '@/lib/market-pick';
 import { API_URL } from '@/lib/constants';
 import type { GoldPrice } from '@/types';
 import { cn } from '@/lib/utils';
+import { BORSA_ENABLED } from '@/lib/features';
 
 interface TickerItem {
   label: string;
@@ -35,7 +36,7 @@ function LiveTicker() {
       switch (msg.channel) {
         case 'borsa': {
           const d = msg.payload as BorsaStreamData;
-          if (d?.type === 'data') updateFromBorsaStream(d);
+          if (BORSA_ENABLED && d?.type === 'data') updateFromBorsaStream(d);
           break;
         }
         case 'gold': {
@@ -95,8 +96,8 @@ function LiveTicker() {
     const gram = pickGold(goldPrices, 'Gram Altın');
     const ceyrek = pickGold(goldPrices, 'Çeyrek Altın');
     const ons = pickGold(goldPrices, 'Ons Altın');
-    const xu100 = pickIndex(indices, 'XU100');
-    const xu030 = pickIndex(indices, 'XU030');
+    const xu100 = BORSA_ENABLED ? pickIndex(indices, 'XU100') : undefined;
+    const xu030 = BORSA_ENABLED ? pickIndex(indices, 'XU030') : undefined;
 
     if (usd) items.push({ label: 'USD/TRY', href: '/doviz/dolar', value: usd.sellPrice, decimals: 4, change: usd.changePercent, flashKey: `currency-serbest-piyasa-${usd.name}` });
     if (eur) items.push({ label: 'EUR/TRY', href: '/doviz/euro', value: eur.sellPrice, decimals: 4, change: eur.changePercent, flashKey: `currency-serbest-piyasa-${eur.name}` });

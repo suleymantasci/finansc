@@ -12,6 +12,7 @@ import { CompareChart, type CompareRow } from '@/components/charts/MiniCharts';
 import { bruttenNete, nettenBrute } from '@/app/araclar/[slug]/_tools/_shared/maas-engine';
 import { AVAILABLE_YEARS, TAX_DATA, type MaasFormData } from '@/app/araclar/[slug]/_tools/_shared/tax-data';
 import { cn } from '@/lib/utils';
+import { BORSA_ENABLED } from '@/lib/features';
 import { ArrowLink, CardHead } from './parts';
 
 const fmt2 = { minimumFractionDigits: 2, maximumFractionDigits: 2 } as const;
@@ -139,12 +140,13 @@ function prevYearKey(key: string): string {
 }
 
 type AssetId = 'gold' | 'usd' | 'eur' | 'bist';
-const ASSETS: { id: AssetId; label: string; short: string; instrument: string; href: string }[] = [
+const ALL_ASSETS: { id: AssetId; label: string; short: string; instrument: string; href: string }[] = [
   { id: 'gold', label: 'Altın', short: 'Gram altın', instrument: instrumentKey.gold('serbest-piyasa', 'gram-altin'), href: '/altin/gram-altin' },
   { id: 'usd', label: 'Dolar', short: 'Dolar', instrument: instrumentKey.fx('USD'), href: '/doviz/dolar' },
   { id: 'eur', label: 'Euro', short: 'Euro', instrument: instrumentKey.fx('EUR'), href: '/doviz/euro' },
   { id: 'bist', label: 'BIST 100', short: 'BIST 100', instrument: instrumentKey.index('XU100'), href: '/borsa/endeksler/XU100' },
 ];
+const ASSETS = BORSA_ENABLED ? ALL_ASSETS : ALL_ASSETS.filter((a) => a.id !== 'bist');
 
 function RealReturnCard() {
   const [tufe, setTufe] = useState<TufeEntry[]>([]);
@@ -261,7 +263,7 @@ function RealReturnCard() {
         </dl>
       </div>
       <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
-        Yıllık getiri: ay sonu kapanışının 12 ay öncesine göre değişimi. Kaynak: TCMB (TÜFE), serbest piyasa ve BIST. Reel = (1 + getiri) ÷ (1 + enflasyon) − 1.
+        Yıllık getiri: ay sonu kapanışının 12 ay öncesine göre değişimi. Kaynak: TCMB (TÜFE){BORSA_ENABLED ? ', serbest piyasa ve BIST' : ' ve serbest piyasa'}. Reel = (1 + getiri) ÷ (1 + enflasyon) − 1.
       </p>
     </article>
   );

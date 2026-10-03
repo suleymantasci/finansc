@@ -1,6 +1,7 @@
 import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { BORSA_ENABLED } from '@/lib/features';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { INDEX_META, INDEX_SYMBOLS, getIndexMeta, type IndexMeta } from '@/lib/seo-data/indices';
 import { STOCK_META } from '@/lib/seo-data/stocks';
@@ -61,6 +62,7 @@ function getFallbackMeta(symbol: string): IndexMeta {
 }
 
 export async function generateStaticParams() {
+  if (!BORSA_ENABLED) return [];
   const live = await getKnownIndexSymbols();
   return [...new Set([...INDEX_SYMBOLS, ...live])].map((sembol) => ({ sembol }));
 }

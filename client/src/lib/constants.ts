@@ -1,3 +1,5 @@
+import { BORSA_ENABLED } from './features';
+
 // ── Site ──
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'FinansÇözüm';
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -18,7 +20,7 @@ export type NavItem =
 export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'Altın', href: '/altin', icon: 'Coins' },
   { label: 'Döviz', href: '/doviz', icon: 'Banknote' },
-  { label: 'Borsa', href: '/borsa', icon: 'TrendingUp' },
+  ...(BORSA_ENABLED ? [{ label: 'Borsa', href: '/borsa', icon: 'TrendingUp' }] : []),
   { label: 'Emtia', href: '/emtia', icon: 'Fuel' },
   {
     label: 'Veriler',
@@ -37,8 +39,12 @@ export const FOOTER_LINKS = {
   piyasalar: [
     { label: 'Altın Fiyatları', href: '/altin' },
     { label: 'Döviz Kurları', href: '/doviz' },
-    { label: 'Borsa', href: '/borsa' },
-    { label: 'Hisse Senetleri', href: '/borsa?tab=hisseler' },
+    ...(BORSA_ENABLED
+      ? [
+          { label: 'Borsa', href: '/borsa' },
+          { label: 'Hisse Senetleri', href: '/borsa?tab=hisseler' },
+        ]
+      : []),
     { label: 'Emtia Fiyatları', href: '/emtia' },
     { label: 'Enflasyon (TÜFE / ÜFE)', href: '/enflasyon' },
   ],

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Shield, Mail, AlertCircle, CheckCircle2, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
+import { BORSA_ENABLED } from '@/lib/features';
 
 export const metadata: Metadata = {
   title: 'Kaynak Politikası ve Veri Doğrulama',
@@ -41,13 +42,13 @@ const SOURCES = [
       'TCMB’nin ilan ettiği gösterge niteliğindeki kurlar ve TCMB’nin yayımladığı, TÜİK kaynaklı enflasyon tabloları. TCMB kurları her iş günü saat 15.30’da ilan edilir.',
     updateFrequency: 'Kur: saatlik kontrol · Enflasyon: aylık',
   },
-  {
+  ...(BORSA_ENABLED ? [{
     name: 'Borsa İstanbul hisse ve endeksleri',
     category: 'Borsa',
     description:
       'Kamuya açık, gecikmeli fiyat yayınlarından otomatik olarak derlenir. Veriler en az 15 dakika gecikmelidir; FinansÇözüm, Borsa İstanbul A.Ş. ile bağlantılı değildir.',
     updateFrequency: 'Seans içinde ~30 sn (15+ dk gecikmeli)',
-  },
+  }] : []),
   {
     name: 'Geçmiş fiyat grafikleri ve emtia',
     category: 'Grafikler',
@@ -134,7 +135,7 @@ export default function KaynakPolitikasiPage() {
             </li>
             <li>
               <strong>Yayın:</strong> Güncellenen fiyatlar sayfaya otomatik iletilir; bağlantı koparsa otomatik
-              olarak yeniden kurulur. Borsa verileri bu yolla da en az 15 dakika gecikmeli gelir.
+              olarak yeniden kurulur.{BORSA_ENABLED && ' Borsa verileri bu yolla da en az 15 dakika gecikmeli gelir.'}
             </li>
             <li>
               <strong>Gecikmiş veri işaretleme:</strong> Piyasa kapalıyken son bilinen fiyat gösterilir ve

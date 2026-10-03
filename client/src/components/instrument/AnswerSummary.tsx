@@ -1,4 +1,5 @@
 import { API_URL } from '@/lib/constants';
+import { BORSA_ENABLED } from '@/lib/features';
 
 /**
  * Sunucuda üretilen "doğrudan yanıt" cümlesi: güncel fiyat + tarih/saat + değişim.
@@ -51,6 +52,7 @@ export async function answerText(spec: Spec): Promise<string | null> {
 }
 
 async function sentence(spec: Spec): Promise<{ text: string; iso?: string } | null> {
+  if (!BORSA_ENABLED && (spec.kind === 'stock' || spec.kind === 'index' || spec.kind === 'borsa-list')) return null;
   if (spec.kind === 'gold') {
     const list = await getJson<{ source: string; goldType: string; buyPrice: number; sellPrice: number; changePercent: number | null; timestamp?: string }[]>(
       '/api/market/gold',
