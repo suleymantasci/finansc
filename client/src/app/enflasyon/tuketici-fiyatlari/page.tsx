@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   keywords: ['tüfe', 'tüketici fiyat endeksi', 'enflasyon', 'aylık enflasyon', 'yıllık enflasyon', 'tüfe tarihsel'],
   alternates: { canonical: `${SITE_URL}/enflasyon/tuketici-fiyatlari` },
   openGraph: {
+    images: [{ url: `${SITE_URL}/og-default.png`, width: 1200, height: 630, alt: SITE_NAME }],
     type: 'website',
     title: 'TÜFE — Tüketici Fiyat Endeksi Verileri',
     description: 'TÜFE yıllık ve aylık değişim verileri. 2005’ten bugüne. TÜİK verileri, TCMB üzerinden.',

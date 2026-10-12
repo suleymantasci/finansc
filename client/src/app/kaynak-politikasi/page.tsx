@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     'FinansÇözüm olarak verilerimizi nereden aldığımızı, nasıl doğruladığımızı ve güncellediğimizi açıklıyoruz. Şeffaflık ve güvenilirlik ilkelerimiz.',
   alternates: { canonical: `${SITE_URL}/kaynak-politikasi` },
   openGraph: {
+    images: [{ url: `${SITE_URL}/og-default.png`, width: 1200, height: 630, alt: SITE_NAME }],
     title: 'Kaynak Politikası ve Veri Doğrulama | FinansÇözüm',
     description: 'Veri kaynaklarımız, güncelleme sıklığımız ve doğrulama süreçlerimiz.',
     url: `${SITE_URL}/kaynak-politikasi`,

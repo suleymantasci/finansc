@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   keywords: ['üfe', 'yi-üfe', 'yurt içi üretici fiyat endeksi', 'üretici enflasyonu', 'üretici fiyat endeksi'],
   alternates: { canonical: `${SITE_URL}/enflasyon/uretici-fiyatlari` },
   openGraph: {
+    images: [{ url: `${SITE_URL}/og-default.png`, width: 1200, height: 630, alt: SITE_NAME }],
     type: 'website',
     title: 'ÜFE / Yİ-ÜFE — Yurt İçi Üretici Fiyat Endeksi',
     description: 'ÜFE ve Yİ-ÜFE yıllık ve aylık değişim verileri. TÜİK verileri, TCMB üzerinden.',

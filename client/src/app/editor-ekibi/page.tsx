@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     'FinansÇözüm içeriklerinin ve verilerinin nasıl hazırlandığı, yapay zekâ kullanımı ve yayın ilkeleri.',
   alternates: { canonical: `${SITE_URL}/editor-ekibi` },
   openGraph: {
+    images: [{ url: `${SITE_URL}/og-default.png`, width: 1200, height: 630, alt: SITE_NAME }],
     title: 'Editör Ekibi | FinansÇözüm',
     description: 'İçerik hazırlama süreci ve yayın ilkeleri',
     url: `${SITE_URL}/editor-ekibi`,

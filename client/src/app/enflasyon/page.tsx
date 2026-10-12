@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     title: 'Enflasyon Verileri — TÜFE ve ÜFE | FinansÇözüm',
     description: 'Güncel TÜFE ve ÜFE / Yİ-ÜFE verileri, son 12 ay karşılaştırması. TÜİK verileri, TCMB üzerinden.',
     url: `${SITE_URL}/enflasyon`,
+    images: [{ url: `${SITE_URL}/og-default.png`, width: 1200, height: 630, alt: SITE_NAME }],
     siteName: SITE_NAME,
     locale: 'tr_TR',
   },
