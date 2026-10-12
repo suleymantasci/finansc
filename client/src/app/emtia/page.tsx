@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 export const revalidate = 600;
 
 export const metadata: Metadata = {
-  title: 'Emtia Fiyatları Bugün | Petrol, Gümüş, Bakır, Buğday',
+  title: 'Emtia Fiyatları Bugün: Petrol, Gümüş, Buğday',
   description:
     'Brent petrol, WTI, doğalgaz, gümüş, platin, bakır, buğday, kahve ve kakao dahil 16 emtianın son kapanış fiyatı, günlük değişimi ve geçmiş grafiği.',
   alternates: { canonical: `${SITE_URL}/emtia` },
