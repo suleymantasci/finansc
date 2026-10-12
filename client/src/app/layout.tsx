@@ -147,6 +147,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable}`}
     >
       <head>
+        <meta name="dijital-asistan-verification" content="FnNViOjSXWAiqaCxtlVUQxem50dTJL2m-CnH8YDc8tc" />
         {/* Çerez onayı verilmişse çubuğu ilk çizimden önce gizle (çubuk SSR'da çizilir; bkz. CookieConsent) */}
         <script
           dangerouslySetInnerHTML={{
