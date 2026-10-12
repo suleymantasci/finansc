@@ -16,6 +16,10 @@ import { RelatedQuotes } from '@/components/instrument/RelatedQuotes';
 import { AboutBlock } from '@/components/instrument/AboutBlock';
 import { FaqBlock } from '@/components/instrument/FaqBlock';
 import { FavoriteButton } from '@/components/instrument/FavoriteButton';
+import { PriceStats } from '@/components/instrument/PriceStats';
+import { ToolLinks } from '@/components/instrument/ToolLinks';
+import { getPriceStats, priceStatsFaq } from '@/lib/price-stats';
+import { fitTitle } from '@/lib/seo-title';
 
 interface Props {
   params: Promise<{ parite: string }>;
@@ -33,14 +37,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const e = CURRENCY_BY_SLUG[parite];
   if (!e) return { title: 'Döviz Bulunamadı', robots: { index: false, follow: false } };
 
-  const title = `${e.name} Kuru Bugün (${e.code}/TRY) | Canlı ${e.code} TL`;
+  const { title: metaTitle, text: title } = fitTitle(
+    `${e.name} Kuru Bugün (${e.code}/TRY) | Canlı ${e.code} TL`,
+    `${e.name} Kuru Bugün: Canlı ${e.code}/TRY`,
+    `${e.name} Kuru Bugün (${e.code}/TRY)`,
+    `${e.code}/TRY Kuru Bugün`,
+  );
   const { description: long } = currencyContent(e);
   const description = long.length > 155 ? long.slice(0, 153).trimEnd() + '…' : long;
   const url = `${SITE_URL}/doviz/${e.slug}`;
   const og = `/api/og?type=doviz&title=${encodeURIComponent(`${e.code}/TRY ${e.name}`)}&subtitle=${encodeURIComponent('Döviz Kuru Bugün, Grafik ve Çevirici')}&category=DÖVİZ&url=${encodeURIComponent(`finanscozum.net/doviz/${e.slug}`)}`;
 
   return {
-    title,
+    title: metaTitle,
     description,
     keywords: [`${e.code} tl`, `${e.name.toLocaleLowerCase('tr-TR')} kuru`, `${e.code} try`, `${e.name.toLocaleLowerCase('tr-TR')} kaç tl`, 'döviz kuru'],
     alternates: { canonical: url },
@@ -57,6 +66,9 @@ export default async function CurrencyPage({ params }: Props) {
   const { description, faq, related } = currencyContent(e);
   const canonical = `${SITE_URL}/doviz/${e.slug}`;
   const historyKey = currencyHistoryKey(e);
+  const statsLabel = { name: `${e.name} kuru`, unit: 'TL', decimals: 4 };
+  const stats = await getPriceStats(historyKey, e.historyUnit);
+  const faqs = stats ? [...faq, ...priceStatsFaq(statsLabel, stats)] : faq;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -117,6 +129,7 @@ export default async function CurrencyPage({ params }: Props) {
           )}
 
           <SourceTable kind="fx" id={e.code} />
+          {stats && <PriceStats s={stats} label={statsLabel} />}
 
           <AdBanner page={`doviz-${e.slug}`} position="in-article" />
 
@@ -133,11 +146,12 @@ export default async function CurrencyPage({ params }: Props) {
             <p>{description}</p>
           </AboutBlock>
 
-          <FaqBlock title={`${e.name} kuru hakkında sık sorulanlar`} faqs={faq} />
+          <FaqBlock title={`${e.name} kuru hakkında sık sorulanlar`} faqs={faqs} />
         </div>
 
         <aside className="space-y-6">
           <Converter title={`${e.code} çevirici`} unitLabel={e.code} moneyLabel="Türk lirası" spec={{ kind: 'fx', code: e.code }} decimals={2} />
+          <ToolLinks slugs={['doviz-hesaplama', 'doviz-kar-zarar-hesaplama', 'gecmis-doviz-kurlari', 'parasal-deger']} />
           <RelatedQuotes
             title="İlgili kurlar"
             moreHref="/doviz"

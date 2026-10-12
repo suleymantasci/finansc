@@ -12,7 +12,7 @@ import { fetchTufeLatest, fetchUfeLatest, fetchTufeAll, fetchUfeAll } from '@/li
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: 'Enflasyon Verileri — TÜFE ve ÜFE | Güncel Aylık ve Yıllık Değişim',
+  title: 'Enflasyon Verileri: Güncel TÜFE ve ÜFE',
   description:
     'TÜFE ve Yİ-ÜFE’nin güncel aylık ve yıllık değişim oranları, son 12 ay karşılaştırması. TÜİK tarafından açıklanan veriler, TCMB üzerinden alınır.',
   keywords: ['enflasyon', 'tüfe', 'üfe', 'yi-üfe', 'tüketici fiyat endeksi', 'üretici fiyat endeksi', 'aylık enflasyon', 'yıllık enflasyon'],

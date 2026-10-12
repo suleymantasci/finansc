@@ -50,6 +50,16 @@ function logAiBot(request: NextRequest) {
   if (se) console.log(JSON.stringify({ t: 'search-bot', bot: se[1], path: request.nextUrl.pathname, ts: new Date().toISOString() }));
 }
 
+// Kaldırılan /borsa sayfalarına gelen ziyaretçiye (veri göstermeyen) hisse araçları önerilir
+const BORSA_GONE_LINKS: [string, string][] = [
+  ['/araclar/hisse-kar-zarar-hesaplama', 'Hisse kâr/zarar hesaplama'],
+  ['/araclar/ortalama-maliyet-hesaplama', 'Hisse ortalama maliyet hesaplama'],
+  ['/araclar/temettu-hesaplama', 'Temettü hesaplama'],
+  ['/araclar/fk-orani-hesaplama', 'F/K ve PD/DD hesaplama'],
+  ['/araclar/sermaye-temettu', 'Bedelli/bedelsiz sermaye artırımı'],
+  ['/blog', 'Yatırım rehberleri'],
+];
+
 const AUTH_SCOPE = ['/hesabim', '/admin', '/giris', '/kayit', '/sifremi-unuttum'];
 
 export function proxy(request: NextRequest) {
@@ -61,7 +71,10 @@ export function proxy(request: NextRequest) {
     return new NextResponse(
       '<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Sayfa kaldırıldı</title></head>' +
         '<body style="font-family:system-ui,sans-serif;max-width:560px;margin:15vh auto;padding:0 16px;text-align:center">' +
-        '<h1>Bu sayfa kaldırıldı</h1><p>Borsa bölümü artık yayında değil.</p><p><a href="/">Ana sayfaya dön</a></p></body></html>',
+        '<h1>Bu sayfa kaldırıldı</h1><p>Borsa bölümü artık yayında değil. Hisse işlemleriniz için hesaplama araçlarımızı kullanabilirsiniz:</p>' +
+        '<ul style="list-style:none;padding:0;line-height:2">' +
+        BORSA_GONE_LINKS.map(([href, label]) => `<li><a href="${href}">${label}</a></li>`).join('') +
+        '</ul><p><a href="/">Ana sayfaya dön</a></p></body></html>',
       { status: 410, headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex', 'Cache-Control': 'public, max-age=3600' } },
     );
   }

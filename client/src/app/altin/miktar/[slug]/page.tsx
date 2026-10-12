@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
+import { fitTitle } from '@/lib/seo-title';
 import { GRAM_AMOUNTS, getGramAmount } from '@/lib/seo-data/altin-amounts';
 import { LiveGoldTicker } from './LiveGoldTicker';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const canonical = `${SITE_URL}${amount.path}`;
   return {
-    title: amount.title,
+    title: fitTitle(amount.title, `${amount.grams.toLocaleString('tr-TR')} gram altın kaç TL? Güncel fiyat`, `${amount.grams.toLocaleString('tr-TR')} gram altın kaç TL?`).title,
     description: amount.description,
     keywords: [
       `${amount.grams} gram altın`,

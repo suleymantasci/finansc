@@ -113,7 +113,7 @@ export function AtlasHero() {
         <div className="max-w-4xl">
           <h1 id="hero-title">
             <span className="eyebrow block text-primary">
-              {BORSA_ENABLED ? 'Canlı altın, döviz, borsa & 40+ hesaplama aracı' : 'Canlı altın, döviz & 40+ hesaplama aracı'}
+              {BORSA_ENABLED ? 'Canlı altın, döviz, borsa & 100+ hesaplama aracı' : 'Canlı altın, döviz & 100+ hesaplama aracı'}
             </span>
             <span className="font-display mt-5 block text-[2.6rem] leading-[1.05] text-foreground sm:text-6xl lg:text-[4.75rem]">
               Tüm finansal cevaplar,{' '}

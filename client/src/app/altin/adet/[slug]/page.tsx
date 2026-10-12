@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
+import { fitTitle } from '@/lib/seo-title';
 import { PIECE_AMOUNTS, getPieceAmount } from '@/lib/seo-data/altin-amounts';
 import { LivePieceTicker } from './LivePieceTicker';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const canonical = `${SITE_URL}${item.path}`;
   return {
-    title: item.title,
+    title: fitTitle(item.title, `${item.count} adet ${item.goldName} kaç TL? Toplam fiyat`, `${item.count} ${item.goldName} kaç TL?`).title,
     description: item.description,
     keywords: [
       `${item.count} adet ${item.goldName.toLocaleLowerCase('tr-TR')}`,

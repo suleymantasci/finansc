@@ -15,6 +15,10 @@ import { AboutBlock } from '@/components/instrument/AboutBlock';
 import { FaqBlock } from '@/components/instrument/FaqBlock';
 import { FavoriteButton } from '@/components/instrument/FavoriteButton';
 import { cn } from '@/lib/utils';
+import { PriceStats } from '@/components/instrument/PriceStats';
+import { ToolLinks } from '@/components/instrument/ToolLinks';
+import { getPriceStats, priceStatsFaq } from '@/lib/price-stats';
+import { fitTitle } from '@/lib/seo-title';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -38,12 +42,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const e = COMMODITY_BY_SLUG[slug];
   if (!e) return { title: 'Emtia Bulunamadı', robots: { index: false, follow: false } };
-  const title = `${e.name} Fiyatı Bugün (${e.unit}) | Grafik ve Geçmiş`;
+  const { title: metaTitle, text: title } = fitTitle(
+    `${e.name} Fiyatı Bugün (${e.unit}) | Grafik ve Geçmiş`,
+    `${e.name} Fiyatı Bugün (${e.unit}) ve Grafik`,
+    `${e.name} Fiyatı Bugün (${e.unit})`,
+    `${e.name} Fiyatı Bugün`,
+  );
   const description = e.description.length > 155 ? e.description.slice(0, 153).trimEnd() + '…' : e.description;
   const url = `${SITE_URL}/emtia/${e.slug}`;
   const og = `/api/og?type=emtia&title=${encodeURIComponent(e.name)}&subtitle=${encodeURIComponent(`${e.unit} · Fiyat ve Grafik`)}&category=EMTİA&url=${encodeURIComponent(`finanscozum.net/emtia/${e.slug}`)}`;
   return {
-    title,
+    title: metaTitle,
     description,
     keywords: [`${e.name.toLocaleLowerCase('tr-TR')} fiyatı`, `${e.shortName.toLocaleLowerCase('tr-TR')} ne kadar`, 'emtia fiyatları', `${e.name.toLocaleLowerCase('tr-TR')} grafik`],
     alternates: { canonical: url },
@@ -59,6 +68,9 @@ export default async function CommodityPage({ params }: Props) {
 
   const peers = COMMODITIES.filter((c) => c.group === e.group && c.slug !== e.slug);
   const [snap, ...peerSnaps] = await Promise.all([fetchCommoditySnapshot(e), ...peers.map((p) => fetchCommoditySnapshot(p))]);
+  const statsLabel = { name: e.name, unit: e.unit === 'oran' ? '' : e.unit, decimals: e.decimals };
+  const stats = await getPriceStats(e.historyKey);
+  const faqs = stats ? [...e.faq, ...priceStatsFaq(statsLabel, stats)] : e.faq;
   const canonical = `${SITE_URL}/emtia/${e.slug}`;
   const Icon = GROUP_ICON[e.group];
   const ch = snap?.changePct ?? 0;
@@ -158,6 +170,7 @@ export default async function CommodityPage({ params }: Props) {
           </section>
 
           <PriceChart instrument={e.historyKey} defaultRange="1y" decimals={e.decimals} live={false} />
+          {stats && <PriceStats s={stats} label={statsLabel} />}
 
           <AdBanner page={`emtia-${e.slug}`} position="in-article" />
 
@@ -174,7 +187,7 @@ export default async function CommodityPage({ params }: Props) {
             <p>{e.description}</p>
           </AboutBlock>
 
-          <FaqBlock title={`${e.name} hakkında sık sorulanlar`} faqs={e.faq} />
+          <FaqBlock title={`${e.name} hakkında sık sorulanlar`} faqs={faqs} />
         </div>
 
         <aside className="space-y-6">
@@ -192,6 +205,7 @@ export default async function CommodityPage({ params }: Props) {
               staticPrice: peerSnaps[i] ? { value: formatCommodity(p, peerSnaps[i]!.last), change: peerSnaps[i]!.changePct } : undefined,
             }))}
           />
+          <ToolLinks slugs={['vadeli-islem-fiyati', 'doviz-hesaplama', 'altin-hesaplama', 'bilesik-buyume']} />
         </aside>
       </div>
     </>

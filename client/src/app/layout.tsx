@@ -147,6 +147,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable}`}
     >
       <head>
+        {/* Canlı fiyatlar (SSE/fetch) API alan adından gelir; bağlantıyı erkenden kur (PSI: ~300 ms LCP kazancı) */}
+        {process.env.NEXT_PUBLIC_API_URL?.startsWith('https://') && <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL} crossOrigin="anonymous" />}
         <meta name="dijital-asistan-verification" content="FnNViOjSXWAiqaCxtlVUQxem50dTJL2m-CnH8YDc8tc" />
         {/* Çerez onayı verilmişse çubuğu ilk çizimden önce gizle (çubuk SSR'da çizilir; bkz. CookieConsent) */}
         <script

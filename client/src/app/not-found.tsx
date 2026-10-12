@@ -6,7 +6,7 @@ import { BORSA_ENABLED } from '@/lib/features';
 
 export const metadata: Metadata = {
   title: 'Sayfa Bulunamadı (404)',
-  description: 'Aradığınız sayfa bulunamadı. Ancak FinansÇözüm\'de altın, döviz ve 40+ finansal hesaplama aracı sizleri bekliyor.',
+  description: 'Aradığınız sayfa bulunamadı. Ancak FinansÇözüm\'de altın, döviz ve 100+ finansal hesaplama aracı sizleri bekliyor.',
   robots: {
     index: false,
     follow: false,

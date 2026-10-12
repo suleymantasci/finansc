@@ -7,6 +7,7 @@ import { BlogArticle } from './BlogArticle';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import type { BlogPost } from '@/types';
 import type { Metadata } from 'next';
+import { fitDescription, fitTitle } from '@/lib/seo-title';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -83,7 +84,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
   const title = post.seoTitle || post.title;
-  const description = post.seoDescription || post.excerpt || undefined;
+  const description = fitDescription(post.seoDescription || post.excerpt);
   // OG image stratejisi:
   // 1) Blog API'sinde kendi uploads/ URL varsa → onu kullan (en özgün)
   // 2) Yoksa → /api/og?type=blog endpoint'i branded HTML-rendered PNG üretir
@@ -94,7 +95,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : `/api/og?type=blog&title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(post.excerpt || post.seoDescription || '')}&category=BLOG&url=${encodeURIComponent(`finanscozum.net/blog/${post.slug}`)}`;
 
   return {
-    title,
+    title: fitTitle(title).title,
     description,
     keywords: post.seoKeywords ? post.seoKeywords.split(',').map((k) => k.trim()) : undefined,
     alternates: {

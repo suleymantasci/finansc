@@ -11,7 +11,7 @@ import { UfeClient } from './UfeClient';
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: 'ÜFE / Yİ-ÜFE — Yurt İçi Üretici Fiyat Endeksi (Tarihsel)',
+  title: 'Yİ-ÜFE Verileri: Üretici Fiyat Endeksi',
   description:
     'ÜFE ve Yİ-ÜFE (Yurt İçi Üretici Fiyat Endeksi) yıllık ve aylık değişim verileri. 2003’ten bugüne aylık veriler, sıralanabilir tablo. TÜİK verileri, TCMB üzerinden.',
   keywords: ['üfe', 'yi-üfe', 'yurt içi üretici fiyat endeksi', 'üretici enflasyonu', 'üretici fiyat endeksi'],

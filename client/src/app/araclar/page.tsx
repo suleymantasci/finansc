@@ -11,7 +11,7 @@ import { TOOL_ICONS } from '@/lib/tools/icons';
 const TOTAL = TOOL_CATALOG.length;
 
 export const metadata: Metadata = {
-  title: 'Hesaplama Araçları | Kredi, Maaş, Kıdem, Vergi, Emeklilik',
+  title: `${TOTAL} Hesaplama Aracı: Kredi, Maaş, Vergi, BES`,
   description: `Kıdem tazminatı, maaş, kredi, KDV, gelir vergisi, emeklilik, işsizlik maaşı, faiz ve yüzde hesaplamaları için ${TOTAL} ücretsiz araç. Sonuçları link ile paylaşın.`,
   keywords: ['hesaplama araçları', 'kıdem tazminatı hesaplama', 'maaş hesaplama', 'kredi hesaplama', 'kdv hesaplama', 'emeklilik hesaplama', 'faiz hesaplama', 'yüzde hesaplama'],
   alternates: { canonical: 'https://finanscozum.net/araclar' },

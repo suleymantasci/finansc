@@ -1,6 +1,7 @@
 import { API_URL } from '@/lib/constants';
 import { safeJsonLd } from '@/lib/json-ld';
 import type { Metadata } from 'next';
+import { fitTitle } from '@/lib/seo-title';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { TOOL_META } from '@/lib/seo-data/tools';
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Description'ı 155 char sınırına kırp (Pit 28b)
   const description = meta.desc.length > 155 ? meta.desc.slice(0, 153).trimEnd() + '…' : meta.desc;
   return {
-    title: meta.title,
+    title: fitTitle(meta.title).title,
     description,
     keywords: [meta.title.toLowerCase(), 'hesaplama aracı', 'finans', slug],
     alternates: { canonical: `https://finanscozum.net/araclar/${slug}` },

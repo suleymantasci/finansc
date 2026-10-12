@@ -299,7 +299,7 @@ function ToolsCard() {
 
       <p className="eyebrow relative text-[#d4a94f]">Hesaplama araçları</p>
       <h3 className="font-display relative mt-3 max-w-[13ch] text-[1.85rem] leading-[1.08] text-[#f3efe6]">
-        Daha akıllı kararlar, 40+ ücretsiz araçla.
+        Daha akıllı kararlar, 100+ ücretsiz araçla.
       </h3>
       <ul className="relative mt-5 grid max-w-[62%] grid-cols-1 gap-y-0.5 text-sm">
         {FEATURED_TOOLS.map((t) => (

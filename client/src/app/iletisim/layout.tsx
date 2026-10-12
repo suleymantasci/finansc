@@ -3,7 +3,7 @@ import { SITE_URL } from '@/lib/constants';
 
 // Sayfa istemci bileşeni olduğu için metadata burada
 export const metadata: Metadata = {
-  title: 'İletişim',
+  title: 'İletişim ve Geri Bildirim',
   description: 'FinansÇözüm ile iletişime geçin: öneri, düzeltme talebi ve iş birliği için mesaj gönderin veya info@finanscozum.net adresine yazın.',
   alternates: { canonical: `${SITE_URL}/iletisim` },
 };

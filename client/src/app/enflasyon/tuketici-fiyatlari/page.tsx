@@ -12,7 +12,7 @@ import { TufeClient } from './TufeClient';
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: 'TÜFE — Tüketici Fiyat Endeksi Verileri (Tarihsel)',
+  title: 'TÜFE Verileri: Aylık ve Yıllık Enflasyon',
   description:
     'TÜFE (Tüketici Fiyat Endeksi) yıllık ve aylık değişim verileri. 2005’ten bugüne aylık veriler, sıralanabilir tablo. TÜİK verileri, TCMB üzerinden.',
   keywords: ['tüfe', 'tüketici fiyat endeksi', 'enflasyon', 'aylık enflasyon', 'yıllık enflasyon', 'tüfe tarihsel'],

@@ -16,6 +16,10 @@ import { AboutBlock } from '@/components/instrument/AboutBlock';
 import { FaqBlock } from '@/components/instrument/FaqBlock';
 import { FavoriteButton } from '@/components/instrument/FavoriteButton';
 import { AdBanner } from '@/components/ads/AdBanner';
+import { PriceStats } from '@/components/instrument/PriceStats';
+import { ToolLinks } from '@/components/instrument/ToolLinks';
+import { getPriceStats, priceStatsFaq } from '@/lib/price-stats';
+import { fitTitle } from '@/lib/seo-title';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -36,14 +40,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // Title: page-prefix only. Layout template '%s | SITE_NAME' ekliyor (Pit 28 fix)
-  const title = `${meta.name} Fiyatı Bugün | Anlık ${meta.shortName} Altın`;
+  const { title: metaTitle, text: title } = fitTitle(
+    `${meta.name} Fiyatı Bugün | Anlık ${meta.shortName} Altın`,
+    `${meta.name} Fiyatı Bugün: Canlı Alış Satış`,
+    `${meta.name} Fiyatı Bugün`,
+  );
   // Description: 150-155 char hedefi. meta.description uzun, slice ile sınırla.
   const description = (meta.description.length > 155
     ? meta.description.slice(0, 153).trimEnd() + '…'
     : meta.description);
 
   return {
-    title,
+    title: metaTitle,
     description,
     keywords: [
       `${meta.slug} fiyatı`,
@@ -87,6 +95,9 @@ export default async function GoldTypePage({ params }: Props) {
   if (!meta || !entry) notFound();
 
   const canonical = `${SITE_URL}/altin/${meta.slug}`;
+  const statsLabel = { name: meta.name, unit: entry.currency === 'USD' ? 'ABD doları' : 'TL' };
+  const stats = await getPriceStats(goldHistoryKey(entry));
+  const faqs = stats ? [...meta.faq, ...priceStatsFaq(statsLabel, stats)] : meta.faq;
   const pageTitle = `${meta.name} Fiyatı Bugün`;
 
   const jsonLd = {
@@ -157,6 +168,7 @@ export default async function GoldTypePage({ params }: Props) {
           <PriceChart instrument={goldHistoryKey(entry)} defaultRange="1y" />
 
           <SourceTable kind="gold" id={meta.slug} />
+          {stats && <PriceStats s={stats} label={statsLabel} />}
 
           <AdBanner page={`altin-${meta.slug}`} position="in-article" />
 
@@ -164,7 +176,7 @@ export default async function GoldTypePage({ params }: Props) {
             <p>{meta.description}</p>
           </AboutBlock>
 
-          <FaqBlock title={`${meta.name} hakkında sık sorulanlar`} faqs={meta.faq} />
+          <FaqBlock title={`${meta.name} hakkında sık sorulanlar`} faqs={faqs} />
         </div>
 
         <aside className="space-y-6">
@@ -174,6 +186,7 @@ export default async function GoldTypePage({ params }: Props) {
             moneyLabel={moneyLabel}
             spec={{ kind: 'gold', slug: meta.slug }}
           />
+          <ToolLinks slugs={['altin-hesaplama', 'altin-kar-zarar-hesaplama', 'altin-ayar-hesaplama', 'gecmis-altin-fiyatlari']} />
           <RelatedQuotes
             title="İlgili altın türleri"
             moreHref="/altin"
