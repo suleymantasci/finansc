@@ -7,6 +7,7 @@ import { ThemeProvider } from 'next-themes';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import Script from 'next/script';
 import { MobileNav } from '@/components/layout/MobileNav';
 import './globals.css';
 import { BORSA_ENABLED } from '@/lib/features';
@@ -252,6 +253,13 @@ export default function RootLayout({
             }}
           />
         </ThemeProvider>
+        {/* Dijital Asistan (asistan.tasci.cloud) — tek satırlık kurulum kodu; asistanın kodu bu projede yok. */}
+        <Script
+          src="https://asistan.tasci.cloud/embed.js"
+          data-installation="5ac85670-bcd0-4b3a-9c50-63ac8c9ffae2"
+          data-verification="tl32A2lQOmv6XzABFMySXrUJ_d4JWxMRlbg8NcZi2lw"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
