@@ -28,8 +28,13 @@ ds.initialize()
 
     // Create admin
     const id = randomUUID();
-    const email = 'admin@finanscozum.com';
-    const password = 'Admin123!';
+    // Never a default password: the repository is public.
+    const email = process.env.ADMIN_EMAIL || 'admin@finanscozum.com';
+    const password = process.env.ADMIN_PASSWORD;
+    if (!password || password.length < 12) {
+      console.error('ADMIN_PASSWORD (en az 12 karakter) ortam değişkeni gerekli.');
+      process.exit(1);
+    }
     const hash = await bcrypt.hash(password, 12);
 
     await ds.query(
@@ -40,7 +45,7 @@ ds.initialize()
 
     console.log('Admin user created!');
     console.log('Email:', email);
-    console.log('Password:', password);
+    console.log('Password: (ADMIN_PASSWORD ortam değişkenindeki değer)');
 
     await ds.destroy();
   })
