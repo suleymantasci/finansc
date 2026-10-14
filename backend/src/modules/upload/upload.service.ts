@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import sharp from 'sharp';
 
 /**
  * Service for persisting uploaded image files to a local uploads directory.
@@ -26,13 +27,6 @@ export class UploadService {
     'image/png',
     'image/webp',
   ]);
-  private static readonly ALLOWED_EXT: Record<string, string> = {
-    'image/jpeg': 'jpg',
-    'image/jpg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp',
-  };
-
   constructor(private readonly config: ConfigService) {
     this.uploadRoot =
       this.config.get<string>('UPLOAD_DIR') || path.join(process.cwd(), 'uploads');
@@ -51,7 +45,7 @@ export class UploadService {
     if (!file) {
       throw new BadRequestException('Dosya yüklenmedi');
     }
-    if (file.size > UploadService.MAX_FILE_SIZE) {
+    if (!Buffer.isBuffer(file.buffer) || file.buffer.length === 0 || file.buffer.length > UploadService.MAX_FILE_SIZE) {
       throw new BadRequestException(
         `Dosya çok büyük (max ${UploadService.MAX_FILE_SIZE / 1024 / 1024}MB)`,
       );
@@ -62,14 +56,25 @@ export class UploadService {
       );
     }
 
-    const ext = UploadService.ALLOWED_EXT[file.mimetype];
+    let image: Buffer;
+    try {
+      const decoder = sharp(file.buffer, { limitInputPixels: 25000000, failOn: 'warning' });
+      const metadata = await decoder.metadata();
+      const expectedFormat = file.mimetype === 'image/jpg' ? 'jpeg' : file.mimetype.slice('image/'.length);
+      if (metadata.format !== expectedFormat) throw new Error('Image type mismatch');
+      image = await decoder.rotate().resize({ width: 2400, height: 2400, fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 85 }).toBuffer();
+    } catch {
+      throw new BadRequestException('Geçerli bir JPEG, PNG veya WebP görseli yükleyin');
+    }
+    const ext = 'webp';
     const id = crypto.randomBytes(16).toString('hex');
     const filename = `${Date.now()}-${id}.${ext}`;
     const dir = path.join(this.uploadRoot, subdir);
     const filepath = path.join(dir, filename);
 
     await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(filepath, file.buffer);
+    await fs.writeFile(filepath, image);
 
     const publicUrl = `${this.publicBaseUrl.replace(/\/$/, '')}/uploads/${subdir}/${filename}`;
     this.logger.log(`uploaded: ${publicUrl} (${file.size} bytes)`);

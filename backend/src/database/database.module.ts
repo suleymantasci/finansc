@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
+import { tlsOptions } from '../config/tls';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { join } from 'path';
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
         ssl: config.get<boolean>('DB_SSL')
-          ? { rejectUnauthorized: false }
+          ? tlsOptions(config, 'DB')
           : false,
         autoLoadEntities: true,
         synchronize: config.get<string>('NODE_ENV') === 'development',

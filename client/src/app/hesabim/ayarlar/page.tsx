@@ -22,7 +22,7 @@ type ProfileData = z.infer<typeof profileSchema>;
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(6, 'Mevcut şifrenizi giriniz'),
-  newPassword: z.string().min(6, 'Yeni şifre en az 6 karakter olmalı'),
+  newPassword: z.string().min(8, 'Yeni şifre en az 8 karakter olmalı'),
   confirmPassword: z.string(),
 }).refine((d) => d.newPassword === d.confirmPassword, {
   message: 'Şifreler eşleşmiyor',

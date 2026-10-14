@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { Roles, Public } from '../../common/decorators';
+import { Roles } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards';
 import { UserRole } from '../users/entities/user.entity';
 import { UploadService } from './upload.service';
@@ -18,12 +18,7 @@ import { UploadService } from './upload.service';
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
-  /**
-   * Public endpoint — accepts a single image file and returns its public URL.
-   * Restricted to admins because the upload becomes the public thumbnail.
-   * In a future iteration we may add image resizing / WebP conversion
-   * (sharp or jimp) to enforce 1200x630 OG standard.
-   */
+  /** Admin-only upload; validated images are converted to WebP. */
   @ApiBearerAuth()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -36,11 +31,13 @@ export class UploadController {
       required: ['file'],
     },
   })
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 0, parts: 1, fieldNameSize: 100 },
+  }))
   async uploadThumbnail(@UploadedFile() file: any) {
     try {
       const url = await this.uploadService.saveImage(file, 'thumbnails');
-      return { url, size: file.size, mime: file.mimetype };
+      return { url, size: file.size, mime: 'image/webp' };
     } catch (e) {
       if (e instanceof BadRequestException) throw e;
       throw new BadRequestException('Yükleme başarısız: ' + (e as Error).message);

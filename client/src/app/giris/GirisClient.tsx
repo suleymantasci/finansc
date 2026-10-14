@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/stores/auth.store';
 import { api } from '@/lib/api';
-import type { AuthUser, AuthTokens } from '@/types';
+import type { AuthUser } from '@/types';
 
 const schema = z.object({
   email: z.string().email('Geçerli bir e-posta giriniz'),
@@ -56,8 +56,8 @@ export function GirisClient() {
     setError('');
     setLoading(true);
     try {
-      const res = await api.post<{ user: AuthUser; accessToken: string; refreshToken: string }>('/api/auth/login', data);
-      setAuth(res.user, res.accessToken, res.refreshToken);
+      const res = await api.post<{ user: AuthUser }>('/api/auth/login', data);
+      setAuth(res.user);
       // ?from=... varsa oraya (güvenli path), yoksa ana sayfaya
       const target = safeRedirectTarget(searchParams?.get('from'));
       router.push(target);

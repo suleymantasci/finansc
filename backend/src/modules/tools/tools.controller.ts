@@ -1,4 +1,4 @@
-import { SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import {
   Controller,
   Get,
@@ -23,7 +23,7 @@ export class ToolsController {
   constructor(private readonly toolsService: ToolsService) {}
 
   @Public()
-  @SkipThrottle()
+  @Throttle({ default: { limit: 600, ttl: 60000 } })
   @Get()
   findAll(@Query('active') active?: string) {
     if (active === 'true') return this.toolsService.findActive();
@@ -31,7 +31,7 @@ export class ToolsController {
   }
 
   @Public()
-  @SkipThrottle()
+  @Throttle({ default: { limit: 600, ttl: 60000 } })
   @Get(':slug')
   async findBySlug(@Param('slug') slug: string) {
     const tool = await this.toolsService.findBySlug(slug);

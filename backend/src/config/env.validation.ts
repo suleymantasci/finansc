@@ -12,14 +12,22 @@ export const envValidationSchema = Joi.object({
   DB_PORT: Joi.number().default(5432),
   DB_NAME: Joi.string().required(),
   DB_USERNAME: Joi.string().required(),
-  DB_PASSWORD: Joi.string().allow('').required(),
-  DB_SSL: Joi.boolean().default(false),
+  DB_PASSWORD: Joi.string().when('NODE_ENV', {
+    is: 'production', then: Joi.string().required(), otherwise: Joi.string().allow('').required(),
+  }),
+  DB_SSL: Joi.boolean().when('NODE_ENV', {
+    is: 'production', then: Joi.boolean().default(true), otherwise: Joi.boolean().default(false),
+  }),
+  DB_SSL_CA_FILE: Joi.string().allow('').optional(),
 
   // JWT
   JWT_ACCESS_SECRET: Joi.string().min(32).required(),
   JWT_REFRESH_SECRET: Joi.string().min(32).required(),
-  JWT_ACCESS_EXPIRES: Joi.string().default('15m'),
-  JWT_REFRESH_EXPIRES: Joi.string().default('7d'),
+  JWT_ACCESS_EXPIRES: Joi.string().pattern(/^[1-9]\d*(s|m|h|d)$/).default('15m'),
+  JWT_REFRESH_EXPIRES: Joi.string().pattern(/^[1-9]\d*d$/).default('7d'),
+  AUTH_COOKIE_DOMAIN: Joi.string().hostname().allow('').when('NODE_ENV', {
+    is: 'production', then: Joi.string().default('finanscozum.net'), otherwise: Joi.string().default(''),
+  }),
 
   // External API
   EXTERNAL_API_BASE_URL: Joi.string().uri().required(),
@@ -38,4 +46,6 @@ export const envValidationSchema = Joi.object({
   SMTP_USER: Joi.string().allow('').optional(),
   SMTP_PASS: Joi.string().allow('').optional(),
   SMTP_FROM: Joi.string().allow('').optional(),
+  SMTP_SSL_CA_FILE: Joi.string().allow('').optional(),
+  SMTP_TLS_SERVERNAME: Joi.string().hostname().allow('').optional(),
 });

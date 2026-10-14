@@ -12,8 +12,8 @@ const H2 = 'font-display mb-3 text-2xl text-foreground sm:text-3xl';
 
 /** Tablo, sitenin gerçekte kullandığı çerez/depolama anahtarlarını listeler; yenisi eklenirse güncelleyin. */
 const ROWS: { name: string; type: string; purpose: string; duration: string }[] = [
-  { name: 'finanscozum-token, finanscozum-role', type: 'Zorunlu (çerez)', purpose: 'Giriş yaptığınızda oturumunuzu ve yetkinizi tanımak', duration: 'Tarayıcı oturumu / çıkış yapana kadar' },
-  { name: 'finanscozum-auth', type: 'Zorunlu (yerel depolama)', purpose: 'Oturum bilgisinin sayfa yenilemede korunması', duration: 'Çıkış yapana kadar' },
+  { name: 'fsc-access', type: 'Zorunlu (çerez)', purpose: 'Giriş yaptığınızda oturumunuzu doğrulamak', duration: '15 dakika / çıkış yapana kadar' },
+  { name: 'fsc-refresh', type: 'Zorunlu (çerez)', purpose: 'Oturumunuzu güvenli biçimde yenilemek', duration: '7 gün / çıkış yapana kadar' },
   { name: 'theme', type: 'İşlevsel (yerel depolama)', purpose: 'Açık/koyu tema tercihinizi hatırlamak', duration: 'Siz silene kadar' },
   { name: 'fc-consent', type: 'Zorunlu (yerel depolama)', purpose: 'Çerez tercihinizi hatırlamak', duration: 'Siz silene kadar' },
   { name: '_ga, _ga_*', type: 'Analitik (çerez) — yalnızca onayla', purpose: 'Google Analytics ile anonim ziyaret istatistikleri', duration: 'En fazla 2 yıl' },
@@ -23,7 +23,7 @@ export default function CerezPolitikasiPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
       <h1 className="font-display mb-2 text-balance text-4xl text-foreground sm:text-5xl">Çerez Politikası</h1>
-      <p className="mb-8 text-sm text-muted-foreground">Son güncelleme: 24 Eylül 2026</p>
+      <p className="mb-8 text-sm text-muted-foreground">Son güncelleme: 14 Ekim 2026</p>
 
       <div className="space-y-8 leading-relaxed text-muted-foreground">
         <section>

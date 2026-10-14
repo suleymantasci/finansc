@@ -12,7 +12,7 @@ import { api } from '@/lib/api';
 
 const schema = z
   .object({
-    newPassword: z.string().min(6, 'En az 6 karakter').max(128),
+    newPassword: z.string().min(8, 'En az 8 karakter').max(128),
     confirm: z.string(),
   })
   .refine((d) => d.newPassword === d.confirm, { message: 'Şifreler eşleşmiyor', path: ['confirm'] });

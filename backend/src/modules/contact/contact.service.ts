@@ -6,6 +6,7 @@ import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 import { ContactMessage } from './entities/contact-message.entity';
 import { CreateContactDto } from './dto/create-contact.dto';
+import { tlsOptions } from '../../config/tls';
 
 @Injectable()
 export class ContactService {
@@ -51,10 +52,8 @@ export class ContactService {
       port,
       secure: port === 465, // 465 = TLS, 587 = STARTTLS
       auth: { user, pass },
-      // docker-mailserver self-signed sertifika kullanabilir; prod'da true
-      tls: {
-        rejectUnauthorized: false,
-      },
+      requireTLS: port !== 465,
+      tls: tlsOptions(this.config, 'SMTP'),
       // Timeout'lar — backend'i bloklamamalı
       connectionTimeout: 10000,
       greetingTimeout: 5000,

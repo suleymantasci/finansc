@@ -2,6 +2,10 @@ require('dotenv').config();
 const { DataSource } = require('typeorm');
 const bcrypt = require('bcrypt');
 const { randomUUID } = require('crypto');
+const { readFileSync } = require('fs');
+const useTls = process.env.DB_SSL === undefined
+  ? process.env.NODE_ENV === 'production'
+  : process.env.DB_SSL === 'true';
 
 const ds = new DataSource({
   type: 'postgres',
@@ -10,7 +14,10 @@ const ds = new DataSource({
   database: process.env.DB_NAME,
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  ssl: useTls ? {
+    rejectUnauthorized: true,
+    ...(process.env.DB_SSL_CA_FILE ? { ca: readFileSync(process.env.DB_SSL_CA_FILE, 'utf8') } : {}),
+  } : false,
 });
 
 ds.initialize()
@@ -29,10 +36,10 @@ ds.initialize()
     // Create admin
     const id = randomUUID();
     // Never a default password: the repository is public.
-    const email = process.env.ADMIN_EMAIL || 'admin@finanscozum.com';
+    const email = process.env.ADMIN_EMAIL || process.env.FINANSCOZUM_ADMIN_EMAIL;
     const password = process.env.ADMIN_PASSWORD;
-    if (!password || password.length < 12) {
-      console.error('ADMIN_PASSWORD (en az 12 karakter) ortam değişkeni gerekli.');
+    if (!email || !password || password.length < 12) {
+      console.error('ADMIN_EMAIL ve ADMIN_PASSWORD (en az 12 karakter) ortam değişkenleri gerekli.');
       process.exit(1);
     }
     const hash = await bcrypt.hash(password, 12);

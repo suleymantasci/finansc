@@ -10,7 +10,7 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY client/package.json ./client/
 COPY backend/package.json ./backend/
 
-RUN pnpm install --no-frozen-lockfile --filter @finanscozum/client
+RUN pnpm install --frozen-lockfile --filter @finanscozum/client
 
 # Copy client source only
 COPY client/ ./client/
@@ -45,9 +45,11 @@ WORKDIR /app
 
 # standalone output (outputFileTracingRoot = workspace root)
 # Next.js mirrors the monorepo structure inside .next/standalone/
-COPY --from=builder /app/client/.next/standalone ./
-COPY --from=builder /app/client/.next/static ./client/.next/static
-COPY --from=builder /app/client/public ./client/public
+COPY --from=builder --chown=node:node /app/client/.next/standalone ./
+COPY --from=builder --chown=node:node /app/client/.next/static ./client/.next/static
+COPY --from=builder --chown=node:node /app/client/public ./client/public
+
+USER node
 
 EXPOSE 3000
 

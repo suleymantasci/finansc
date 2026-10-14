@@ -15,7 +15,8 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migration:generate": "pnpm typeorm migration:generate -d src/database/data-source.ts",
     "migration:run": "pnpm typeorm migration:run -d src/database/data-source.ts",
-    "migration:revert": "pnpm typeorm migration:revert -d src/database/data-source.ts"
+    "migration:revert": "pnpm typeorm migration:revert -d src/database/data-source.ts",
+    "test:security": "pnpm build && node --test test/*.test.cjs"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",
@@ -24,7 +25,7 @@
     "@nestjs/core": "^11.0.0",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.0",
-    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-express": "11.1.28",
     "express": "^5.2.1",
     "@nestjs/swagger": "^11.0.0",
     "@nestjs/terminus": "^11.0.0",
@@ -38,14 +39,15 @@
     "eventsource": "^4.1.0",
     "helmet": "^8.0.0",
     "joi": "^17.13.0",
-    "nodemailer": "^6.9.16",
+    "nodemailer": "10.0.16",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.13.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.20",
-    "uuid": "^11.0.0"
+    "uuid": "^11.0.0",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",

@@ -1,4 +1,4 @@
-import { SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { Controller, Get, Param, Query, Sse, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { merge, Observable, map } from 'rxjs';
@@ -13,9 +13,8 @@ function assertBorsaEnabled(): void {
 }
 
 @ApiTags('Market')
-// Salt okunur piyasa verisi: SSR/ISR tek IP'den çok sayıda istek atar; sınırlama
-// sayfaların 429/404 vermesine yol açıyordu. Veri zaten upstream'de önbellekli.
-@SkipThrottle()
+// SSR/ISR trafiğine izin veren, public kötüye kullanımı sınırlayan istek bütçesi.
+@Throttle({ default: { limit: 600, ttl: 60000 } })
 @Controller('market')
 export class MarketController {
   constructor(private readonly marketService: MarketService) {}

@@ -10,13 +10,13 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/stores/auth.store';
 import { api } from '@/lib/api';
-import type { AuthUser, AuthTokens } from '@/types';
+import type { AuthUser } from '@/types';
 
 const schema = z.object({
   firstName: z.string().min(2, 'Ad en az 2 karakter olmalı'),
   lastName: z.string().min(2, 'Soyad en az 2 karakter olmalı'),
   email: z.string().email('Geçerli bir e-posta giriniz'),
-  password: z.string().min(6, 'Şifre en az 6 karakter olmalı'),
+  password: z.string().min(8, 'Şifre en az 8 karakter olmalı'),
   confirmPassword: z.string(),
   terms: z.literal(true, { errorMap: () => ({ message: 'Kullanım şartlarını kabul etmelisiniz' }) }),
 }).refine((d) => d.password === d.confirmPassword, {
@@ -39,13 +39,13 @@ export function KayitClient() {
     setError('');
     setLoading(true);
     try {
-      const res = await api.post<{ user: AuthUser; accessToken: string; refreshToken: string }>('/api/auth/register', {
+      const res = await api.post<{ user: AuthUser }>('/api/auth/register', {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
       });
-      setAuth(res.user, res.accessToken, res.refreshToken);
+      setAuth(res.user);
       router.push('/hesabim');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Kayıt başarısız';

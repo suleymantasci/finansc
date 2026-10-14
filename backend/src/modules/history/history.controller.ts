@@ -1,4 +1,4 @@
-import { SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { Controller, Get, Param, Query, Sse, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Observable, map } from 'rxjs';
@@ -24,9 +24,8 @@ function assertInstrument(instrument: string): void {
  *   SSE  /api/history/:instrument/stream       → son mum güncellemesi
  */
 @ApiTags('History')
-// Salt okunur piyasa verisi: SSR/ISR tek IP'den çok sayıda istek atar; sınırlama
-// sayfaların 429/404 vermesine yol açıyordu. Veri zaten upstream'de önbellekli.
-@SkipThrottle()
+// SSR/ISR trafiğine izin veren, public kötüye kullanımı sınırlayan istek bütçesi.
+@Throttle({ default: { limit: 600, ttl: 60000 } })
 @Controller('history')
 export class HistoryController {
   constructor(private readonly historyService: HistoryService) {}

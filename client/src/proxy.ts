@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { PROTECTED_ROUTES, AUTH_ROUTES, ADMIN_ROUTES } from '@/lib/constants';
 import { BORSA_ENABLED } from '@/lib/features';
+import { verifySession } from '@/lib/server-session';
 
 // Yapay zekâ tarayıcı/asistanları. *-User ve OAI-SearchBot/PerplexityBot istekleri, bir kullanıcının
 // sorusu yanıtlanırken sayfanın okunduğunu gösterir (GEO görünürlüğünün doğrudan işareti).
@@ -62,7 +63,7 @@ const BORSA_GONE_LINKS: [string, string][] = [
 
 const AUTH_SCOPE = ['/hesabim', '/admin', '/giris', '/kayit', '/sifremi-unuttum'];
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   logAiBot(request);
 
@@ -80,32 +81,38 @@ export function proxy(request: NextRequest) {
   }
   if (!AUTH_SCOPE.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return NextResponse.next();
 
-  // Check if user has auth token in cookies (set by client-side auth flow)
-  const token = request.cookies.get('finanscozum-token')?.value;
-  const userRole = request.cookies.get('finanscozum-role')?.value;
+  const session = await verifySession(request);
+  const finish = (response: NextResponse) => {
+    for (const cookie of session.cookies) response.headers.append('Set-Cookie', cookie);
+    response.headers.set('Cache-Control', 'private, no-store');
+    return response;
+  };
 
   const isProtectedRoute = PROTECTED_ROUTES.some((r) => pathname.startsWith(r));
   const isAdminRoute = ADMIN_ROUTES.some((r) => pathname.startsWith(r));
   const isAuthRoute = AUTH_ROUTES.some((r) => pathname === r);
 
   // Redirect to login if accessing protected route without token
-  if (isProtectedRoute && !token) {
+  if (isProtectedRoute && session.unavailable) {
+    return finish(new NextResponse('Oturum şu anda doğrulanamıyor. Lütfen tekrar deneyin.', { status: 503 }));
+  }
+  if (isProtectedRoute && !session.user) {
     const loginUrl = new URL('/giris', request.url);
     loginUrl.searchParams.set('from', pathname);
-    return NextResponse.redirect(loginUrl);
+    return finish(NextResponse.redirect(loginUrl));
   }
 
   // Redirect to home if accessing admin route without admin role
-  if (isAdminRoute && userRole !== 'admin') {
-    return NextResponse.redirect(new URL('/', request.url));
+  if (isAdminRoute && session.user?.role !== 'admin') {
+    return finish(NextResponse.redirect(new URL('/', request.url)));
   }
 
   // Redirect to home if accessing auth routes while logged in
-  if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL('/', request.url));
+  if (isAuthRoute && session.user) {
+    return finish(NextResponse.redirect(new URL('/', request.url)));
   }
 
-  return NextResponse.next();
+  return finish(NextResponse.next());
 }
 
 export const config = {

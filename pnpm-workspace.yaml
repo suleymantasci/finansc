@@ -17,3 +17,7 @@ allowBuilds:
   '@nestjs/core': true
   '@scarf/scarf': true
   bcrypt: true
+
+# Ensure every multipart parser uses the patched release.
+overrides:
+  multer: 2.4.0

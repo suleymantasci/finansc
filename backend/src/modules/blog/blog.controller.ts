@@ -1,4 +1,4 @@
-import { SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import {
   Controller,
   Get,
@@ -25,7 +25,7 @@ export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
   @Public()
-  @SkipThrottle()
+  @Throttle({ default: { limit: 120, ttl: 60000 } })
   @Get()
   findAll(
     @Query('page') page?: number,
@@ -41,7 +41,7 @@ export class BlogController {
   }
 
   @Public()
-  @SkipThrottle()
+  @Throttle({ default: { limit: 120, ttl: 60000 } })
   @Get(':slug')
   findBySlug(@Param('slug') slug: string, @CurrentUser('role') role?: string) {
     return this.blogService.findBySlug(slug, role === UserRole.ADMIN);

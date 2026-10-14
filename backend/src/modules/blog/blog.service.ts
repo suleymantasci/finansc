@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleDestroy } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Blog, BlogStatus } from './entities/blog.entity';
@@ -6,11 +6,42 @@ import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 
 @Injectable()
-export class BlogService {
+export class BlogService implements OnModuleDestroy {
+  private pendingViews = new Map<string, number>();
+  private viewWrite: Promise<void> | null = null;
+  private readonly viewTimer: NodeJS.Timeout;
+
   constructor(
     @InjectRepository(Blog)
     private readonly blogRepo: Repository<Blog>,
-  ) {}
+  ) {
+    this.viewTimer = setInterval(() => { void this.flushViews(); }, 5000);
+    this.viewTimer.unref();
+  }
+
+  async onModuleDestroy() {
+    clearInterval(this.viewTimer);
+    await this.viewWrite;
+    await this.flushViews();
+  }
+
+  private flushViews(): Promise<void> {
+    if (this.viewWrite) return this.viewWrite;
+    const views = this.pendingViews;
+    this.pendingViews = new Map();
+    this.viewWrite = (async () => {
+      for (const [slug, count] of views) {
+        try {
+          await this.blogRepo.createQueryBuilder().update(Blog)
+            .set({ viewCount: () => '"viewCount" + :count', updatedAt: () => '"updatedAt"' })
+            .setParameter('count', count).where('slug = :slug', { slug }).execute();
+        } catch {
+          this.pendingViews.set(slug, (this.pendingViews.get(slug) ?? 0) + count);
+        }
+      }
+    })().finally(() => { this.viewWrite = null; });
+    return this.viewWrite;
+  }
 
   async findAll(options: {
     page?: number;
@@ -69,19 +100,8 @@ export class BlogService {
     });
     if (!blog) throw new NotFoundException('Blog yazısı bulunamadı');
 
-    // Increment view count in background (fire-and-forget)
-    this.blogRepo
-      .createQueryBuilder()
-      .update(Blog)
-      .set({
-        viewCount: () => '"viewCount" + 1',
-        // TypeORM her UPDATE'e updatedAt=now() ekliyor; görüntülenme sayacı "güncellenme"
-        // tarihini değiştirmemeli (her okunan yazı "Güncellendi: bugün" görünüyordu).
-        updatedAt: () => '"updatedAt"',
-      })
-      .where('slug = :slug', { slug })
-      .execute()
-      .catch(() => {});
+    // Count every read, but write once per slug per flush instead of per request.
+    this.pendingViews.set(slug, (this.pendingViews.get(slug) ?? 0) + 1);
 
     return blog;
   }

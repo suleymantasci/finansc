@@ -12,12 +12,43 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: security-tests-only
+          POSTGRES_DB: finansc_security_test
+        ports:
+          - 127.0.0.1:15432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d finansc_security_test"
+          --health-interval 10s --health-timeout 5s --health-retries 5
     permissions:
       contents: read
       packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install locked dependencies
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+
+      - name: Security regression checks
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:security-tests-only@127.0.0.1:15432/finansc_security_test
+        run: |
+          pnpm --filter @finanscozum/backend test:security
+          pnpm --filter @finanscozum/client test:security
+          pnpm --filter @finanscozum/client exec tsc --noEmit --incremental false
+          pnpm --filter @finanscozum/client test
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -73,11 +104,24 @@ jobs:
           command_timeout: 10m
           envs: GITHUB_REPOSITORY,GITHUB_ACTOR
           script: |
+            set -eu
             # Login to GHCR
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
             # Go to compose directory
             cd /docker/finansc
+
+            # Deploy the compose configuration from this exact public commit.
+            curl --fail --silent --show-error --retry 3 \
+              "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/docker-compose.yml" \
+              --output docker-compose.next.yml
+            docker compose -f docker-compose.next.yml config --quiet
+            cp docker-compose.yml docker-compose.previous.yml
+            mv docker-compose.next.yml docker-compose.yml
+
+            # Runtime containers run as node (uid 1000), including image uploads.
+            mkdir -p uploads/thumbnails certs
+            chown -R 1000:1000 uploads
 
             # Pull latest images via compose (respects GITHUB_REPOSITORY from .env)
             docker compose pull

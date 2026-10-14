@@ -3,23 +3,21 @@ import {
   ConflictException,
   UnauthorizedException,
   BadRequestException,
-  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, LessThan, MoreThan, DataSource, EntityManager } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
-import { User } from '../users/entities/user.entity';
+import { randomUUID, createHash } from 'crypto';
+import { User, UserRole } from '../users/entities/user.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { RegisterDto, LoginDto, UpdateProfileDto, ChangePasswordDto } from './dto';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { isExposedAdminPassword } from '../../common/public-passwords';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
-
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
@@ -27,6 +25,7 @@ export class AuthService {
     private readonly refreshRepo: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -38,49 +37,54 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
-    const user = this.userRepo.create({
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      email: dto.email.toLowerCase(),
-      passwordHash,
+    return this.dataSource.transaction(async (manager) => {
+      const users = manager.getRepository(User);
+      const user = await users.save(users.create({
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        email: dto.email.toLowerCase(),
+        passwordHash,
+      }));
+      return this.generateTokens(user, undefined, undefined, manager);
     });
-    await this.userRepo.save(user);
-
-    return this.generateTokens(user);
   }
 
   async login(dto: LoginDto, userAgent?: string, ipAddress?: string) {
-    const user = await this.userRepo.findOne({
-      where: { email: dto.email.toLowerCase() },
-      select: ['id', 'email', 'passwordHash', 'role', 'isActive', 'firstName', 'lastName', 'phone', 'city', 'birthDate', 'gender'],
+    return this.dataSource.transaction(async (manager) => {
+      const user = await manager.getRepository(User).findOne({
+        where: { email: dto.email.toLowerCase() },
+        select: ['id', 'email', 'passwordHash', 'role', 'isActive', 'tokenVersion', 'firstName', 'lastName', 'phone', 'city', 'birthDate', 'gender'],
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
+        throw new UnauthorizedException('E-posta veya şifre hatalı');
+      }
+      if (!user.isActive) throw new UnauthorizedException('Hesap devre dışı bırakılmış');
+      if (user.role === UserRole.ADMIN && isExposedAdminPassword(dto.password)) {
+        throw new UnauthorizedException('Yönetici şifresi yenilenmeli; şifre sıfırlama bağlantısı isteyin');
+      }
+      return this.generateTokens(user, userAgent, ipAddress, manager);
     });
-
-    if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
-      throw new UnauthorizedException('E-posta veya şifre hatalı');
-    }
-
-    if (!user.isActive) {
-      throw new UnauthorizedException('Hesap devre dışı bırakılmış');
-    }
-
-    return this.generateTokens(user, userAgent, ipAddress);
   }
 
   async refreshTokens(refreshToken: string) {
-    const tokenRecord = await this.refreshRepo.findOne({
-      where: { tokenHash: await this.hashToken(refreshToken), isRevoked: false },
-      relations: ['user'],
+    const tokenHash = await this.hashToken(refreshToken);
+    const candidate = await this.refreshRepo.findOne({ where: { tokenHash, isRevoked: false } });
+    if (!candidate) throw new UnauthorizedException('Geçersiz veya süresi dolmuş refresh token');
+    return this.dataSource.transaction(async (manager) => {
+      // Every session mutation locks the user first, then consumes its token.
+      const user = await manager.getRepository(User).findOne({
+        where: { id: candidate.userId }, lock: { mode: 'pessimistic_write' },
+      });
+      if (!user?.isActive) throw new UnauthorizedException('Hesap devre dışı bırakılmış');
+      const tokens = manager.getRepository(RefreshToken);
+      const consumed = await tokens.update(
+        { id: candidate.id, tokenHash, isRevoked: false, expiresAt: MoreThan(new Date()) },
+        { isRevoked: true },
+      );
+      if (consumed.affected !== 1) throw new UnauthorizedException('Geçersiz veya süresi dolmuş refresh token');
+      return this.generateTokens(user, candidate.userAgent ?? undefined, candidate.ipAddress ?? undefined, manager);
     });
-
-    if (!tokenRecord || tokenRecord.expiresAt < new Date()) {
-      throw new UnauthorizedException('Geçersiz veya süresi dolmuş refresh token');
-    }
-
-    // Revoke old token
-    tokenRecord.isRevoked = true;
-    await this.refreshRepo.save(tokenRecord);
-
-    return this.generateTokens(tokenRecord.user);
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
@@ -109,22 +113,37 @@ export class AuthService {
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
-    const user = await this.userRepo.findOne({
-      where: { id: userId },
-      select: ['id', 'passwordHash'],
+    const passwordHash = await bcrypt.hash(dto.newPassword, 12);
+    return this.dataSource.transaction(async (manager) => {
+      const users = manager.getRepository(User);
+      const user = await users.findOne({
+        where: { id: userId },
+        select: ['id', 'email', 'passwordHash', 'role', 'isActive', 'tokenVersion', 'firstName', 'lastName'],
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!user?.isActive) throw new UnauthorizedException();
+      if (!(await bcrypt.compare(dto.currentPassword, user.passwordHash))) throw new BadRequestException('Mevcut şifre hatalı');
+      if (user.role === UserRole.ADMIN && isExposedAdminPassword(dto.newPassword)) throw new BadRequestException('Bu şifre kullanılamaz');
+      user.passwordHash = passwordHash;
+      user.tokenVersion += 1;
+      await users.save(user);
+      await manager.getRepository(RefreshToken).update({ userId, isRevoked: false }, { isRevoked: true });
+      return { ...(await this.generateTokens(user, undefined, undefined, manager)), message: 'Şifre başarıyla değiştirildi' };
     });
-    if (!user) throw new UnauthorizedException();
-
-    const valid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
-    if (!valid) throw new BadRequestException('Mevcut şifre hatalı');
-
-    user.passwordHash = await bcrypt.hash(dto.newPassword, 12);
-    await this.userRepo.save(user);
-    return { message: 'Şifre başarıyla değiştirildi' };
   }
 
   async logout(userId: string) {
-    await this.refreshRepo.update({ userId, isRevoked: false }, { isRevoked: true });
+    await this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(User).increment({ id: userId }, 'tokenVersion', 1);
+      await manager.getRepository(RefreshToken).update({ userId, isRevoked: false }, { isRevoked: true });
+    });
+    return { ok: true };
+  }
+
+  async profile(userId: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user?.isActive) throw new UnauthorizedException();
+    return this.publicUser(user);
   }
 
   async cleanupExpiredTokens() {
@@ -137,15 +156,17 @@ export class AuthService {
     user: User,
     userAgent?: string,
     ipAddress?: string,
+    manager: EntityManager = this.dataSource.manager,
   ) {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       role: user.role,
+      ver: user.tokenVersion,
     };
 
     const accessToken = this.jwtService.sign(
-      { sub: payload.sub, email: payload.email, role: payload.role },
+      payload,
       {
         secret: this.config.get<string>('JWT_ACCESS_SECRET'),
         expiresIn: (this.config.get<string>('JWT_ACCESS_EXPIRES') ?? '15m') as any,
@@ -157,34 +178,31 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + this.parseDays(refreshExpiresIn));
 
-    const tokenRecord = this.refreshRepo.create({
+    const tokens = manager.getRepository(RefreshToken);
+    const tokenRecord = tokens.create({
       tokenHash: await this.hashToken(refreshTokenValue),
       expiresAt,
       userId: user.id,
       userAgent: userAgent?.substring(0, 255),
       ipAddress: ipAddress?.substring(0, 45),
     });
-    await this.refreshRepo.save(tokenRecord);
+    await tokens.save(tokenRecord);
 
     return {
       accessToken,
       refreshToken: refreshTokenValue,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        isActive: user.isActive,
-      },
+      user: this.publicUser(user),
     };
   }
 
   private async hashToken(token: string): Promise<string> {
-    const { createHash } = await import('crypto');
     return createHash('sha256').update(token).digest('hex');
   }
 
+  private publicUser(user: User) {
+    const { id, email, firstName, lastName, role, isActive, phone, city, birthDate, gender } = user;
+    return { id, email, firstName, lastName, role, isActive, phone, city, birthDate, gender };
+  }
   private parseDays(value: string): number {
     const match = value.match(/^(\d+)d$/);
     return match ? parseInt(match[1], 10) : 7;

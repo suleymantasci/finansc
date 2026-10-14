@@ -7,6 +7,7 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 import { mkdirSync } from 'fs';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { assertSessionOrigin } from './common/session';
 
 async function bootstrap() {
   // Use the Express-specific factory so we can attach express.static() for
@@ -14,6 +15,7 @@ async function bootstrap() {
   // `app.useStaticAssets()` helper — it now lives in the optional
   // `@nestjs/serve-static` package; we don't want to add another dep.)
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableShutdownHooks();
   const config = app.get(ConfigService);
 
   // Traefik arkasındayız: gerçek istemci IP'si X-Forwarded-For'da. Bu olmadan
@@ -28,8 +30,12 @@ async function bootstrap() {
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   }));
   app.enableCors({
-    origin: (config.get<string>('CORS_ORIGIN') ?? '').split(','),
+    origin: (config.get<string>('CORS_ORIGIN') ?? '').split(',').map((origin) => origin.trim()).filter(Boolean),
     credentials: true,
+  });
+  app.use((req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) => {
+    try { assertSessionOrigin(req, config); next(); }
+    catch { res.status(403).json({ message: 'İstek kaynağı doğrulanamadı' }); }
   });
 
   // Static assets — /uploads/* serves user-uploaded images

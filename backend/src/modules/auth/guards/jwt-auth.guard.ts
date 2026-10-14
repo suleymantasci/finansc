@@ -6,6 +6,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../../../common/decorators';
+import { ACCESS_COOKIE, readCookie } from '../../../common/session';
 
 const PUBLIC_FLAG = Symbol('publicRoute');
 
@@ -26,7 +27,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     // yoksa ya da geçersizse ziyaretçi olarak devam et — asla reddetme.
     const req = context.switchToHttp().getRequest();
     req[PUBLIC_FLAG] = true;
-    if (!req.headers?.authorization) return true;
+    if (!req.headers?.authorization && !readCookie(req.headers?.cookie, ACCESS_COOKIE)) return true;
     try {
       await super.canActivate(context);
     } catch {

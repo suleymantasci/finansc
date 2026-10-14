@@ -34,6 +34,9 @@ export class User {
   @Column({ default: true })
   isActive!: boolean;
 
+  @Column({ default: 0 })
+  tokenVersion!: number;
+
   @Column({ type: 'varchar', length: 20, nullable: true })
   phone!: string | null;
 

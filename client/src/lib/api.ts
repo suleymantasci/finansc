@@ -10,15 +10,15 @@ type RequestOptions = {
   _isRetry?: boolean;
 };
 
-async function tryRefreshToken(): Promise<boolean> {
-  const { refreshToken, setAuth, clearAuth } = useAuthStore.getState();
-  if (!refreshToken) return false;
-
+let refreshInFlight: Promise<boolean> | null = null;
+async function refreshSession(): Promise<boolean> {
+  const { setAuth, clearAuth } = useAuthStore.getState();
   try {
     const res = await fetch(`${API_BASE}/api/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
+      headers: { 'Content-Type': 'application/json', 'X-Session-Mode': 'cookie' },
+      credentials: 'include',
+      body: '{}',
     });
 
     if (!res.ok) {
@@ -27,7 +27,7 @@ async function tryRefreshToken(): Promise<boolean> {
     }
 
     const data = await res.json();
-    setAuth(data.user, data.accessToken, data.refreshToken);
+    setAuth(data.user);
     return true;
   } catch {
     clearAuth();
@@ -35,18 +35,22 @@ async function tryRefreshToken(): Promise<boolean> {
   }
 }
 
+function tryRefreshToken(): Promise<boolean> {
+  refreshInFlight ??= refreshSession().finally(() => { refreshInFlight = null; });
+  return refreshInFlight;
+}
+
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, headers = {}, token, _isRetry } = options;
 
-  // Auto-attach token from store if not explicitly provided
-  const authToken = token ?? useAuthStore.getState().accessToken ?? undefined;
-
   const config: RequestInit = {
     method,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      'X-Session-Mode': 'cookie',
       ...headers,
-      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   };
@@ -54,13 +58,14 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   const res = await fetch(`${API_BASE}${endpoint}`, config);
 
   // On 401, try refreshing the token once
-  if (res.status === 401 && !_isRetry && authToken) {
+  const publicAuth = /^\/api\/auth\/(login|register|refresh|forgot-password|reset-password)$/.test(endpoint);
+  if (res.status === 401 && !_isRetry && !publicAuth) {
     const refreshed = await tryRefreshToken();
     if (refreshed) {
       return request<T>(endpoint, { ...options, _isRetry: true });
     }
     // Refresh failed → clear auth and redirect to login
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && /^\/(admin|hesabim)(\/|$)/.test(window.location.pathname)) {
       window.location.href = '/giris';
     }
     throw new Error('Oturum süresi doldu, lütfen tekrar giriş yapın');

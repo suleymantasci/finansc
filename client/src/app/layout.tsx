@@ -2,6 +2,7 @@ import { safeJsonLd } from '@/lib/json-ld';
 import { Analytics } from '@/components/analytics/GoogleAnalytics';
 import { CookieConsent } from '@/components/consent/CookieConsent';
 import type { Metadata, Viewport } from 'next';
+import { AuthSession } from '@/components/auth/AuthSession';
 import { Geist, Geist_Mono, Newsreader } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { SITE_NAME, SITE_URL } from '@/lib/constants';
@@ -166,6 +167,7 @@ export default function RootLayout({
           defaultTheme="dark"
           enableSystem={false}
         >
+          <AuthSession />
           <Header />
           <main id="main" className="flex-1">{children}</main>
           <Footer />

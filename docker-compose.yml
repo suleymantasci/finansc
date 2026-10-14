@@ -21,6 +21,7 @@ services:
     # Host'ta /docker/finansc/uploads altında kalıcı olarak durur.
     volumes:
       - /docker/finansc/uploads:/app/uploads
+      - /docker/finansc/certs:/app/certs:ro
     environment:
       - NODE_ENV=production
       - PORT=3001
@@ -29,11 +30,13 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DB_SSL=${DB_SSL:-false}
+      - DB_SSL=${DB_SSL:-true}
+      - DB_SSL_CA_FILE=${DB_SSL_CA_FILE:-}
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - JWT_ACCESS_EXPIRES=${JWT_ACCESS_EXPIRES:-15m}
       - JWT_REFRESH_EXPIRES=${JWT_REFRESH_EXPIRES:-7d}
+      - AUTH_COOKIE_DOMAIN=${AUTH_COOKIE_DOMAIN:-finanscozum.net}
       - EXTERNAL_API_BASE_URL=${EXTERNAL_API_BASE_URL}
       - EXTERNAL_API_KEY=${EXTERNAL_API_KEY:-}
       - CORS_ORIGIN=${CORS_ORIGIN:-https://finanscozum.net,https://www.finanscozum.net}
@@ -44,6 +47,8 @@ services:
       - SMTP_USER=${SMTP_USER:-}
       - SMTP_PASS=${SMTP_PASS:-}
       - SMTP_FROM=${SMTP_FROM:-noreply@finanscozum.net}
+      - SMTP_SSL_CA_FILE=${SMTP_SSL_CA_FILE:-}
+      - SMTP_TLS_SERVERNAME=${SMTP_TLS_SERVERNAME:-mail.finanscozum.net}
       # İletişim formu mesajlarının gönderileceği adres (default info@)
       - MAIL_TO=${MAIL_TO:-info@finanscozum.net}
     labels:

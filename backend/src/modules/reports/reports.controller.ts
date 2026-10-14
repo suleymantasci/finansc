@@ -15,6 +15,8 @@ import { Public, Roles } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards';
 import { UserRole } from '../users/entities/user.entity';
 import { ReportType, ReportStatus } from './entities/report.entity';
+import { Throttle } from '@nestjs/throttler';
+import { CreateReportDto, UpdateReportStatusDto } from './dto/create-report.dto';
 
 @ApiTags('Reports')
 @Controller('reports')
@@ -22,15 +24,11 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 300000 } })
   @Post()
   create(
     @Body()
-    body: {
-      type: string;
-      slug: string;
-      pageTitle: string;
-      message?: string;
-    },
+    body: CreateReportDto,
   ) {
     if (!body.type || !body.slug || !body.pageTitle) {
       throw new BadRequestException('type, slug ve pageTitle zorunludur');
@@ -60,7 +58,7 @@ export class ReportsController {
   @Patch(':id/status')
   updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { status: string },
+    @Body() body: UpdateReportStatusDto,
   ) {
     if (!Object.values(ReportStatus).includes(body.status as ReportStatus)) {
       throw new BadRequestException('Geçersiz status değeri');
