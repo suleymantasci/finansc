@@ -3,8 +3,13 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY}:backend-latest
     container_name: finansc-backend
     restart: unless-stopped
+    depends_on:
+      finansc-db:
+        condition: service_healthy
     networks:
       - traefik-public
+      # Private network to the project's own database (finansc-db).
+      - internal
       # mailserver stack'i mail-system_default adlı docker network'ünde
       # çalışıyor. SMTP bağlantısı için backend'in bu ağa da bağlı olması
       # gerekir; aksi halde `mailserver` hostname'i DNS'te çözülmez.
@@ -25,12 +30,13 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - DB_HOST=${DB_HOST}
+      - DB_HOST=${DB_HOST:-finansc-db}
       - DB_PORT=${DB_PORT:-5432}
       - DB_NAME=${DB_NAME}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DB_SSL=${DB_SSL:-true}
+      # Database is on the private compose network; TLS is not needed there.
+      - DB_SSL=${DB_SSL:-false}
       - DB_SSL_CA_FILE=${DB_SSL_CA_FILE:-}
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
@@ -53,6 +59,7 @@ services:
       - MAIL_TO=${MAIL_TO:-info@finanscozum.net}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
       - "traefik.http.routers.finansc-backend.rule=Host(`api.finanscozum.net`)"
       - "traefik.http.routers.finansc-backend.entrypoints=websecure"
       - "traefik.http.routers.finansc-backend.tls=true"
@@ -86,7 +93,32 @@ services:
       - "traefik.http.middlewares.finansc-www-redirect.redirectregex.permanent=true"
       - "traefik.http.routers.finansc-client.middlewares=finansc-www-redirect"
 
+  # Project-owned PostgreSQL: only on the internal network, no host port.
+  # Data lives in the finansc_pgdata volume.
+  finansc-db:
+    image: postgres:16-alpine
+    container_name: finansc-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      TZ: Europe/Istanbul
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  pgdata:
+
 networks:
+  internal:
   traefik-public:
     external: true
   mail-system_default:
